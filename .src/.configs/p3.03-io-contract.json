@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "project_version": "3.2.0.0.0.0",
+  "part": "Part 03",
+  "objective": "P3.03",
+  "title": "Interrupt, Timer, Power and Console Contract",
+  "scope": {
+    "machine": "vmapple",
+    "cpu_contract_owner": "Part 02",
+    "guest_runtime_deferred": true,
+    "inferno_source_patch_required": false
+  },
+  "source_locks": {
+    "inferno": {
+      "repository": "ChefKissInc/Inferno",
+      "revision": "cc4302a99167abec69b714cfd00c38caece7e7de",
+      "path": "hw/vmapple/vmapple.c",
+      "blob_sha": "89c04c09f705d987ee96c11c1f5f4fc79713bf2e"
+    },
+    "xnu_vmapple": {
+      "repository": "apple-oss-distributions/xnu",
+      "revision": "f6217f891ac0bb64f3d375211650a4c1ff8ca1ea",
+      "path": "pexpert/pexpert/arm64/VMAPPLE.h",
+      "blob_sha": "08b35780a1dcf187af2ced7839d7045afb433de7"
+    },
+    "qemu_reference": {
+      "repository": "qemu/qemu",
+      "revision": "84f07211cc5b4fc6a371559bf8a5de4fb068e648",
+      "release": "11.1.0",
+      "path": "hw/vmapple/vmapple.c",
+      "blob_sha": "607181f5177b1c798a7504150ce29aa383b29993"
+    }
+  },
+  "machine_limits": {
+    "max_cpus": 32,
+    "external_irq_lines": 256,
+    "gic_internal_irqs": 32,
+    "gic_num_irq_property": 288
+  },
+  "components": [
+    {
+      "id": "gicv3_distributor",
+      "device": "generic-qemu-gicv3",
+      "ownership": "generic_qemu",
+      "guest_contract": "source_backed",
+      "base": "0x10000000",
+      "size": "0x00010000",
+      "revision": 3,
+      "action": "validate"
+    },
+    {
+      "id": "gicv3_redistributor",
+      "device": "generic-qemu-gicv3",
+      "ownership": "generic_qemu",
+      "guest_contract": "source_backed",
+      "base": "0x10010000",
+      "size": "0x00400000",
+      "per_cpu_stride": "0x00020000",
+      "capacity_cpus": 32,
+      "action": "validate"
+    },
+    {
+      "id": "gicv3_cpu_lines",
+      "device": "generic-qemu-gicv3",
+      "ownership": "generic_qemu",
+      "guest_contract": "reference_machine_contract",
+      "gic_outputs": [
+        "IRQ",
+        "FIQ"
+      ],
+      "cpu_inputs": [
+        "ARM_CPU_IRQ",
+        "ARM_CPU_FIQ"
+      ],
+      "per_cpu": true,
+      "action": "validate"
+    },
+    {
+      "id": "architectural_virtual_timer",
+      "device": "arm-generic-timer",
+      "ownership": "generic_qemu",
+      "guest_contract": "reference_machine_contract",
+      "cpu_output": "GTIMER_VIRT",
+      "ppi": 27,
+      "per_cpu": true,
+      "action": "validate"
+    },
+    {
+      "id": "pl011_uart",
+      "device": "pl011",
+      "ownership": "generic_qemu",
+      "guest_contract": "source_backed",
+      "base": "0x20010000",
+      "size": "0x00010000",
+      "spi": 1,
+      "chardev": "serial_hd(0)",
+      "action": "preserve"
+    },
+    {
+      "id": "pl031_rtc",
+      "device": "pl031",
+      "ownership": "generic_qemu",
+      "guest_contract": "reference_machine_contract",
+      "base": "0x20050000",
+      "size": "0x00001000",
+      "spi": 2,
+      "action": "validate"
+    },
+    {
+      "id": "pl061_gpio_power",
+      "device": "pl061+gpio-key",
+      "ownership": "generic_qemu",
+      "guest_contract": "reference_machine_contract",
+      "base": "0x20060000",
+      "size": "0x00001000",
+      "spi": 5,
+      "pullups": 0,
+      "pulldowns": 255,
+      "power_gpio_pin": 3,
+      "power_request_input": 0,
+      "event_semantics": "unknown_requires_runtime_evidence",
+      "action": "validate"
+    },
+    {
+      "id": "pvpanic_mmio",
+      "device": "pvpanic-mmio",
+      "ownership": "generic_qemu",
+      "guest_contract": "optional_reference_component",
+      "base": "0x20070000",
+      "size": "0x00000002",
+      "spi": null,
+      "action": "preserve"
+    }
+  ],
+  "rules": {
+    "generic_devices_are_preserved_until_evidence_disproves_compatibility": true,
+    "gicv3_and_pl011_are_source_backed_by_xnu_vmapple": true,
+    "virtual_timer_ppi_is_27": true,
+    "redistributor_capacity_must_match_machine_cpu_cap": true,
+    "power_gpio_event_semantics_remain_evidence_gated": true,
+    "pvpanic_is_not_promoted_to_boot_requirement": true,
+    "no_new_inferno_patch_for_p3_03": true,
+    "guest_runtime_deferred": true
+  },
+  "next_objective": "P3.04"
+}
