@@ -1,8 +1,8 @@
 # Source
 
-Project version: **`2.3.0.0.0.0`**
+Project version: **`2.4.0.0.0.0`**
 
-The source tree contains the complete Part 01 evidence pipeline and Part 02 CPU compatibility work through P2.04.
+The source tree contains the complete Part 01 evidence pipeline and Part 02 CPU compatibility work through P2.05.
 
 ## Layout
 
@@ -29,30 +29,25 @@ P2.02 adds the fail-closed Apple sysreg registration framework.
 
 P2.03 adds the evidence-gated sysreg read/write/reset/access policy engine. The live semantic table remains empty.
 
-P2.04 adds:
+P2.04 adds the project-owned VMApple architectural minimum feature profile for TCG `apple-gxf` while leaving ordinary `max`, host/HVF and KVM paths unchanged.
+
+P2.05 adds:
 
 ```text
-.src/.patches/0005-arm-vmapple-feature-contract.patch
-.src/.configs/p2.04-feature-contract.json
-.src/.tools/prepare-p2.04.sh
+.src/.configs/p2.05-regression-policy.json
+.src/.tools/cpu-contract-regression.py
+.src/.tools/prepare-p2.05.sh
 ```
 
-The P2.04 patch creates, inside disposable patched Inferno trees:
-
-```text
-target/arm/apple-cpu-features.c
-target/arm/apple-cpu-features.h
-```
-
-It attaches a minimum architectural VMApple feature profile only to the TCG `apple-gxf` path. The profile covers PAuth presence, SSBS2, SME/SME2, PAN3, 4 KiB + 16 KiB stage-1 granules and range TLBI while preserving stronger QEMU `max` capabilities.
-
-The standard `max` CPU, host/HVF and KVM paths are not modified by the P2.04 profile.
+The P2.05 suite content-locks the Part 02 contracts and patches through P2.04, prepares the full `0001`–`0005` patch series on the pinned Inferno source, verifies `max` isolation and TCG `apple-gxf` CPU wiring, checks that P2.03 still exposes zero live implementation-defined sysreg semantics, and emits a deterministic regression fingerprint.
 
 The next source objective is:
 
 ```text
-P2.05 — Deterministic CPU Contract Regression Harness
+P2.06 — Part 02 Integration Gate
 ```
+
+P2.06 is the final Part 02 objective.
 
 ## Testing and artifacts
 
