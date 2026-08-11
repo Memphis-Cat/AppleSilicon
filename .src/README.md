@@ -1,8 +1,8 @@
 # Source
 
-Project version: **`3.5.0.0.0.0`**
+Project version: **`4.0.0.0.0.0`**
 
-The source tree contains the closed Part 01 evidence pipeline, closed Part 02 CPU compatibility contract, and closed Part 03 VMApple platform contract through P3.06.
+The source tree contains closed Part 01 evidence, closed Part 02 CPU compatibility, closed Part 03 VMApple platform integration, and active Part 04 runtime-evidence work beginning at P4.01.
 
 ## Layout
 
@@ -15,42 +15,13 @@ The source tree contains the closed Part 01 evidence pipeline, closed Part 02 CP
 └── .fixtures/           # sanitized deterministic fixtures
 ```
 
-## Part 01
+## Closed implementation layers
 
-Part 01 is closed at P1.10. Its build/probe, trace normalization, reference-manifest and A/B evidence pipeline remains authoritative for runtime evidence and divergence promotion.
+Part 01 is closed at P1.10 and remains authoritative for runtime manifests, trace comparison and divergence promotion.
 
-## Part 02
+Part 02 is closed at P2.06 and owns the `apple-gxf` CPU compatibility contract.
 
-Part 02 is closed at P2.06. It owns the deliberate Apple-compatible CPU contract, including the fail-closed implementation-defined sysreg framework/policy model and the `apple-gxf` architectural feature contract.
-
-## Part 03
-
-Part 03 is closed at P3.06.
-
-Completed platform objectives:
-
-```text
-P3.01  platform ownership inventory
-P3.02  configuration and platform identity
-P3.03  interrupt, timer, power and console
-P3.04  boot backdoor and storage
-P3.05  PCIe, peripheral, crypto and graphics
-P3.06  Part 03 integration gate
-```
-
-The final P3.06 gate binds all Part 03 contracts to the passing P2.06 CPU integration state, invokes each platform validator, checks cross-contract evidence gates and emits:
-
-```text
-.build/p3.06/platform-integration-manifest.json
-```
-
-The final runtime delegation remains:
-
-```text
-P3.06 -> P2.06 -> P1.07
-```
-
-with P1.09/P1.10 controlling comparable evidence and divergence promotion.
+Part 03 is closed at P3.06 and owns the integrated non-CPU VMApple platform contract.
 
 ## Compatibility patch chain
 
@@ -64,23 +35,43 @@ The ordered source patch chain remains exactly:
 0005-arm-vmapple-feature-contract.patch
 ```
 
-Part 03 adds no `0006` patch.
+P4.01 adds no `0006` patch.
 
-Unknown config-layout, power-event, BDIF-write/barrier, AES-command and modern graphics behavior remains evidence-gated rather than implemented from guesses.
+## Part 04 — Runtime evidence
 
-P1.05's optional real-PVG path remains in force and fake GPU substitution is forbidden.
+Part 04 is fixed at exactly P4.01 through P4.06.
 
-## Next progression point
+Current state:
 
 ```text
-Part 04
-P4.01
+P4.01  Runtime Session Provenance and Input Lock  complete
+P4.02  Integrated TCG Probe Capture               NEXT
+P4.03  Apple Silicon HVF Reference Capture
+P4.04  Comparable A/B Session Assembly
+P4.05  Reproducible Divergence Promotion
+P4.06  Part 04 Runtime Evidence Gate
 ```
 
-Part 04 begins from the integrated CPU + platform contract and moves into runtime evidence instead of extending the Part 03 static contract inventory.
+There is no P4.07.
+
+P4.01 introduces a deterministic pre-execution session plan that binds:
+
+```text
+P3.06 platform integration fingerprint
+QEMU executable SHA-256/version/capabilities
+role: probe or reference
+firmware/AUX/root/machine-identity digests
+optional hardware-model digest
+canonical machine-UUID digest
+Part 01 trace/debug contract
+```
+
+The plan stores no raw UUID, hostname, local paths, identity data or guest artifact contents. It is provenance metadata only and cannot be promoted to runtime evidence.
 
 ## Testing and artifacts
 
-Intermediate objectives rely on development-side validation and persistent `.logs/` artifacts rather than repeated maintainer testing. Real macOS execution remains reserved for integrated runtime evidence.
+`prepare-p4.01.sh` performs logged static validation without a guest.
+
+`plan-p4.01-session.sh` performs logged local pre-execution planning and determinism checks when real QEMU/VM inputs are available, but still does not launch QEMU.
 
 No proprietary Apple firmware, macOS images, AUX/root storage artifacts, tickets, keys, authentic hardware secrets, machine-identity blobs or account secrets belong in `.src/`.
