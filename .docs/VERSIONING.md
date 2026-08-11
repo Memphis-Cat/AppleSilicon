@@ -18,26 +18,16 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-4.2.0.0.0.0
+4.3.0.0.0.0
 ```
 
-This update implements P4.03, **Apple Silicon HVF Reference Capture**.
+This update implements P4.04, **Comparable A/B Session Assembly**.
 
-P4.03 adds a provenance-bound primary reference path for:
+P4.04 admits one P4.03 Apple-Silicon/HVF reference capture and one P4.02 TCG/`apple-gxf` probe capture only after their P4.01 plans, capture fingerprints and authoritative P1.09 manifests all agree on the comparison contract.
 
-```text
-vmapple
-HVF
-host CPU
-Darwin arm64
-4G RAM
-4 vCPUs
-30-second observation
-```
+Additional P4.04 equality includes the P3.06 manifest/fingerprint, hashed machine UUID and QEMU version string. Host, accelerator, CPU and host-specific QEMU executable digest/size remain intentional role differences.
 
-The reference host requirement is fail-closed. An Intel Mac/Hackintosh or synthetic substitute cannot be accepted as the primary P4.03 reference.
-
-P4.03 reuses the existing P1.09 reference runner and manifest policy; it does not add another HVF launcher or another evidence schema. The P4.03 capture descriptor binds the P1.09 manifest plus the separately hashed launcher log, repeats provenance after execution and cannot promote a divergence.
+The deterministic A/B bundle is assembled twice and must be byte-identical. P4.04 does not compare traces and cannot promote a divergence; P1.08 and P1.10 remain authoritative.
 
 Part 04 remains fixed at exactly six objectives:
 
@@ -50,9 +40,9 @@ P4.05 — Reproducible Divergence Promotion
 P4.06 — Part 04 Runtime Evidence Gate
 ```
 
-There is no P4.07. P4.04 is next.
+There is no P4.07. P4.05 is next.
 
-P4.03 adds no Inferno patch and no real Apple Silicon/HVF guest was launched while implementing it. The repository root `README.md` remains intentionally unchanged.
+P4.04 adds no Inferno patch and no real A/B pair was assembled while implementing it because runtime P4.02/P4.03 captures remain deferred. The repository root `README.md` remains intentionally unchanged.
 
 ## Reset behavior
 
