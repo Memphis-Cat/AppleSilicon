@@ -15,6 +15,13 @@
     "runtime_result_prefix": "P1_07_PROBE_",
     "runtime_manifest_role": "probe"
   },
+  "runtime_parameters": {
+    "ram": "4G",
+    "ram_mib": 4096,
+    "smp": 4,
+    "capture_seconds": 30,
+    "grace_seconds": 3
+  },
   "locked_project_artifacts": [
     {"path":".src/.configs/p4.01-runtime-session-policy.json","git_blob_sha":"6feb5275b827595c4ac6b2f5ca68d9cc9a836f5b","role":"session_provenance_policy"},
     {"path":".src/.tools/runtime-session.py","git_blob_sha":"f5fa692a3372aa4eb2e0c16865464f609d0e0998","role":"session_provenance_planner"},
@@ -46,6 +53,7 @@
   "requirements": {
     "p4_01_probe_session_plan_must_be_ready": true,
     "session_fingerprint_required": true,
+    "runtime_parameters_must_be_locked_before_run": true,
     "qemu_and_inputs_must_match_session_plan_before_run": true,
     "qemu_and_inputs_must_match_session_plan_after_run": true,
     "preflight_results_must_be_byte_identical": true,
@@ -56,6 +64,7 @@
     "probe_manifest_must_validate_under_p1_09": true,
     "probe_manifest_inputs_must_match_session_plan": true,
     "probe_manifest_trace_contract_must_match_session_plan": true,
+    "probe_manifest_ram_and_smp_must_match_runtime_parameters": true,
     "runtime_artifacts_must_be_digest_bound": true,
     "capture_manifest_must_store_no_raw_local_paths": true,
     "capture_manifest_is_not_a_divergence_promotion": true,
