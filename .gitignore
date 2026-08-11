@@ -1,4 +1,3 @@
-logs/*.log
-build/
-src/upstream/inferno/build/
+.logs/
+.build/
 .DS_Store
