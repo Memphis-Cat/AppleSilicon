@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`3.2.0.0.0.0`**
+Current project version: **`3.3.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments and implementation objectives for AppleSilicon.
 
@@ -17,6 +17,7 @@ This directory records the research, design decisions, compatibility contracts, 
 - [P3.01.md](P3.01.md) — platform ownership inventory.
 - [P3.02.md](P3.02.md) — configuration and platform identity contract.
 - [P3.03.md](P3.03.md) — interrupt, timer, power and console contract.
+- [P3.04.md](P3.04.md) — boot backdoor and storage contract.
 
 ## Part boundaries
 
@@ -32,12 +33,12 @@ Part 03 is fixed at exactly P3.01 through P3.06; there is no P3.07.
 P3.01  complete
 P3.02  complete
 P3.03  complete
-P3.04  NEXT
-P3.05  planned
+P3.04  complete
+P3.05  NEXT
 P3.06  planned / final Part 03 objective
 ```
 
-P3.03 freezes the stable VMApple GICv3, architectural virtual timer, PL011, PL031, PL061/power and pvpanic wiring without replacing generic QEMU devices. Exact power-button event semantics remain evidence-gated.
+P3.04 freezes VMApple's two-phase boot/storage model: read-only observed BDIF pre-boot access over AUX/root plus Apple-flavored virtio-blk runtime storage. BDIF writes and real Apple barrier flush semantics remain evidence-gated.
 
 ## Maintainer testing policy
 
@@ -49,7 +50,7 @@ Development-side source inspection, compilation, static checks, automated tests,
 
 Every meaningful executable AppleSilicon operation must leave a `.log` artifact under `.logs/` unless a later component explicitly documents another local output contract.
 
-P3.03 adds `.src/.tools/prepare-p3.03.sh`, which writes a logged deterministic platform-I/O validation without launching a macOS guest.
+P3.04 adds `.src/.tools/prepare-p3.04.sh`, which writes a logged deterministic boot/storage contract validation without launching a macOS guest or opening local Apple storage artifacts.
 
 ## Evidence policy
 
