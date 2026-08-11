@@ -10,10 +10,12 @@ Part 01 tools provide build/probe, trace normalization, reference-manifest and A
 
 ```text
 cpu-contract.py
+cpu-contract-regression.py
 prepare-p2.01.sh
 prepare-p2.02.sh
 prepare-p2.03.sh
 prepare-p2.04.sh
+prepare-p2.05.sh
 ```
 
 ### cpu-contract.py / prepare-p2.01.sh
@@ -30,17 +32,27 @@ Validates the sysreg policy engine and ordered patches through 0004, including e
 
 ### prepare-p2.04.sh
 
-P2.04's logged architectural feature-profile validator.
+Validates the VMApple architectural feature profile and ordered patches through 0005, including TCG-only `apple-gxf` wiring, `max` isolation, PAuth/SSBS2/SME2/PAN3/translation-granule/range-TLBI requirements and preservation of P2.03's empty live sysreg policy table.
 
-It checks the exact XNU VMApple and Inferno source locks, validates the P2.04 JSON contract, verifies pinned Inferno's feature-test/max-CPU capabilities, applies patches 0001–0005 to `.build/p2.04/inferno-src`, verifies TCG-only `apple-gxf` wiring and `max` isolation, validates the required PAuth/SSBS2/SME2/PAN3/TGran4/TGran16/TLBIRANGE postconditions, confirms P2.03's live sysreg policy count remains zero, and runs `git diff --check`.
+### cpu-contract-regression.py / prepare-p2.05.sh
 
-Every run writes:
+P2.05's deterministic non-guest CPU-contract regression suite.
+
+It content-locks the P2.01–P2.04 contracts and patches 0003–0005, cross-checks objective sequencing and policy invariants, prepares the complete 0001–0005 patch chain on the pinned Inferno source, inspects the resulting `apple-gxf` source integration, and emits:
 
 ```text
-.logs/AppleSilicon-p2.04-YYYYMMDD-HHMMSS-PID.log
+.build/p2.05/cpu-contract-regression.json
 ```
 
-It does not launch a macOS guest.
+The result contains a deterministic SHA-256 suite fingerprint. The logged preparation harness runs the regression twice and requires byte-identical JSON.
+
+Every preparation run writes:
+
+```text
+.logs/AppleSilicon-p2.05-YYYYMMDD-HHMMSS-PID.log
+```
+
+No macOS guest is launched.
 
 ## Rules
 
