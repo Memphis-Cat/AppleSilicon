@@ -18,18 +18,24 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-4.4.0.0.0.0
+4.5.0.0.0.0
 ```
 
-This update implements P4.05, **Reproducible Divergence Promotion**.
+This update implements P4.06, **Part 04 Runtime Evidence Gate**, the final planned implementation objective.
 
-P4.05 consumes at least two independent P4.04-admitted A/B runtime sessions, regenerates one P1.10 candidate from each exact manifest/trace pair, requires the same divergence signature and P1.09 contract fingerprint, then delegates promotion to the existing P1.10 `promote` command.
+P4.06 validates P4.01 through P4.05, preserves the five-patch Inferno chain, and distinguishes planned implementation completion from real runtime evidence validation.
 
-Independence is stronger than simple pair uniqueness: the A/B fingerprints, reference run IDs, probe run IDs, reference capture fingerprints and probe capture fingerprints must all differ. The P4.04 shared contract and exact role-specific QEMU binaries must remain fixed across reproductions.
+Without real runtime artifacts the expected classification is:
 
-The authoritative promotion remains `P01-DIVERGENCE-0001`; P1.10 auto-commit remains disabled. P4.05 adds no Inferno patch and does not claim a real promoted divergence during implementation because two independent real runtime reproductions have not been supplied.
+```text
+P4_06_IMPLEMENTATION_COMPLETE_RUNTIME_EVIDENCE_PENDING
+```
 
-Part 04 remains fixed at exactly six objectives:
+This closes the planned implementation roadmap while keeping runtime validation explicitly pending.
+
+The future runtime gate requires at least two independent P4.04 sessions and accepts either reproduced trace equivalence within the configured capture scope or one reproducible divergence backed by the exact P4.05/P1.10 promotion record.
+
+Part 04 is fixed at exactly six objectives:
 
 ```text
 P4.01 — Runtime Session Provenance and Input Lock
@@ -40,9 +46,9 @@ P4.05 — Reproducible Divergence Promotion
 P4.06 — Part 04 Runtime Evidence Gate
 ```
 
-There is no P4.07. P4.06 is next and is the final Part 04 objective.
+There is no P4.07 and no automatically defined Part 05.
 
-The repository root `README.md` remains intentionally unchanged.
+The repository root `README.md` remains intentionally unchanged. P4.06 adds no Inferno patch, and no real runtime pass is claimed during implementation.
 
 ## Reset behavior
 
