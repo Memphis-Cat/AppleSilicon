@@ -99,7 +99,12 @@ FINAL_STAGE="config-validation"
 python3 -m json.tool "${CONFIG}" >/dev/null || fail "CONFIG_INVALID" "P1.08 comparison config is invalid JSON."
 
 FINAL_STAGE="syntax-validation"
-python3 -m py_compile "${TOOL}" || fail "PYTHON_SYNTAX_FAILED" "P1.08 comparator failed Python syntax compilation."
+python3 - "${TOOL}" <<'PY' || fail "PYTHON_SYNTAX_FAILED" "P1.08 comparator failed Python syntax compilation."
+import sys
+from pathlib import Path
+path = Path(sys.argv[1])
+compile(path.read_text(encoding="utf-8"), str(path), "exec")
+PY
 
 FINAL_STAGE="embedded-self-check"
 python3 "${TOOL}" self-check --config "${CONFIG}" || fail "EMBEDDED_SELF_CHECK_FAILED" "P1.08 embedded self-check failed."
