@@ -17,18 +17,35 @@ The first phase establishes a reproducible upstream baseline, identifies which p
 Research performed for the first update found several important existing projects:
 
 - [QEMU](https://github.com/qemu/qemu) contains the upstream `vmapple` machine model. It recreates the virtual device model exposed to Apple-Silicon macOS guests by Apple's Virtualization.framework. Upstream currently documents an Apple Silicon/macOS host requirement and macOS 12 guest support.
-- [ChefKiss Inferno](https://github.com/ChefKissInc/Inferno) is an active QEMU derivative for emulating Apple ARM devices. It contains Apple device-emulation work and `vmapple`, making it an important reference for this project.
+- [ChefKiss Inferno](https://github.com/ChefKissInc/Inferno) is an active QEMU derivative for emulating Apple ARM devices. It contains Apple device-emulation work and `vmapple`, making it the closest active reference/base found for this project.
 - [qemu-t8030](https://github.com/TrungNguyen1909/qemu-t8030) emulates the T8030/A13 platform and demonstrates that substantial Apple-specific SoC behavior can be modeled in QEMU. It is archived and iPhone/iOS-oriented, so it is research material rather than the main base.
 - [xnu-qemu-arm64](https://github.com/alephsecurity/xnu-qemu-arm64) demonstrated ARM64 XNU/iOS bring-up in QEMU, including KVM work, but relies on guest patching and targets older iOS hardware.
 - [m1n1](https://github.com/AsahiLinux/m1n1) is the main hardware-research tool for observing real Apple Silicon behavior and tracing macOS/XNU hardware accesses.
 - [Apple's open-source XNU](https://github.com/apple-oss-distributions/xnu) is a primary source for the ARM64 kernel-side contracts that are visible in open source.
 
-The project will initially treat upstream QEMU/VMApple and Inferno as references/bases, while keeping AppleSilicon-specific research, patches, tests, traces, and documentation in this repository.
+The project uses a pinned Inferno source reference while keeping AppleSilicon-specific research, patches, tests, traces, and documentation in this repository.
+
+## Clone
+
+Clone the project and its pinned upstream source together:
+
+```bash
+git clone --recurse-submodules https://github.com/Memphis-Cat/AppleSilicon.git
+```
+
+If the repository was already cloned without submodules:
+
+```bash
+git submodule update --init --recursive
+```
+
+The current Inferno reference is pinned rather than following `master` automatically, so experiments remain reproducible until we deliberately update the baseline.
 
 ## Repository layout
 
 ```text
 AppleSilicon/
+├── .gitmodules
 ├── README.md
 ├── docs/
 │   ├── README.md
@@ -37,7 +54,15 @@ AppleSilicon/
 │   ├── ARCHITECTURE.md
 │   └── PART-01-BASELINE.md
 └── src/
-    └── README.md
+    ├── README.md
+    ├── upstream/
+    │   └── inferno/       # pinned Git submodule
+    ├── patches/
+    │   └── README.md
+    ├── tools/
+    │   └── README.md
+    └── configs/
+        └── README.md
 ```
 
 The source tree will expand only as each part becomes concrete. We are deliberately avoiding a giant placeholder tree for components that do not exist yet.
@@ -72,7 +97,7 @@ Guest patches may be used temporarily for research and instrumentation, but a su
 
 ## Documentation
 
-Start with [docs/README.md](docs/README.md), then read [docs/PART-01-BASELINE.md](docs/PART-01-BASELINE.md).
+Start with [docs/README.md](docs/README.md), then read [docs/RESEARCH.md](docs/RESEARCH.md) and [docs/PART-01-BASELINE.md](docs/PART-01-BASELINE.md).
 
 ## Legal and licensing note
 
