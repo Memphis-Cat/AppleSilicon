@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`0.6.0.0.0.0`**
+Current project version: **`0.7.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments, and implementation objectives for AppleSilicon.
 
@@ -16,6 +16,7 @@ This directory records the research, design decisions, compatibility contracts, 
 - [P1.04.md](P1.04.md) — decouple VMApple compilation from HVF.
 - [P1.05.md](P1.05.md) — make Apple PVG optional during VMApple machine construction.
 - [P1.06.md](P1.06.md) — explicit non-host VMApple CPU selection for TCG experiments.
+- [P1.07.md](P1.07.md) — complete logged TCG VMApple pre-boot probe harness.
 
 ## Part and objective naming
 
@@ -53,9 +54,9 @@ The default path is:
 
 Runtime logging must capture stdout and stderr together unless a later component explicitly documents another design. Logs should contain version, time, host information, configuration information where safe, and the final exit state.
 
-Logs must not intentionally contain passwords, Apple account information, authentication tokens, private keys, tickets, or other sensitive machine material.
+Logs must not intentionally contain passwords, Apple account information, authentication tokens, private keys, tickets, raw VM machine identifiers, or other sensitive machine material.
 
-P1.01 defines the first implementation of this rule.
+P1.01 defines the first implementation of this rule. P1.07 extends it to separate launcher, serial, QEMU debug, and trace-capability logs for the first controlled non-host VMApple probe.
 
 ## Documentation rules
 
