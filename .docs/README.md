@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`4.4.0.0.0.0`**
+Current project version: **`4.5.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments and implementation objectives for AppleSilicon.
 
@@ -15,21 +15,17 @@ This directory records the research, design decisions, compatibility contracts, 
 - [P2.01.md](P2.01.md) through [P2.06.md](P2.06.md) — completed Part 02 sequence.
 - [PART-03-PLATFORM-CONTRACT.md](PART-03-PLATFORM-CONTRACT.md) — closed Part 03 VMApple platform tree.
 - [P3.01.md](P3.01.md) through [P3.06.md](P3.06.md) — completed Part 03 sequence.
-- [PART-04-RUNTIME-EVIDENCE.md](PART-04-RUNTIME-EVIDENCE.md) — active fixed Part 04 runtime-evidence tree.
-- [P4.01.md](P4.01.md) — runtime session provenance and input lock.
-- [P4.02.md](P4.02.md) — integrated TCG probe capture.
-- [P4.03.md](P4.03.md) — Apple Silicon HVF reference capture.
-- [P4.04.md](P4.04.md) — comparable A/B session assembly.
-- [P4.05.md](P4.05.md) — reproducible divergence promotion.
+- [PART-04-RUNTIME-EVIDENCE.md](PART-04-RUNTIME-EVIDENCE.md) — closed Part 04 runtime-evidence implementation tree.
+- [P4.01.md](P4.01.md) through [P4.06.md](P4.06.md) — completed Part 04 implementation sequence.
 
 ## Part boundaries
 
 Part 01 closes at `P1.10`; there is no P1.11.
 Part 02 closes at `P2.06`; there is no P2.07.
 Part 03 closes at `P3.06`; there is no P3.07.
-Part 04 is fixed at `P4.01` through `P4.06`; there is no P4.07.
+Part 04 closes at `P4.06`; there is no P4.07.
 
-## Current Part 04 state
+## Current state
 
 ```text
 P4.01  complete
@@ -37,26 +33,31 @@ P4.02  complete
 P4.03  complete
 P4.04  complete
 P4.05  complete
-P4.06  NEXT / final Part 04 objective
+P4.06  complete
+
+planned implementation roadmap  complete
+real runtime evidence validation pending
 ```
 
-P4.05 requires at least two independent P4.04-admitted runtime pairs, regenerates their candidates through the existing P1.10/P1.08 path, requires one reproduced divergence signature and one P1.09 contract fingerprint, and delegates the authoritative promotion to P1.10.
+P4.06 does not fabricate a runtime pass. The implementation-only classification is `P4_06_IMPLEMENTATION_COMPLETE_RUNTIME_EVIDENCE_PENDING`.
+
+The real runtime gate requires at least two independent P4.04 sessions and accepts either reproduced trace equivalence or a reproducible divergence promoted by P4.05/P1.10.
+
+No Part 05 is automatically defined; further implementation work must be evidence-driven or explicitly scoped.
 
 ## Maintainer testing policy
 
-The maintainer will not be asked to manually test individual objectives. Manual testing is reserved for the finished integrated project.
-
-Development-side source inspection, compilation, static checks, automated tests, emulator probes, regression tests and trace comparisons remain expected where practical.
+Manual testing is reserved for the finished integrated project. The implementation roadmap is now complete; the remaining validation work is the real integrated runtime evidence run with the required local environments.
 
 ## Logging policy
 
-Every meaningful executable AppleSilicon operation must leave a `.log` artifact under `.logs/` unless a later component explicitly documents another local output contract.
+Every meaningful executable AppleSilicon operation must leave a `.log` artifact under `.logs/` unless a component explicitly documents another local output contract.
 
-P4.05 provides a logged static preparation harness and deterministic promotion wrapper.
+P4.06 provides both a logged deterministic implementation-close harness and a logged deterministic runtime evaluator.
 
 ## Evidence policy
 
-P4.02/P4.03 establish runtime provenance, P4.04 establishes pair admissibility, and P4.05 orchestrates reproducible promotion while preserving P1.08/P1.10 as the trace/promotion authorities.
+P4.02/P4.03 establish runtime provenance, P4.04 establishes pair admissibility, P4.05 establishes reproducible promotion, and P4.06 is the final evidence gate. P1.08/P1.09/P1.10 remain authoritative for trace comparison, pair comparability and promotion.
 
 ## Root README rule
 
