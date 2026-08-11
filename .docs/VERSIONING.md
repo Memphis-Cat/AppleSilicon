@@ -71,12 +71,14 @@ Example:
 ## Current version
 
 ```text
-0.7.0.0.0.0
+0.8.0.0.0.0
 ```
 
-This update implements P1.07, **TCG VMApple Pre-Boot Probe Harness**. It adds the first complete non-host VMApple launch specification using TCG plus the explicit P1.06 CPU profiles while preserving the upstream VMApple firmware/storage shape.
+This update implements P1.08, **VMApple Trace Normalization and Earliest-Divergence Extraction**.
 
-P1.07 adds fail-closed local-input validation, QEMU capability discovery, configurable debug logging, MMIO trace-event filtering, a finite probe window, separate launcher/serial/QEMU `.log` outputs, and deterministic result classifications. The runtime launcher is implemented now but intentionally not executed under the project owner's final-testing-only rule.
+P1.08 adds a standard-library Python trace normalizer/comparator, conservative removal of QEMU host-runtime noise, preservation of guest MMIO semantics, bounded trace resynchronization, first-divergence classification, Markdown/JSON candidate reports, sanitized fixtures, and a mandatory logged development-validation harness.
+
+Real Apple/HVF and TCG VMApple trace collection remains intentionally deferred under the project owner's final-testing-only rule. Synthetic fixture results must never be promoted into a real `P01-DIVERGENCE-0001`.
 
 The root `README.md` is intentionally not version-updated in this release under the project owner's instruction.
 
