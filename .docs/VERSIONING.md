@@ -18,16 +18,26 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-4.1.0.0.0.0
+4.2.0.0.0.0
 ```
 
-This update implements P4.02, **Integrated TCG Probe Capture**.
+This update implements P4.03, **Apple Silicon HVF Reference Capture**.
 
-P4.02 consumes the P4.01 probe session plan, locks the execution to `vmapple` + TCG + `apple-gxf`, 4 GiB RAM, 4 vCPUs and a 30-second observation window, then reuses the existing P3.06 → P2.06 → P1.07 runtime chain.
+P4.03 adds a provenance-bound primary reference path for:
 
-After a completed observational run it reuses the Part 01 probe collector to create a validated P1.09 manifest, repeats the provenance preflight, requires byte-identical pre/post results and emits a sanitized P4.02 capture descriptor.
+```text
+vmapple
+HVF
+host CPU
+Darwin arm64
+4G RAM
+4 vCPUs
+30-second observation
+```
 
-No divergence is promoted by P4.02. P1.10 remains authoritative for promotion.
+The reference host requirement is fail-closed. An Intel Mac/Hackintosh or synthetic substitute cannot be accepted as the primary P4.03 reference.
+
+P4.03 reuses the existing P1.09 reference runner and manifest policy; it does not add another HVF launcher or another evidence schema. The P4.03 capture descriptor binds the P1.09 manifest plus the separately hashed launcher log, repeats provenance after execution and cannot promote a divergence.
 
 Part 04 remains fixed at exactly six objectives:
 
@@ -40,9 +50,9 @@ P4.05 — Reproducible Divergence Promotion
 P4.06 — Part 04 Runtime Evidence Gate
 ```
 
-There is no P4.07. P4.03 is next.
+There is no P4.07. P4.04 is next.
 
-P4.02 adds no Inferno source patch. Real TCG execution is intentionally deferred to final integrated testing. The repository root `README.md` remains intentionally unchanged.
+P4.03 adds no Inferno patch and no real Apple Silicon/HVF guest was launched while implementing it. The repository root `README.md` remains intentionally unchanged.
 
 ## Reset behavior
 
@@ -55,5 +65,4 @@ Examples:
 1.9.0.0.0.0 -> 2.0.0.0.0.0
 2.5.0.0.0.0 -> 3.0.0.0.0.0
 3.5.0.0.0.0 -> 4.0.0.0.0.0
-4.0.0.0.0.0 -> 4.1.0.0.0.0
 ```
