@@ -1,0 +1,21 @@
+diff --git a/hw/vmapple/vmapple.c b/hw/vmapple/vmapple.c
+--- a/hw/vmapple/vmapple.c
++++ b/hw/vmapple/vmapple.c
+@@ -169,12 +169,19 @@ static void create_gfx(VMAppleMachineState *vms, MemoryRegion *mem)
+ {
+     int irq_gfx = vms->irqmap[VMAPPLE_APV_GFX];
+     int irq_iosfc = vms->irqmap[VMAPPLE_APV_IOSFC];
++    DeviceState *gfx_dev;
+     SysBusDevice *gfx;
+ 
+-    gfx = SYS_BUS_DEVICE(qdev_new("apple-gfx-mmio"));
++    gfx_dev = qdev_try_new("apple-gfx-mmio");
++    if (!gfx_dev) {
++        warn_report("VMApple: apple-gfx-mmio unavailable; continuing without Apple PVG");
++        return;
++    }
++
++    gfx = SYS_BUS_DEVICE(gfx_dev);
+     sysbus_mmio_map(gfx, 0, vms->memmap[VMAPPLE_APV_GFX].base);
+     sysbus_mmio_map(gfx, 1, vms->memmap[VMAPPLE_APV_IOSFC].base);
+     sysbus_connect_irq(gfx, 0, qdev_get_gpio_in(vms->gic, irq_gfx));
