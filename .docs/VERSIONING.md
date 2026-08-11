@@ -71,16 +71,18 @@ Example:
 ## Current version
 
 ```text
-0.8.0.0.0.0
+0.9.0.0.0.0
 ```
 
-This update implements P1.08, **VMApple Trace Normalization and Earliest-Divergence Extraction**.
+This update implements P1.09, **Reference Trace Manifest and Real-Hardware Trace Preparation**.
 
-P1.08 adds a standard-library Python trace normalizer/comparator, conservative removal of QEMU host-runtime noise, preservation of guest MMIO semantics, bounded trace resynchronization, first-divergence classification, Markdown/JSON candidate reports, sanitized fixtures, and a mandatory logged development-validation harness.
+P1.09 adds a privacy-safe evidence manifest policy, reference/probe example manifests, a standard-library collector/validator/pairing tool, automatic SHA-256/size recording for local guest inputs and evidence artifacts, a fail-closed Apple-Silicon/HVF reference runner, and a logged development-side validation harness.
 
-Real Apple/HVF and TCG VMApple trace collection remains intentionally deferred under the project owner's final-testing-only rule. Synthetic fixture results must never be promoted into a real `P01-DIVERGENCE-0001`.
+The pairing contract makes the pinned Inferno revision, VMApple shape, RAM/SMP, trace/debug sets, and local guest-input hashes equal across the reference and probe while allowing the intended host/accelerator/CPU differences.
 
-The root `README.md` is intentionally not version-updated in this release under the project owner's instruction.
+m1n1 is documented only as a secondary real-hardware escalation path for behavior that public source and the primary VMApple/HVF reference cannot explain. No real QEMU, macOS, HVF, or m1n1 execution is performed by the P1.09 preparation path.
+
+The root `README.md` remains intentionally unchanged.
 
 ## Reset behavior
 
