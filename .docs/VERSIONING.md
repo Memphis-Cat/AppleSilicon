@@ -71,12 +71,12 @@ Example:
 ## Current version
 
 ```text
-0.6.0.0.0.0
+0.7.0.0.0.0
 ```
 
-This update implements P1.06, **Explicit Non-Host VMApple CPU Selection**. Research confirmed that QEMU already routes an explicit `-cpu` option into `MachineState::cpu_type`, and VMApple constructs its CPUs from that value, so no unnecessary third VMApple source patch is added merely to replace the `host` default.
+This update implements P1.07, **TCG VMApple Pre-Boot Probe Harness**. It adds the first complete non-host VMApple launch specification using TCG plus the explicit P1.06 CPU profiles while preserving the upstream VMApple firmware/storage shape.
 
-P1.06 preserves `host` as the Apple/HVF reference default and adds two controlled TCG profiles: `max` as the neutral generic ARM64 control and Inferno's existing `apple-gxf` model as the Apple-oriented experimental profile. A logged preparation harness validates the complete source path, preserves P1.04/P1.05, rejects accidental `host` or non-TCG use, and emits deterministic CPU-profile metadata for the later TCG probe launcher.
+P1.07 adds fail-closed local-input validation, QEMU capability discovery, configurable debug logging, MMIO trace-event filtering, a finite probe window, separate launcher/serial/QEMU `.log` outputs, and deterministic result classifications. The runtime launcher is implemented now but intentionally not executed under the project owner's final-testing-only rule.
 
 The root `README.md` is intentionally not version-updated in this release under the project owner's instruction.
 
