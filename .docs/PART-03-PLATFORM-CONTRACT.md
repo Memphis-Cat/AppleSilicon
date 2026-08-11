@@ -1,8 +1,8 @@
 # Part 03 — VMApple Platform Contract
 
-Project version: **`3.0.0.0.0.0`**
+Project version: **`3.1.0.0.0.0`**
 
-Status: **Active — P3.01 implemented**
+Status: **Active — P3.01 and P3.02 implemented**
 
 ## Purpose
 
@@ -95,8 +95,6 @@ VMApple AES
 Apple PVG graphics
 ```
 
-The inventory records ownership, Part 03 owner, current source state, evidence and the allowed next action.
-
 Project files:
 
 ```text
@@ -108,15 +106,40 @@ Project files:
 
 ## P3.02 — Configuration and Platform Identity Contract
 
-Status: **Next**
+Status: **Implementation complete — runtime identity validation deferred**
 
-P3.02 owns the VMApple configuration region and the guest-visible semantics of CPU count, RAM size, ECID/UUID linkage, random field, MAC identities, CPU IDs, serial, model and SoC-name fields.
+P3.02 source-locks the 64 KiB VMApple configuration region and classifies its fields as machine-derived, machine-random, device properties, reference constants, derived sequences, or opaque/reserved state.
 
-It must distinguish fields that merely exist in the reference implementation from fields whose exact value or behavior is actually required.
+It establishes explicit local profile handling for:
+
+```text
+machine UUID / ECID input
+serial
+model
+SoC name
+four VMApple config MAC identities
+installer flags
+```
+
+while preserving CPU count, RAM size, random value and CPU-ID generation as machine-derived behavior.
+
+Reference defaults such as `1234`, `VM0001` and `Apple M1 (Virtual)` are recorded but are not promoted into macOS requirements.
+
+P3.02 also records an unresolved source-layout discrepancy: the declared `uint32_t cpu_ids[0x80]` occupies `0x200` bytes, while adjacent source comments place `scratch` and later identity fields as if the CPU-ID array occupied only `0x80` bytes. Because VMApple caps CPUs at 32, the discrepancy is significant, but no source fix is made without runtime/reference evidence.
+
+Project files:
+
+```text
+.docs/P3.02.md
+.src/.configs/p3.02-identity-contract.json
+.src/.configs/p3.02-identity.example.json
+.src/.tools/platform-identity.py
+.src/.tools/prepare-p3.02.sh
+```
 
 ## P3.03 — Interrupt, Timer, Power and Console Contract
 
-Status: **Planned**
+Status: **Next**
 
 P3.03 owns GICv3 layout/wiring, generic virtual timer routing, PL011 console, PL031 RTC, PL061 GPIO/power and diagnostic pvpanic behavior.
 
@@ -154,6 +177,6 @@ Presence in source does not by itself prove boot criticality.
 
 ## Testing rule
 
-No manual maintainer test is required for P3.01.
+No manual maintainer test is required for P3.01 or P3.02.
 
-Development-side validation may inspect source locks, contracts and deterministic summaries. Real VMApple/macOS execution remains deferred to final integrated testing.
+Development-side validation may inspect source locks, contracts, synthetic profiles and deterministic summaries. Real VMApple/macOS execution remains deferred to final integrated testing.
