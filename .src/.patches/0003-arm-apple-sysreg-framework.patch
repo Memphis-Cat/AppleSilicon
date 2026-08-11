@@ -14,11 +14,11 @@ The helper for future policy entries uses CP_ACCESS_UNDEFINED as its fail-closed
 behavior and provides no migratable state, constant value, reset value,
 read-as-zero behavior, or write-ignore behavior.
 ---
- target/arm/apple-sysregs.c | 79 ++++++++++++++++++++++++++++++++++++++++
- target/arm/apple-sysregs.h | 39 ++++++++++++++++++++
- target/arm/cpu64.c         |  2 ++
+ target/arm/apple-sysregs.c | 88 +++++++++++++++++++++++++++++++++++++++
+ target/arm/apple-sysregs.h | 39 +++++++++++++++++
+ target/arm/cpu64.c         |  2 +
  target/arm/meson.build     |  1 +
- 4 files changed, 121 insertions(+)
+ 4 files changed, 130 insertions(+)
  create mode 100644 target/arm/apple-sysregs.c
  create mode 100644 target/arm/apple-sysregs.h
 
@@ -27,7 +27,7 @@ new file mode 100644
 index 0000000000..1111111111
 --- /dev/null
 +++ b/target/arm/apple-sysregs.c
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,88 @@
 +/*
 + * Apple implementation-defined AArch64 system-register framework
 + *
@@ -173,8 +173,7 @@ index 0000000000..1111111111
 + #include "cpregs.h"
 + #include "qemu/module.h"
 + #include "qemu/units.h"
-+@@ -733,6 +734,7 @@ static void aarch64_apple_gxf_initfn(Object *obj)
-+ 
++@@ -733,5 +734,6 @@ static void aarch64_apple_gxf_initfn(Object *obj)
 +     if (tcg_enabled()) {
 +         object_property_set_bool(obj, "pauth-noop", true, NULL);
 ++        apple_sysreg_framework_init(cpu);
@@ -185,13 +184,10 @@ index 0000000000..1111111111
 +index 94692f6ae2..4444444444 100644
 +--- a/target/arm/meson.build
 ++++ b/target/arm/meson.build
-+@@ -5,6 +5,7 @@ arm_ss.add(files(
-+ ))
-+ 
++@@ -7,3 +7,4 @@
 + arm_ss.add(when: 'TARGET_AARCH64', if_true: files(
 ++  'apple-sysregs.c',
 +   'cpu64.c',
 +   'gdbstub64.c'))
-+ 
 +-- 
 +2.50.1
