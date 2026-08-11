@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`3.4.0.0.0.0`**
+Current project version: **`3.5.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments and implementation objectives for AppleSilicon.
 
@@ -13,12 +13,8 @@ This directory records the research, design decisions, compatibility contracts, 
 - [P1.01.md](P1.01.md) through [P1.10.md](P1.10.md) — completed Part 01 sequence.
 - [PART-02-CPU-CONTRACT.md](PART-02-CPU-CONTRACT.md) — closed Part 02 CPU compatibility objective tree.
 - [P2.01.md](P2.01.md) through [P2.06.md](P2.06.md) — completed Part 02 sequence.
-- [PART-03-PLATFORM-CONTRACT.md](PART-03-PLATFORM-CONTRACT.md) — active fixed Part 03 platform-contract tree.
-- [P3.01.md](P3.01.md) — platform ownership inventory.
-- [P3.02.md](P3.02.md) — configuration and platform identity contract.
-- [P3.03.md](P3.03.md) — interrupt, timer, power and console contract.
-- [P3.04.md](P3.04.md) — boot backdoor and storage contract.
-- [P3.05.md](P3.05.md) — PCIe, peripheral, crypto and graphics contract.
+- [PART-03-PLATFORM-CONTRACT.md](PART-03-PLATFORM-CONTRACT.md) — closed Part 03 platform-contract tree.
+- [P3.01.md](P3.01.md) through [P3.06.md](P3.06.md) — completed Part 03 sequence.
 
 ## Part boundaries
 
@@ -26,9 +22,9 @@ Part 01 closes at `P1.10`; there is no P1.11.
 
 Part 02 closes at `P2.06`; there is no P2.07.
 
-Part 03 is fixed at exactly P3.01 through P3.06; there is no P3.07.
+Part 03 closes at `P3.06`; there is no P3.07.
 
-## Current Part 03 state
+## Closed Part 03 state
 
 ```text
 P3.01  complete
@@ -36,10 +32,19 @@ P3.02  complete
 P3.03  complete
 P3.04  complete
 P3.05  complete
-P3.06  NEXT / final Part 03 objective
+P3.06  complete
 ```
 
-P3.05 preserves generic GPEX/virtio/XHCI peripherals, freezes the macOS XHCI conditional-interrupter workaround already present in pinned Inferno, evidence-gates incomplete Apple AES commands, and preserves P1.05's host-dependent Apple PVG optionalization without introducing a fake GPU.
+P3.06 binds the source-locked Part 03 platform contracts to the closed P2.06 CPU integration state and the Part 01 evidence pipeline. It runs every Part 03 validator, enforces machine-wide fail-closed invariants, verifies the compatibility patch series still ends at `0005`, and emits a deterministic platform integration fingerprint.
+
+Unknown configuration-layout, power-event, storage-write/barrier, AES-command and modern graphics behavior remains runtime-evidence gated. No fake GPU or speculative `0006` patch is introduced.
+
+The next progression point is:
+
+```text
+Part 04
+P4.01
+```
 
 ## Maintainer testing policy
 
@@ -51,7 +56,7 @@ Development-side source inspection, compilation, static checks, automated tests,
 
 Every meaningful executable AppleSilicon operation must leave a `.log` artifact under `.logs/` unless a later component explicitly documents another local output contract.
 
-P3.05 adds `.src/.tools/prepare-p3.05.sh`, which writes a logged deterministic PCIe/peripheral/AES/graphics contract validation without launching a macOS guest or opening Apple firmware/storage/identity artifacts.
+P3.06 adds `.src/.tools/prepare-p3.06.sh` for deterministic non-guest integration validation and `.src/.tools/run-p3.06-probe.sh` as the final Part 03 runtime wrapper. The runtime wrapper delegates to P2.06/P1.07 instead of forking VMApple launch logic.
 
 ## Evidence policy
 
