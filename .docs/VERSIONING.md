@@ -18,16 +18,14 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-3.1.0.0.0.0
+3.2.0.0.0.0
 ```
 
-This normal update implements P3.02, **Configuration and Platform Identity Contract**.
+This normal update implements P3.03, **Interrupt, Timer, Power and Console Contract**.
 
-P3.02 source-locks the VMApple configuration-region behavior, records the structural versus reference-default identity fields, adds a privacy-safe local identity profile compiler, and preserves machine-derived CPU count, RAM size, random value and CPU-ID generation.
+P3.03 freezes the stable VMApple generic-device wiring for GICv3, per-vCPU virtual timer PPI 27, PL011 UART, PL031 RTC, PL061 GPIO/power and MMIO pvpanic. XNU's source-locked VMApple configuration independently confirms GICv3 and PL011 and defines the `0x20000` GIC redistributor-per-PE size.
 
-It also records an unresolved source-layout discrepancy between the declared `uint32_t cpu_ids[0x80]` array and the adjacent offsets documented for `scratch`, `serial`, `model` and `soc_name`. The discrepancy remains evidence-gated; P3.02 does not patch the layout from inference alone.
-
-No Inferno source patch is required for P3.02 because existing QEMU device properties and `-global` configuration are sufficient to express controlled identity experiments.
+Pinned Inferno and upstream QEMU 11.1.0 retain the same relevant VMApple address/interrupt wiring, so P3.03 adds no new Inferno patch. Generic devices are preserved until runtime evidence proves a concrete incompatibility. Exact power-button event semantics remain evidence-gated.
 
 Part 03 remains fixed at exactly six objectives:
 
@@ -42,9 +40,9 @@ P3.06 — Part 03 Integration Gate
 
 There is no P3.07.
 
-P3.03 is next.
+P3.04 is next.
 
-No real macOS/HVF/TCG guest execution or real platform identity is claimed for P3.02. The repository root `README.md` remains intentionally unchanged.
+No real macOS/HVF/TCG guest execution is claimed for P3.03. The repository root `README.md` remains intentionally unchanged.
 
 ## Reset behavior
 
@@ -61,4 +59,5 @@ Examples:
 2.4.0.0.0.0 -> 2.5.0.0.0.0
 2.5.0.0.0.0 -> 3.0.0.0.0.0
 3.0.0.0.0.0 -> 3.1.0.0.0.0
+3.1.0.0.0.0 -> 3.2.0.0.0.0
 ```
