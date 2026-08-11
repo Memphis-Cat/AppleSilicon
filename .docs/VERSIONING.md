@@ -71,16 +71,18 @@ Example:
 ## Current version
 
 ```text
-2.0.0.0.0.0
+2.1.0.0.0.0
 ```
 
-This major update begins **Part 02 — Apple CPU Compatibility Contract** and implements P2.01, **Apple CPU System Register and Feature Inventory**.
+This normal update implements P2.02, **Apple System Register Emulation Framework**.
 
-P2.01 locks exact XNU, QEMU, m1n1 and Inferno source identities; records a machine-readable CPU-focused Apple implementation-defined register inventory; distinguishes physical-Apple register evidence from VMApple requirements; and adds a deterministic validator plus logged preparation harness.
+P2.02 adds the project-owned AArch64 Apple system-register framework patch, uses QEMU/Inferno's real `ARMCPRegInfo` registration path, attaches the framework only to the TCG `apple-gxf` CPU path, and provides an explicit fail-closed undefined-access helper for future evidence-backed policies.
 
-No register is marked runtime-required and no reset/read/write semantics are invented in P2.01. Real guest execution remains deferred under the maintainer's final-integration testing rule.
+P2.02 intentionally installs zero guest-visible Apple register policies by default. It does not invent reset values, constants, read-as-zero behavior, write-ignore behavior, stored state, or VMApple-required status. Those semantics belong to P2.03.
 
-Part 02 has a fixed six-objective sequence and ends at P2.06. There is no P2.07.
+A logged development-side preparation harness validates the ordered patch series in a disposable Inferno tree. Real guest execution remains deferred under the maintainer's final-integration testing rule.
+
+Part 02 remains fixed at six objectives and ends at P2.06. P2.03 is next.
 
 The root `README.md` remains intentionally unchanged.
 
@@ -95,6 +97,7 @@ Examples:
 0.1.0.4.0.3 -> 0.2.0.0.0.0
 0.9.0.0.0.0 -> 1.0.0.0.0.0
 1.9.0.0.0.0 -> 2.0.0.0.0.0
+2.0.0.0.0.0 -> 2.1.0.0.0.0
 ```
 
 Emergency releases are intentionally allowed to break the normal cadence because urgency is the defining property of that field.
