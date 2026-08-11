@@ -23,6 +23,7 @@ p3.02-identity-contract.json
 p3.02-identity.example.json
 p3.03-io-contract.json
 p3.04-storage-contract.json
+p3.05-peripheral-contract.json
 ```
 
 ### P3.01
@@ -43,6 +44,10 @@ p3.04-storage-contract.json
 
 `p3.04-storage-contract.json` freezes the two-phase VMApple storage contract: BDIF MMIO/DMA pre-boot access, AUX/root backend topology, Apple `vmapple-virtio-blk-pci` identity/variants/config field and the current successful no-op Apple barrier. BDIF writes and real barrier flush semantics remain runtime-evidence gated.
 
+### P3.05
+
+`p3.05-peripheral-contract.json` freezes generic GPEX/virtio/XHCI ownership, the VMApple macOS XHCI conditional-interrupter compatibility policy, Apple AES MMIO/reset/known command behavior, unresolved AES commands, and the host-framework-dependent Apple PVG boundary. P1.05's optional-PVG policy is preserved and no fake GPU or new Inferno patch is introduced.
+
 ## Secret/proprietary material rule
 
-Configuration files may describe local paths using placeholders, but must not contain Apple proprietary firmware, macOS disk images, real serial numbers, machine secrets, signing tickets, private keys or device-specific credentials.
+Configuration files may describe local paths using placeholders, but must not contain Apple proprietary firmware, macOS disk images, real serial numbers, machine secrets, signing tickets, private keys, authentic hardware keys or device-specific credentials.
