@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "project_version": "4.4.0.0.0.0",
+  "part": "Part 04",
+  "objective": "P4.05",
+  "title": "Reproducible Divergence Promotion",
+  "source_lock": {
+    "inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
+  },
+  "input_contract": {
+    "ab_classification": "P4_04_AB_SESSION_READY",
+    "ab_project_version": "4.3.0.0.0.0",
+    "minimum_reproductions": 2,
+    "reference_accelerator": "hvf",
+    "reference_cpu": "host",
+    "probe_accelerator": "tcg",
+    "probe_cpu": "apple-gxf"
+  },
+  "reproduction_equal_paths": [
+    "shared_contract",
+    "reference.qemu",
+    "probe.qemu",
+    "reference.machine",
+    "probe.machine"
+  ],
+  "reproduction_unique_paths": [
+    "ab_fingerprint",
+    "reference.run_id",
+    "probe.run_id",
+    "reference.capture_fingerprint",
+    "probe.capture_fingerprint"
+  ],
+  "locked_project_artifacts": [
+    {"path":".src/.configs/p4.04-ab-session-policy.json","git_blob_sha":"d533f09d417664446db1c49b4ed25af1beb1bf43","role":"ab_session_policy"},
+    {"path":".src/.tools/ab-session.py","git_blob_sha":"b85f38d2d1413090e7beedfdf957983b6aeae611","role":"ab_session_assembler"},
+    {"path":".src/.configs/p1.09-manifest-policy.json","git_blob_sha":"ccaf2c515102aad4f24a370dc6d4078f7924e91f","role":"pair_contract_policy"},
+    {"path":".src/.tools/reference-manifest.py","git_blob_sha":"e22ee337b0206b0ba7f2d67de6cf6e05ea6e4cd4","role":"pair_contract_tool"},
+    {"path":".src/.configs/p1.08-compare.json","git_blob_sha":"9efac8bec834be7226e17b78aec7cf7c79dcd17f","role":"trace_comparison_policy"},
+    {"path":".src/.tools/compare-boot-traces.py","git_blob_sha":"1c1d3774782dfcb1261272fa7c4a137f56ac9a4e","role":"trace_comparison_tool"},
+    {"path":".src/.configs/p1.10-promotion-policy.json","git_blob_sha":"aa8804320da885373e2779a704dde75e9ef3bc98","role":"promotion_policy"},
+    {"path":".src/.tools/evidence-bundle.py","git_blob_sha":"dcc9dfd66659c8e5dea3c083ca6584422ddc1336","role":"promotion_authority"},
+    {"path":"README.md","git_blob_sha":"5f056dadbac5d814b9ffb287ec786a559774f953","role":"frozen_root_readme"}
+  ],
+  "requirements": {
+    "minimum_reproductions_must_match_or_exceed_p1_10": true,
+    "each_reproduction_must_be_p4_04_admitted": true,
+    "each_ab_fingerprint_must_reproduce": true,
+    "ab_bundle_must_bind_supplied_manifests": true,
+    "all_reproductions_must_share_full_p4_04_shared_contract": true,
+    "same_reference_qemu_binary_required_across_reproductions": true,
+    "same_probe_qemu_binary_required_across_reproductions": true,
+    "independent_reference_runs_required": true,
+    "independent_probe_runs_required": true,
+    "independent_reference_captures_required": true,
+    "independent_probe_captures_required": true,
+    "p1_10_candidate_generation_must_be_reused": true,
+    "p1_08_trace_comparison_must_be_reused": true,
+    "candidate_must_be_runtime_origin": true,
+    "candidate_must_be_promotion_eligible": true,
+    "candidate_must_contain_real_divergence": true,
+    "all_candidates_must_share_divergence_signature": true,
+    "all_candidates_must_share_p1_09_contract_fingerprint": true,
+    "p1_10_promotion_command_must_be_reused": true,
+    "p1_10_promotion_record_must_be_promoted": true,
+    "p1_10_auto_commit_must_remain_disabled": true,
+    "p4_05_output_must_bind_every_ab_session_and_candidate": true,
+    "p4_05_output_must_store_no_raw_local_paths": true,
+    "no_new_inferno_patch_for_p4_05": true,
+    "root_readme_remains_frozen": true
+  },
+  "outputs": {
+    "promotion_record": ".build/p4.05/promotion.json",
+    "p1_10_record": ".build/p4.05/p1.10/P01-DIVERGENCE-0001.json",
+    "candidate_root": ".build/p4.05/candidates/<index>/candidate.json"
+  },
+  "next_objective": "P4.06"
+}
