@@ -71,12 +71,12 @@ Example:
 ## Current version
 
 ```text
-0.5.0.0.0.0
+0.6.0.0.0.0
 ```
 
-This update implements P1.05, **Decouple VMApple Machine Realization From Apple PVG**. It adds the second ordered VMApple patch, replacing unconditional `apple-gfx-mmio` construction with QEMU's module-aware `qdev_try_new()` path so builds without Apple's Darwin-only ParavirtualizedGraphics device can continue constructing the VMApple machine skeleton without inventing fake graphics behavior.
+This update implements P1.06, **Explicit Non-Host VMApple CPU Selection**. Research confirmed that QEMU already routes an explicit `-cpu` option into `MachineState::cpu_type`, and VMApple constructs its CPUs from that value, so no unnecessary third VMApple source patch is added merely to replace the `host` default.
 
-P1.05 preserves the existing PVG MMIO and IRQ path whenever `apple-gfx-mmio` is available, keeps the VMApple `host` CPU default unchanged, and adds a logged preparation harness that applies P1.04 and P1.05 in order to a disposable `.build/p1.05` source tree.
+P1.06 preserves `host` as the Apple/HVF reference default and adds two controlled TCG profiles: `max` as the neutral generic ARM64 control and Inferno's existing `apple-gxf` model as the Apple-oriented experimental profile. A logged preparation harness validates the complete source path, preserves P1.04/P1.05, rejects accidental `host` or non-TCG use, and emits deterministic CPU-profile metadata for the later TCG probe launcher.
 
 The root `README.md` is intentionally not version-updated in this release under the project owner's instruction.
 
