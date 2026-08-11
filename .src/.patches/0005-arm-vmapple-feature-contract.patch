@@ -170,7 +170,7 @@ diff --git a/target/arm/cpu64.c b/target/arm/cpu64.c
          apple_sysreg_framework_init(cpu);
      }
  
- diff --git a/target/arm/meson.build b/target/arm/meson.build
+diff --git a/target/arm/meson.build b/target/arm/meson.build
 --- a/target/arm/meson.build
 +++ b/target/arm/meson.build
 @@ -5,6 +5,7 @@ arm_ss.add(files(
