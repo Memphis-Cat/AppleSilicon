@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "project_version": "3.1.0.0.0.0",
+  "part": "Part 03",
+  "objective": "P3.02",
+  "title": "Configuration and Platform Identity Contract",
+  "next_objective": "P3.03",
+  "scope": {
+    "machine": "vmapple",
+    "device_type": "vmapple-cfg",
+    "config_region_size": 65536,
+    "guest_runtime_deferred": true,
+    "source_patch_required": false
+  },
+  "source_locks": {
+    "inferno": {
+      "repository": "ChefKissInc/Inferno",
+      "revision": "cc4302a99167abec69b714cfd00c38caece7e7de",
+      "cfg_path": "hw/vmapple/cfg.c",
+      "cfg_blob_sha": "3d58a29f69d7b6090436afbe9609ee9370a6c115",
+      "machine_path": "hw/vmapple/vmapple.c",
+      "machine_blob_sha": "89c04c09f705d987ee96c11c1f5f4fc79713bf2e",
+      "header_path": "include/hw/vmapple/vmapple.h",
+      "header_blob_sha": "1154c10d0f4f30cb339a7ee9470578d441acbd10"
+    },
+    "qemu_upstream_reference": {
+      "repository": "qemu/qemu",
+      "revision": "84f07211cc5b4fc6a371559bf8a5de4fb068e648",
+      "cfg_path": "hw/vmapple/cfg.c",
+      "cfg_blob_sha": "2a3204f0ec2615097a4198e42cbe8d185f526e9e",
+      "machine_path": "hw/vmapple/vmapple.c",
+      "machine_blob_sha": "607181f5177b1c798a7504150ce29aa383b29993"
+    }
+  },
+  "field_classes": [
+    "machine_derived",
+    "machine_random",
+    "device_property",
+    "reference_constant",
+    "derived_sequence",
+    "opaque_reserved"
+  ],
+  "requirement_states": [
+    "structural_source_backed",
+    "reference_default_only",
+    "unknown_requires_runtime_evidence",
+    "opaque_do_not_modify"
+  ],
+  "fields": [
+    {"name":"version","offset":0,"size":4,"class":"reference_constant","source":"cfg.c:vmapple_cfg_realize","baseline":2,"requirement":"unknown_requires_runtime_evidence","configurable":false,"source_comment_offset":0,"layout_status":"comment_matches_c_declaration"},
+    {"name":"nr_cpus","offset":4,"size":4,"class":"machine_derived","source":"vmapple.c:create_cfg","baseline":"MachineState.smp.cpus","requirement":"structural_source_backed","configurable":false,"source_comment_offset":4,"layout_status":"comment_matches_c_declaration"},
+    {"name":"unk1","offset":8,"size":4,"class":"reference_constant","source":"cfg.c:vmapple_cfg_realize","baseline":1,"requirement":"opaque_do_not_modify","configurable":false,"source_comment_offset":8,"layout_status":"comment_matches_c_declaration"},
+    {"name":"unk2","offset":12,"size":4,"class":"reference_constant","source":"cfg.c:vmapple_cfg_realize","baseline":1,"requirement":"opaque_do_not_modify","configurable":false,"source_comment_offset":12,"layout_status":"comment_matches_c_declaration"},
+    {"name":"unk3","offset":16,"size":4,"class":"reference_constant","source":"cfg.c:vmapple_cfg_realize","baseline":32,"requirement":"opaque_do_not_modify","configurable":false,"source_comment_offset":16,"layout_status":"comment_matches_c_declaration"},
+    {"name":"unk4","offset":20,"size":4,"class":"reference_constant","source":"cfg.c:vmapple_cfg_realize","baseline":0,"requirement":"opaque_do_not_modify","configurable":false,"source_comment_offset":20,"layout_status":"comment_matches_c_declaration"},
+    {"name":"ecid","offset":24,"size":8,"class":"machine_derived","source":"vmapple.c:create_cfg <- VMAppleMachineState.uuid","baseline":"machine.uuid","requirement":"structural_source_backed","configurable":true,"profile_key":"machine_uuid","source_comment_offset":24,"layout_status":"comment_matches_c_declaration"},
+    {"name":"ram_size","offset":32,"size":8,"class":"machine_derived","source":"vmapple.c:create_cfg","baseline":"MachineState.ram_size","requirement":"structural_source_backed","configurable":false,"source_comment_offset":32,"layout_status":"comment_matches_c_declaration"},
+    {"name":"run_installer1","offset":40,"size":4,"class":"device_property","source":"cfg.c:qdev property","baseline":0,"requirement":"unknown_requires_runtime_evidence","configurable":true,"profile_key":"run_installer1","source_comment_offset":40,"layout_status":"comment_matches_c_declaration"},
+    {"name":"unk5","offset":44,"size":4,"class":"reference_constant","source":"cfg.c:vmapple_cfg_realize","baseline":1,"requirement":"opaque_do_not_modify","configurable":false,"source_comment_offset":44,"layout_status":"comment_matches_c_declaration"},
+    {"name":"unk6","offset":48,"size":4,"class":"reference_constant","source":"cfg.c:vmapple_cfg_realize","baseline":1,"requirement":"opaque_do_not_modify","configurable":false,"source_comment_offset":48,"layout_status":"comment_matches_c_declaration"},
+    {"name":"run_installer2","offset":52,"size":4,"class":"device_property","source":"cfg.c:qdev property","baseline":0,"requirement":"unknown_requires_runtime_evidence","configurable":true,"profile_key":"run_installer2","source_comment_offset":52,"layout_status":"comment_matches_c_declaration"},
+    {"name":"rnd","offset":56,"size":4,"class":"machine_random","source":"vmapple.c:create_cfg:qemu_guest_getrandom_nofail","baseline":"fresh_random_u32_each_machine_creation","requirement":"structural_source_backed","configurable":false,"source_comment_offset":56,"layout_status":"comment_matches_c_declaration"},
+    {"name":"unk7","offset":60,"size":4,"class":"reference_constant","source":"cfg.c:vmapple_cfg_realize","baseline":0,"requirement":"opaque_do_not_modify","configurable":false,"source_comment_offset":60,"layout_status":"comment_matches_c_declaration"},
+    {"name":"mac_en0","offset":64,"size":6,"class":"device_property","source":"cfg.c:qdev property","baseline":"00:00:00:00:00:00","requirement":"unknown_requires_runtime_evidence","configurable":true,"profile_key":"mac_en0","source_comment_offset":64,"layout_status":"comment_matches_c_declaration"},
+    {"name":"mac_en1","offset":72,"size":6,"class":"device_property","source":"cfg.c:qdev property","baseline":"00:00:00:00:00:00","requirement":"unknown_requires_runtime_evidence","configurable":true,"profile_key":"mac_en1","source_comment_offset":72,"layout_status":"comment_matches_c_declaration"},
+    {"name":"mac_wifi0","offset":80,"size":6,"class":"device_property","source":"cfg.c:qdev property","baseline":"00:00:00:00:00:00","requirement":"unknown_requires_runtime_evidence","configurable":true,"profile_key":"mac_wifi0","source_comment_offset":80,"layout_status":"comment_matches_c_declaration"},
+    {"name":"mac_bt0","offset":88,"size":6,"class":"device_property","source":"cfg.c:qdev property","baseline":"00:00:00:00:00:00","requirement":"unknown_requires_runtime_evidence","configurable":true,"profile_key":"mac_bt0","source_comment_offset":88,"layout_status":"comment_matches_c_declaration"},
+    {"name":"reserved","offset":96,"size":160,"class":"opaque_reserved","source":"cfg.c:VMAppleCfg","baseline":"zeroed","requirement":"opaque_do_not_modify","configurable":false,"source_comment_offset":96,"layout_status":"comment_matches_c_declaration"},
+    {"name":"cpu_ids","offset":256,"size":512,"class":"derived_sequence","source":"cfg.c:vmapple_cfg_realize","baseline":"cpu_ids[i]=i for i<nr_cpus","requirement":"structural_source_backed","configurable":false,"source_comment_offset":256,"layout_status":"comment_matches_c_declaration"},
+    {"name":"scratch","offset":768,"size":512,"class":"opaque_reserved","source":"cfg.c:VMAppleCfg","baseline":"zeroed_on_reset","requirement":"unknown_requires_runtime_evidence","configurable":false,"source_comment_offset":384,"layout_status":"source_comment_disagrees_with_c_declaration"},
+    {"name":"serial","offset":1280,"size":32,"class":"device_property","source":"cfg.c:qdev property","baseline":"1234","requirement":"reference_default_only","configurable":true,"profile_key":"serial","max_text_bytes":31,"source_comment_offset":896,"layout_status":"source_comment_disagrees_with_c_declaration"},
+    {"name":"unk8","offset":1312,"size":32,"class":"reference_constant","source":"cfg.c:vmapple_cfg_realize","baseline":"D/A","requirement":"opaque_do_not_modify","configurable":false,"source_comment_offset":928,"layout_status":"source_comment_disagrees_with_c_declaration"},
+    {"name":"model","offset":1344,"size":32,"class":"device_property","source":"cfg.c:qdev property","baseline":"VM0001","requirement":"reference_default_only","configurable":true,"profile_key":"model","max_text_bytes":31,"source_comment_offset":960,"layout_status":"source_comment_disagrees_with_c_declaration"},
+    {"name":"unk9","offset":1376,"size":32,"class":"opaque_reserved","source":"cfg.c:VMAppleCfg","baseline":"zeroed","requirement":"opaque_do_not_modify","configurable":false,"source_comment_offset":992,"layout_status":"source_comment_disagrees_with_c_declaration"},
+    {"name":"unk10","offset":1408,"size":4,"class":"reference_constant","source":"cfg.c:vmapple_cfg_realize","baseline":1,"requirement":"opaque_do_not_modify","configurable":false,"source_comment_offset":1024,"layout_status":"source_comment_disagrees_with_c_declaration"},
+    {"name":"soc_name","offset":1412,"size":32,"class":"device_property","source":"cfg.c:qdev property","baseline":"Apple M1 (Virtual)","requirement":"reference_default_only","configurable":true,"profile_key":"soc_name","max_text_bytes":31,"source_comment_offset":1028,"layout_status":"source_comment_disagrees_with_c_declaration"}
+  ],
+  "profile_policy": {
+    "synthetic_examples_only_in_repo": true,
+    "real_identifiers_must_remain_local": true,
+    "machine_uuid_min": 0,
+    "machine_uuid_max": 18446744073709551615,
+    "installer_flag_values": [0,1],
+    "mac_format": "xx:xx:xx:xx:xx:xx",
+    "locally_administered_mac_required_for_synthetic_profiles": true,
+    "omit_null_properties_to_preserve_upstream_defaults": true,
+    "do_not_override_machine_derived_nr_cpus_ram_or_rnd": true,
+    "qemu_global_driver": "vmapple-cfg"
+  },
+  "rules": {
+    "ecid_is_fed_from_machine_uuid_property": true,
+    "uuid_label_does_not_prove_apple_semantic_uuid_format": true,
+    "cpu_ids_are_derived_from_cpu_count": true,
+    "rnd_remains_machine_generated": true,
+    "reference_identity_strings_are_not_promoted_to_requirements": true,
+    "zero_mac_defaults_are_not_promoted_to_requirements": true,
+    "unknown_fields_are_not_repurposed": true,
+    "no_real_identity_material_in_repo": true,
+    "guest_runtime_deferred": true,
+    "no_inferno_source_patch_required": true,
+    "layout_comments_are_not_treated_as_abi_truth": true,
+    "cpu_id_array_layout_discrepancy_remains_unfixed": true
+  },
+  "layout_findings": {
+    "cpu_ids_declared_entries": 128,
+    "machine_max_cpus": 32,
+    "cpu_ids_declared_bytes": 512,
+    "source_comment_implied_bytes_before_scratch": 128,
+    "computed_scratch_offset": 768,
+    "source_comment_scratch_offset": 384,
+    "computed_serial_offset": 1280,
+    "source_comment_serial_offset": 896,
+    "classification": "unresolved_source_layout_discrepancy",
+    "action": "preserve_and_measure_before_any_source_fix",
+    "notes": "The C declaration uint32_t cpu_ids[0x80] occupies 0x200 bytes, while adjacent source comments place scratch as if cpu_ids occupied 0x80 bytes. No semantic correction is made in P3.02."
+  }
+}
