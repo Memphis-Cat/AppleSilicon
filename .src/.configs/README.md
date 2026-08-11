@@ -33,6 +33,7 @@ Part 03 is closed at P3.06.
 
 ```text
 p4.01-runtime-session-policy.json
+p4.02-probe-capture-policy.json
 ```
 
 ### P4.01
@@ -44,11 +45,25 @@ probe      vmapple / TCG / apple-gxf
 reference  vmapple / HVF / host / Darwin arm64
 ```
 
-A session plan must bind a passing P3.06 integration fingerprint, the exact QEMU executable digest/version/capabilities, hashes and sizes of firmware/AUX/root/machine-identity inputs, optional hardware-model digest, and a SHA-256 digest of the canonicalized machine UUID.
+The session plan binds P3.06, the exact QEMU executable, guest-input digests and canonicalized machine-UUID digest without storing the raw local data.
 
-The raw UUID and all local source paths/content remain excluded from the plan.
+### P4.02
 
-Part 04 is fixed at P4.01 through P4.06; there is no P4.07.
+`p4.02-probe-capture-policy.json` defines the first runtime probe capture contract:
+
+```text
+machine          vmapple
+accelerator      tcg
+cpu              apple-gxf
+RAM              4G / 4096 MiB
+SMP              4
+capture_seconds  30
+grace_seconds    3
+```
+
+It requires pre/post P4.01 provenance equality, reuse of the P3.06 → P2.06 → P1.07 runtime chain, generation of a valid P1.09 probe manifest and no divergence promotion.
+
+Part 04 is fixed at P4.01 through P4.06; there is no P4.07. P4.03 is next.
 
 ## Secret/proprietary material rule
 
