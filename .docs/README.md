@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`0.8.0.0.0.0`**
+Current project version: **`0.9.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments, and implementation objectives for AppleSilicon.
 
@@ -18,6 +18,7 @@ This directory records the research, design decisions, compatibility contracts, 
 - [P1.06.md](P1.06.md) — explicit non-host VMApple CPU selection for TCG experiments.
 - [P1.07.md](P1.07.md) — complete logged TCG VMApple pre-boot probe harness.
 - [P1.08.md](P1.08.md) — trace normalization and earliest-divergence extraction.
+- [P1.09.md](P1.09.md) — privacy-safe reference/probe evidence manifests and real-reference preparation.
 
 ## Part and objective naming
 
@@ -41,9 +42,9 @@ The maintainer will not be asked to manually test every part, objective, update,
 
 Manual maintainer testing is reserved for the finished integration stage.
 
-Development-side validation is still expected. Source review, compilation, static checks, automated tests, emulator probes, regression tests, and trace comparisons should be used whenever possible so that intermediate defects are discovered without depending on repeated maintainer testing.
+Development-side validation is still expected. Source review, compilation, static checks, automated tests, emulator probes, regression tests, trace comparisons, and synthetic evidence generation should be used whenever possible so that intermediate defects are discovered without depending on repeated maintainer testing.
 
-P1.08 adds synthetic trace fixtures and a self-check/validation harness specifically so trace-analysis logic can be checked without requiring a macOS guest run.
+P1.08 validates trace-analysis logic with synthetic traces. P1.09 validates the reference/probe evidence contract, privacy checks, input hashing, manifest pairing, collector, and reference-runner syntax without launching a guest.
 
 ## Mandatory logging policy
 
@@ -59,7 +60,7 @@ Runtime logging must capture stdout and stderr together unless a later component
 
 Logs must not intentionally contain passwords, Apple account information, authentication tokens, private keys, tickets, raw VM machine identifiers, or other sensitive machine material.
 
-P1.01 defines the first implementation of this rule. P1.07 extends it to separate launcher, serial, QEMU debug, and trace-capability logs for the first controlled non-host VMApple probe. P1.08 adds logged trace-analysis validation and keeps generated comparison artifacts under ignored local build/log paths.
+P1.01 defines the first implementation of this rule. P1.07 extends it to separate launcher, serial, QEMU debug, and trace-capability logs for the controlled TCG VMApple probe. P1.08 adds logged trace-analysis validation. P1.09 adds versionable evidence manifests that store hashes/sizes instead of raw local guest identity/input data.
 
 ## Documentation rules
 
