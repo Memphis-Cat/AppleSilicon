@@ -20,33 +20,39 @@ Part 03 tools validate the VMApple platform contracts and close them through P3.
 runtime-session.py
 prepare-p4.01.sh
 plan-p4.01-session.sh
+probe-capture.py
+prepare-p4.02.sh
+run-p4.02-probe.sh
 ```
 
-### runtime-session.py
+### P4.01
 
-Validates the P4.01 policy and creates privacy-safe deterministic pre-execution runtime session plans. It hashes the selected QEMU executable and local guest inputs, verifies role-specific QEMU capabilities, canonicalizes then hashes the machine UUID, and stores no raw local paths or guest artifact contents.
+`runtime-session.py` validates the P4.01 policy and creates privacy-safe deterministic pre-execution runtime session plans.
 
-### prepare-p4.01.sh
+`prepare-p4.01.sh` performs logged static preparation without a guest.
 
-Logged non-guest P4.01 preparation. It validates JSON/Python/Bash syntax, locked project artifacts, privacy rules, fixed Part 04 objective count and negative self-checks. It also rejects an unreviewed `0006` patch.
+`plan-p4.01-session.sh` hashes the selected QEMU executable and local VM inputs twice and requires deterministic session plans. It does not launch QEMU.
 
-### plan-p4.01-session.sh
+### P4.02
 
-Logged local session planner. It requires a passing P3.06 integration manifest plus real local QEMU/VM inputs, generates the plan twice and requires byte-for-byte equality. It does not launch QEMU.
+`probe-capture.py` validates the P4.02 policy, performs live pre/post provenance checks and finalizes a sanitized capture descriptor around a validated P1.09 probe manifest.
 
-Default output pattern:
+`prepare-p4.02.sh` performs logged static P4.02 validation without launching a guest.
+
+`run-p4.02-probe.sh` is the integrated runtime wrapper. It fixes the probe to `vmapple` / TCG / `apple-gxf` / 4G / 4 vCPUs / 30 seconds, delegates through P3.06 → P2.06 → P1.07, packages the completed observation through `collect-p1.10-probe.sh`, validates the resulting P1.09 manifest, repeats provenance checks, and emits a P4.02 capture descriptor.
+
+P4.02 does not compare A/B traces and cannot promote a divergence.
+
+Default local outputs include:
 
 ```text
-.build/p4.01/<role>-runtime-session-plan.json
+.build/p4.01/probe-runtime-session-plan.json
+.build/p4.02/<run>/probe-manifest.json
+.build/p4.02/<run>/probe-capture.json
 ```
 
-Logs:
-
-```text
-.logs/AppleSilicon-p4.01-prepare-*.log
-.logs/AppleSilicon-p4.01-plan-<role>-*.log
-```
+Logs remain under `.logs/`.
 
 ## Rules
 
-Preparation tools keep the pinned Inferno submodule pristine and use project-owned `.build/` and `.logs/` state. Secret or proprietary Apple artifacts must not be committed.
+Preparation tools keep the pinned Inferno submodule pristine and use project-owned `.build/` and `.logs/` state. Secret or proprietary Apple artifacts must not be committed. Part 04 remains fixed at P4.01–P4.06; P4.03 is next.
