@@ -1,4 +1,4 @@
-# Research, Trace and CPU Contract Tools
+# Research, Trace, CPU and Platform Contract Tools
 
 Tools in this directory support reproducible compatibility research rather than guest patching.
 
@@ -6,53 +6,46 @@ Tools in this directory support reproducible compatibility research rather than 
 
 Part 01 tools provide build/probe, trace normalization, reference-manifest and A/B evidence workflows. Part 01 is closed at P1.10.
 
-## Part 02 tools
+## Part 02
+
+Part 02 tools implement and validate the source-locked CPU compatibility contract through the P2.06 integration gate. Part 02 is closed at P2.06.
+
+## Part 03 tools
 
 ```text
-cpu-contract.py
-cpu-contract-regression.py
-prepare-p2.01.sh
-prepare-p2.02.sh
-prepare-p2.03.sh
-prepare-p2.04.sh
-prepare-p2.05.sh
+platform-contract.py
+platform-identity.py
+platform-io-contract.py
+prepare-p3.01.sh
+prepare-p3.02.sh
+prepare-p3.03.sh
 ```
 
-### cpu-contract.py / prepare-p2.01.sh
+### platform-contract.py / prepare-p3.01.sh
 
-Validate and query the source-locked P2.01 Apple CPU register/feature inventory.
+Validate the non-CPU VMApple ownership inventory and fixed Part 03 objective map.
 
-### prepare-p2.02.sh
+### platform-identity.py / prepare-p3.02.sh
 
-Validates the fail-closed Apple system-register framework and ordered patches through 0003.
+Validate and deterministically compile privacy-safe VMApple configuration/identity profiles without overriding machine-derived CPU/RAM/random/CPU-ID fields.
 
-### prepare-p2.03.sh
+### platform-io-contract.py / prepare-p3.03.sh
 
-Validates the sysreg policy engine and ordered patches through 0004, including evidence/scope requirements and the zero live-semantic-policy invariant.
+Validate the stable VMApple GICv3, architectural timer, PL011, PL031, PL061/power and pvpanic wiring against the pinned Inferno source.
 
-### prepare-p2.04.sh
-
-Validates the VMApple architectural feature profile and ordered patches through 0005, including TCG-only `apple-gxf` wiring, `max` isolation, PAuth/SSBS2/SME2/PAN3/translation-granule/range-TLBI requirements and preservation of P2.03's empty live sysreg policy table.
-
-### cpu-contract-regression.py / prepare-p2.05.sh
-
-P2.05's deterministic non-guest CPU-contract regression suite.
-
-It content-locks the P2.01–P2.04 contracts and patches 0003–0005, cross-checks objective sequencing and policy invariants, prepares the complete 0001–0005 patch chain on the pinned Inferno source, inspects the resulting `apple-gxf` source integration, and emits:
+P3.03 emits deterministic summaries beneath:
 
 ```text
-.build/p2.05/cpu-contract-regression.json
+.build/p3.03/
 ```
 
-The result contains a deterministic SHA-256 suite fingerprint. The logged preparation harness runs the regression twice and requires byte-identical JSON.
-
-Every preparation run writes:
+and logs meaningful preparation runs as:
 
 ```text
-.logs/AppleSilicon-p2.05-YYYYMMDD-HHMMSS-PID.log
+.logs/AppleSilicon-p3.03-YYYYMMDD-HHMMSS-PID.log
 ```
 
-No macOS guest is launched.
+No macOS guest is launched and no generic device is replaced.
 
 ## Rules
 
