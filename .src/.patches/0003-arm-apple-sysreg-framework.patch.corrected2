@@ -1,0 +1,193 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: AppleSilicon Project <noreply@example.invalid>
+Date: Tue, 11 Aug 2026 10:39:00 +0100
+Subject: [PATCH] target/arm: add fail-closed Apple sysreg framework
+
+P2.02 introduces the project-owned bridge between Apple implementation-defined
+AArch64 system-register metadata and QEMU's ARMCPRegInfo registration API.
+
+The framework is wired only into the TCG apple-gxf CPU path. It deliberately
+registers no guest-visible Apple register policy by default. Unknown semantics
+must therefore remain undefined until P2.03 assigns an evidence-backed policy.
+
+The helper for future policy entries uses CP_ACCESS_UNDEFINED as its fail-closed
+behavior and provides no migratable state, constant value, reset value,
+read-as-zero behavior, or write-ignore behavior.
+---
+ target/arm/apple-sysregs.c | 88 +++++++++++++++++++++++++++++++++++++++
+ target/arm/apple-sysregs.h | 39 +++++++++++++++++
+ target/arm/cpu64.c         |  2 +
+ target/arm/meson.build     |  1 +
+ 4 files changed, 130 insertions(+)
+ create mode 100644 target/arm/apple-sysregs.c
+ create mode 100644 target/arm/apple-sysregs.h
+
+diff --git a/target/arm/apple-sysregs.c b/target/arm/apple-sysregs.c
+new file mode 100644
+index 0000000000..1111111111
+--- /dev/null
++++ b/target/arm/apple-sysregs.c
+@@ -0,0 +1,88 @@
++/*
++ * Apple implementation-defined AArch64 system-register framework
++ *
++ * SPDX-License-Identifier: GPL-2.0-or-later
++ */
++
++#include "qemu/osdep.h"
++#include "qemu/log.h"
++#include "apple-sysregs.h"
++#include "cpregs.h"
++
++static CPAccessResult apple_sysreg_undefined_access(CPUARMState *env,
++                                                     const ARMCPRegInfo *ri,
++                                                     bool isread)
++{
++    (void)env;
++
++    qemu_log_mask(LOG_UNIMP,
++                  "apple-sysreg: undefined %s %s "
++                  "(S%u_%u_C%u_C%u_%u)\n",
++                  isread ? "read" : "write", ri->name,
++                  ri->opc0, ri->opc1, ri->crn, ri->crm, ri->opc2);
++    return CP_ACCESS_UNDEFINED;
++}
++
++static uint64_t apple_sysreg_unreachable_read(CPUARMState *env,
++                                               const ARMCPRegInfo *ri)
++{
++    (void)env;
++    (void)ri;
++    g_assert_not_reached();
++    return 0;
++}
++
++static void apple_sysreg_unreachable_write(CPUARMState *env,
++                                            const ARMCPRegInfo *ri,
++                                            uint64_t value)
++{
++    (void)env;
++    (void)ri;
++    (void)value;
++    g_assert_not_reached();
++}
++
++static void apple_sysreg_validate_spec(const AppleSysRegSpec *spec)
++{
++    g_assert(spec != NULL);
++    g_assert(spec->name != NULL);
++    g_assert(spec->name[0] != '\0');
++    g_assert(spec->op0 <= 3);
++    g_assert(spec->op1 <= 7);
++    g_assert(spec->crn <= 15);
++    g_assert(spec->crm <= 15);
++    g_assert(spec->op2 <= 7);
++}
++
++void apple_sysreg_register_undefined(ARMCPU *cpu,
++                                     const AppleSysRegSpec *spec)
++{
++    ARMCPRegInfo ri;
++
++    g_assert(cpu != NULL);
++    apple_sysreg_validate_spec(spec);
++
++    ri = (ARMCPRegInfo) {
++        .name = spec->name,
++        .state = ARM_CP_STATE_AA64,
++        .type = ARM_CP_NO_RAW | ARM_CP_NO_GDB,
++        .access = PL0_RW,
++        .opc0 = spec->op0,
++        .opc1 = spec->op1,
++        .crn = spec->crn,
++        .crm = spec->crm,
++        .opc2 = spec->op2,
++        .accessfn = apple_sysreg_undefined_access,
++        .readfn = apple_sysreg_unreachable_read,
++        .writefn = apple_sysreg_unreachable_write,
++    };
++
++    define_one_arm_cp_reg(cpu, &ri);
++}
++
++void apple_sysreg_framework_init(ARMCPU *cpu)
++{
++    g_assert(cpu != NULL);
++
++    /* P2.03 owns the first evidence-backed guest-visible policy table. */
++}
+diff --git a/target/arm/apple-sysregs.h b/target/arm/apple-sysregs.h
+new file mode 100644
+index 0000000000..2222222222
+--- /dev/null
++++ b/target/arm/apple-sysregs.h
+@@ -0,0 +1,39 @@
++/*
++ * Apple implementation-defined AArch64 system-register framework
++ *
++ * SPDX-License-Identifier: GPL-2.0-or-later
++ */
++
++#ifndef TARGET_ARM_APPLE_SYSREGS_H
++#define TARGET_ARM_APPLE_SYSREGS_H
++
++#include "cpu.h"
++
++/*
++ * Encoding-only description matching the P2.01 machine-readable inventory.
++ * Behavior is intentionally not represented here; P2.03 owns policy.
++ */
++typedef struct AppleSysRegSpec {
++    const char *name;
++    uint8_t op0;
++    uint8_t op1;
++    uint8_t crn;
++    uint8_t crm;
++    uint8_t op2;
++} AppleSysRegSpec;
++
++/*
++ * Register one explicitly known encoding with fail-closed undefined access.
++ * This is infrastructure for policy construction, not a claim that the guest
++ * requires the register.
++ */
++void apple_sysreg_register_undefined(ARMCPU *cpu,
++                                     const AppleSysRegSpec *spec);
++
++/*
++ * Attach the Apple sysreg framework to an Apple-oriented TCG CPU.
++ * P2.02 deliberately registers zero guest-visible policies here.
++ */
++void apple_sysreg_framework_init(ARMCPU *cpu);
++
++#endif /* TARGET_ARM_APPLE_SYSREGS_H */
+diff --git a/target/arm/cpu64.c b/target/arm/cpu64.c
+index c390124d2e..3333333333 100644
+--- a/target/arm/cpu64.c
++++ b/target/arm/cpu64.c
+@@ -20,6 +20,7 @@
+ #include "qemu/osdep.h"
+ #include "qapi/error.h"
+ #include "cpu.h"
++#include "apple-sysregs.h"
+ #include "cpregs.h"
+ #include "qemu/module.h"
+ #include "qemu/units.h"
+@@ -733,5 +734,6 @@ static void aarch64_apple_gxf_initfn(Object *obj)
+     if (tcg_enabled()) {
+         object_property_set_bool(obj, "pauth-noop", true, NULL);
++        apple_sysreg_framework_init(cpu);
+     }
+ 
+     set_feature(&ARM_CPU(obj)->env, ARM_FEATURE_GXF);
+diff --git a/target/arm/meson.build b/target/arm/meson.build
+index 94692f6ae2..4444444444 100644
+--- a/target/arm/meson.build
++++ b/target/arm/meson.build
+@@ -7,3 +7,4 @@
+ arm_ss.add(when: 'TARGET_AARCH64', if_true: files(
++  'apple-sysregs.c',
+   'cpu64.c',
+   'gdbstub64.c'))
+-- 
+2.50.1
