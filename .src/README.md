@@ -1,8 +1,8 @@
 # Source
 
-Project version: **`2.4.0.0.0.0`**
+Project version: **`3.3.0.0.0.0`**
 
-The source tree contains the complete Part 01 evidence pipeline and Part 02 CPU compatibility work through P2.05.
+The source tree contains the closed Part 01 evidence pipeline, the closed Part 02 CPU compatibility contract, and active Part 03 VMApple platform-contract work through P3.04.
 
 ## Layout
 
@@ -17,40 +17,55 @@ The source tree contains the complete Part 01 evidence pipeline and Part 02 CPU 
 
 ## Part 01
 
-Part 01 is closed at P1.10. Its evidence pipeline remains available for final integration testing.
+Part 01 is closed at P1.10. Its build/probe, trace normalization, reference-manifest and A/B evidence pipeline remains available for final integration testing.
 
-## Part 02 source chain
+## Part 02
 
-Part 02 is fixed at P2.01 through P2.06.
+Part 02 is closed at P2.06. It owns the deliberate Apple-compatible CPU contract, including the fail-closed implementation-defined sysreg framework/policy model and the `apple-gxf` architectural feature contract.
 
-P2.01 inventories Apple implementation-defined CPU registers and source-backed feature observations without assigning semantics.
-
-P2.02 adds the fail-closed Apple sysreg registration framework.
-
-P2.03 adds the evidence-gated sysreg read/write/reset/access policy engine. The live semantic table remains empty.
-
-P2.04 adds the project-owned VMApple architectural minimum feature profile for TCG `apple-gxf` while leaving ordinary `max`, host/HVF and KVM paths unchanged.
-
-P2.05 adds:
+The ordered source patch chain remains:
 
 ```text
-.src/.configs/p2.05-regression-policy.json
-.src/.tools/cpu-contract-regression.py
-.src/.tools/prepare-p2.05.sh
+0001-vmapple-decouple-build-from-hvf.patch
+0002-vmapple-optional-apple-pvg.patch
+0003-arm-apple-sysreg-framework.patch
+0004-arm-apple-sysreg-policy-model.patch
+0005-arm-vmapple-feature-contract.patch
 ```
 
-The P2.05 suite content-locks the Part 02 contracts and patches through P2.04, prepares the full `0001`–`0005` patch series on the pinned Inferno source, verifies `max` isolation and TCG `apple-gxf` CPU wiring, checks that P2.03 still exposes zero live implementation-defined sysreg semantics, and emits a deterministic regression fingerprint.
+## Part 03
+
+Part 03 is fixed at exactly P3.01 through P3.06.
+
+Completed platform objectives:
+
+```text
+P3.01  platform ownership inventory
+P3.02  configuration and platform identity
+P3.03  interrupt, timer, power and console
+P3.04  boot backdoor and storage
+```
+
+P3.04 freezes the source-backed two-phase VMApple storage model:
+
+```text
+BDIF MMIO/DMA pre-boot reads
+        +
+Apple vmapple-virtio-blk-pci AUX/root runtime devices
+```
+
+It adds no new Inferno patch. BDIF write requirements and real Apple barrier flush/ordering semantics remain evidence-gated.
 
 The next source objective is:
 
 ```text
-P2.06 — Part 02 Integration Gate
+P3.05 — PCIe, Peripheral, Crypto and Graphics Contract
 ```
 
-P2.06 is the final Part 02 objective.
+P3.06 is the final Part 03 objective; there is no P3.07.
 
 ## Testing and artifacts
 
 Intermediate objectives rely on development-side validation and persistent `.logs/` artifacts rather than repeated maintainer testing. Real macOS execution remains reserved for final integration.
 
-No proprietary Apple firmware, macOS images, tickets, keys, machine-identity blobs or account secrets belong in `.src/`.
+No proprietary Apple firmware, macOS images, AUX/root storage artifacts, tickets, keys, machine-identity blobs or account secrets belong in `.src/`.
