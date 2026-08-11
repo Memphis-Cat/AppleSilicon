@@ -1,8 +1,8 @@
 # Source
 
-Project version: **`2.0.0.0.0.0`**
+Project version: **`2.1.0.0.0.0`**
 
-The source tree contains the complete Part 01 research/evidence pipeline and now begins Part 02's Apple CPU compatibility layer.
+The source tree contains the complete Part 01 research/evidence pipeline and the first two Part 02 Apple CPU compatibility objectives.
 
 ## Current layout
 
@@ -10,7 +10,7 @@ The source tree contains the complete Part 01 research/evidence pipeline and now
 .src/
 ├── .upstream/
 │   └── .inferno/       # pinned upstream reference/submodule
-├── .patches/           # ordered VMApple compatibility research patches
+├── .patches/           # ordered VMApple and Apple CPU compatibility patches
 ├── .tools/             # build, probe, trace, evidence, CPU-contract and validation tools
 ├── .configs/           # non-secret experiment configs, policies and CPU contracts
 └── .fixtures/          # sanitized deterministic development fixtures
@@ -44,7 +44,7 @@ P2.01 adds:
 .src/.tools/prepare-p2.01.sh
 ```
 
-The machine-readable contract currently inventories CPU-focused Apple implementation-defined register groups:
+The machine-readable contract inventories CPU-focused Apple implementation-defined register groups:
 
 ```text
 hid_ehid
@@ -57,13 +57,31 @@ control_hypervisor
 
 P2.01 is deliberately inventory-only. Every register starts with unknown runtime priority and unknown XNU relevance. No reset value, read value, writable mask, side effect or trap policy is fabricated.
 
+P2.02 adds:
+
+```text
+.src/.patches/0003-arm-apple-sysreg-framework.patch
+.src/.tools/prepare-p2.02.sh
+```
+
+The P2.02 patch adds, inside the disposable patched Inferno tree:
+
+```text
+target/arm/apple-sysregs.c
+target/arm/apple-sysregs.h
+```
+
+It provides an encoding-only `AppleSysRegSpec` to `ARMCPRegInfo` bridge, an explicit fail-closed undefined-access registration helper, Meson integration for AArch64, and TCG-only attachment to Inferno's existing `apple-gxf` CPU model.
+
+P2.02 deliberately installs **zero guest-visible Apple system-register policies by default**. No read-as-zero, write-ignore, constant, reset-value or stored-state behavior is invented.
+
 The next source objective is:
 
 ```text
-P2.02 — Apple System Register Emulation Framework
+P2.03 — Register Read/Write/Reset Policy Model
 ```
 
-P2.02 will use QEMU's existing ARM system-register infrastructure rather than creating a parallel instruction decoder.
+P2.03 will define the allowed data-driven behavior classes and the evidence required before a P2.01 inventory entry may receive one.
 
 ## Maintainer testing policy
 
