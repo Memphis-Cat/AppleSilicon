@@ -18,18 +18,24 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-2.3.0.0.0.0
+2.4.0.0.0.0
 ```
 
-This normal update implements P2.04, **CPU Feature and ID-Register Compatibility**.
+This normal update implements P2.05, **Deterministic CPU Contract Regression Harness**.
 
-P2.04 locks the public XNU VMApple architectural feature declarations and adds a project-owned minimum feature profile for the TCG `apple-gxf` CPU. The profile requires PAuth presence, SSBS2, SME/SME2, PAN3, 4 KiB and 16 KiB stage-1 translation granules, and range TLBI while preserving stronger capabilities inherited from QEMU `max`.
+P2.05 does not add new guest-visible CPU behavior. It locks the exact Part 02 contracts/patches through P2.04, cross-checks their invariants, prepares the complete ordered patch series on the pinned Inferno source, inspects the resulting TCG `apple-gxf` integration, and emits a deterministic CPU-contract regression result with a SHA-256 suite fingerprint.
 
-P2.04 does not alter the normal `max`, host/HVF or KVM CPU paths. It does not invent paravirtualized PAC/CTRR/GIC behavior and it does not add Apple implementation-defined sysreg semantics; P2.03's live semantic policy table remains empty.
+The canonical result is written to:
 
-A logged preparation harness validates the source locks and complete ordered patch series in a disposable Inferno source tree. Real guest execution remains deferred under the final-integration testing rule.
+```text
+.build/p2.05/cpu-contract-regression.json
+```
 
-Part 02 remains fixed at six objectives. P2.05 is next and P2.06 is the final Part 02 objective.
+The logged harness runs the regression twice against the same prepared source and requires byte-identical JSON. Unknown Apple implementation-defined sysreg semantics remain fail-closed and P2.03's live semantic policy count remains zero.
+
+Real macOS/HVF/TCG guest execution remains deferred under the final-integration testing rule.
+
+Part 02 remains fixed at six objectives. P2.06 is next and is the final Part 02 objective. There is no P2.07.
 
 The repository root `README.md` remains intentionally unchanged.
 
@@ -44,5 +50,5 @@ Examples:
 0.1.0.4.0.3 -> 0.2.0.0.0.0
 0.9.0.0.0.0 -> 1.0.0.0.0.0
 1.9.0.0.0.0 -> 2.0.0.0.0.0
-2.2.0.0.0.0 -> 2.3.0.0.0.0
+2.3.0.0.0.0 -> 2.4.0.0.0.0
 ```
