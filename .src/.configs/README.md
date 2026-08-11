@@ -5,8 +5,8 @@ This directory contains reproducible, non-secret example configurations, policie
 ## Closed contracts
 
 Part 02 CPU contracts are closed at P2.06.
-
 Part 03 platform contracts are closed at P3.06.
+Part 04 implementation contracts are closed at P4.06.
 
 ## Part 04 runtime-evidence contracts
 
@@ -16,32 +16,20 @@ p4.02-probe-capture-policy.json
 p4.03-reference-capture-policy.json
 p4.04-ab-session-policy.json
 p4.05-divergence-promotion-policy.json
+p4.06-runtime-evidence-gate-policy.json
 ```
 
-### P4.01
+P4.01 locks privacy-safe pre-execution provenance.
 
-Defines deterministic pre-execution provenance for both runtime roles:
+P4.02/P4.03 define the TCG/`apple-gxf` probe and Darwin/arm64 + HVF + `host` reference capture contracts.
 
-```text
-probe      vmapple / TCG / apple-gxf
-reference  vmapple / HVF / host / Darwin arm64
-```
+P4.04 defines A/B admission and comparability.
 
-### P4.02 / P4.03
+P4.05 requires at least two independent admitted sessions before delegating any divergence promotion to P1.10.
 
-Define provenance-bound runtime capture contracts using 4G RAM, 4 vCPUs, a 30-second observation and 3-second grace period. P4.03 additionally fails closed without Darwin/arm64 + HVF + `host`.
+P4.06 is the final gate. It distinguishes `planned_implementation_complete` from real runtime validation and accepts only two evidence-backed runtime outcomes: reproduced trace equivalence within the configured capture scope, or a reproducible divergence backed by P4.05/P1.10 promotion.
 
-### P4.04
-
-Defines the A/B admission contract. It requires the P4.01 plans, P4.02/P4.03 captures and authoritative P1.09 manifests to agree on shared P3.06 state, hashed machine UUID, guest inputs, trace/debug configuration, RAM/SMP and QEMU version. Host-specific QEMU executable digests may differ between reference and probe.
-
-### P4.05
-
-Defines the reproduction/promotion orchestration contract. At least two independently captured P4.04 pairs are required. Their A/B fingerprints, role run IDs and role capture fingerprints must be unique, while the full P4.04 shared contract and each role's exact QEMU binary must remain equal across reproductions.
-
-P4.05 reuses P1.10 candidate generation/promotion and P1.08 trace comparison. It does not define a second promotion algorithm, and P1.10 auto-commit remains disabled.
-
-P4.06 is next and final. Part 04 remains fixed at P4.01 through P4.06; there is no P4.07.
+There is no P4.07 and no automatically defined Part 05.
 
 ## Secret/proprietary material rule
 
