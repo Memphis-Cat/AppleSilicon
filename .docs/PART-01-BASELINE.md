@@ -1,280 +1,317 @@
 # Part 01 — VMApple Baseline and Host-Dependency Map
 
-Project version: **`0.2.0.0.0.0`**
+Project version: **`0.8.0.0.0.0`**
 
-Status: **Documentation / research phase**
+Status: **Active — tooling and dependency-decoupling objectives in progress; runtime reference/probe collection deferred**
 
 ## Purpose
 
-Part 01 turns the current public VMApple work into a reproducible reference and answers one concrete question:
+Part 01 answers one concrete question:
 
-> What exactly prevents a VMApple macOS guest from running when the virtual CPU is no longer backed by a real Apple Silicon host CPU?
+> What is the first precise compatibility difference that prevents the VMApple machine from progressing when its guest CPU is no longer backed by the known Apple/HVF reference path?
 
-This part does **not** attempt to implement every missing Apple Silicon component.
+Part 01 does not try to implement an entire Apple Silicon SoC at once.
 
-It creates the environment in which every later component can be discovered and implemented one at a time.
+It builds the reproducible environment, removes host-only construction assumptions one at a time, defines the controlled TCG path, and creates the evidence tooling needed to discover the first real incompatibility.
 
-## Sub-objectives
+## Project-wide rules applied to Part 01
 
-Part 01 is split into smaller objectives. The first detailed objective is:
+### Maintainer testing
 
-- [P1.01 — Logged VMApple Baseline Harness](P1.01.md)
+The project owner is not asked to manually test individual objectives, updates, fixes, or hotfixes.
 
-P1.01 establishes mandatory persistent `.log` output before deeper VMApple experiments begin.
-
-Later objectives will continue the sequence as `P1.02`, `P1.03`, and so on rather than requiring Part 01 to be completed all at once.
-
-## Maintainer testing rule
-
-The maintainer will not be asked to manually test every Part 01 objective or intermediate release.
-
-Manual maintainer testing is reserved for the finished integration stage. Development-side build checks, source inspection, automated tests, emulator probes, and generated logs should be used during the project instead.
-
-## Logging rule
-
-Every meaningful runtime experiment in Part 01 must create a persistent `.log` file, including failed runs.
-
-The default location is:
-
-```text
-logs/AppleSilicon-YYYYMMDD-HHMMSS-PID.log
-```
-
-Console output alone is not accepted as the only record of a runtime experiment.
-
----
-
-# Part 01 success condition
-
-Part 01 is complete when all of the following are true:
-
-1. We can build the pinned emulator/reference tree reproducibly.
-2. We have a documented known-good VMApple reference path using legally obtained local guest material where authorized development hardware is available.
-3. We have deterministic serial/QEMU logging from reference and probe runs.
-4. We can force the same VMApple machine toward a non-host CPU path under TCG.
-5. The first divergence/failure between the known-good Apple-host path and the generic virtual CPU path is identified precisely.
-6. That divergence is recorded as a named CPU/platform contract with a regression test or minimal reproducer.
-7. We have a written dependency map showing which known requirements are CPU, boot, or device-model problems.
-
-A GUI is not required.
-
-A complete XNU boot is not required on the generic CPU path.
-
-The important output is the **first understood incompatibility**, because that becomes the next compatibility objective.
-
----
-
-# Objective tree
-
-## P01.O1 — Freeze an upstream reference
-
-Pin the exact source revision used for experiments.
-
-Primary candidates:
-
-- ChefKiss Inferno for the active Apple ARM/QEMU research tree.
-- Upstream QEMU for the cleanest current VMApple implementation.
-
-Record:
-
-```text
-repository
-commit SHA
-host OS
-host CPU
-compiler
-Meson version
-Ninja version
-QEMU configure arguments
-```
-
-Do not write documentation against an unspecified `master` checkout and later assume behavior is unchanged.
-
-### Acceptance
-
-A clean checkout at the pinned revision builds from documented commands.
-
----
-
-## P01.O2 — Build a known-good VMApple reference
-
-Upstream QEMU currently documents VMApple with:
-
-```text
-Apple Silicon host
-macOS host
-HVF
-VMApple machine
-Apple Virtualization.framework pre-boot environment
-macOS 12 virtual-machine guest material
-```
-
-The reference command shape documented by upstream is approximately:
-
-```bash
-qemu-system-aarch64 \
-  -serial mon:stdio \
-  -m 4G \
-  -accel hvf \
-  -M vmapple,uuid="$UUID" \
-  -bios "$AVPBOOTER" \
-  -drive file="$AUX",if=pflash,format=raw \
-  -drive file="$DISK",if=pflash,format=raw \
-  -drive file="$AUX",if=none,id=aux,format=raw \
-  -drive file="$DISK",if=none,id=root,format=raw \
-  -device vmapple-virtio-blk-pci,variant=aux,drive=aux \
-  -device vmapple-virtio-blk-pci,variant=root,drive=root
-```
-
-Source: <https://www.qemu.org/docs/master/system/arm/vmapple.html>
-
-This command is a **reference**, not our final product design.
-
-### Repository rule
-
-Do not commit:
-
-- AVPBooter,
-- macOS disk images,
-- IPSWs/installers,
-- machine-specific secrets,
-- Apple keys,
-- extracted proprietary firmware.
-
-All such material remains local to the authorized development machine.
+Manual testing is reserved for the finished integration stage. Intermediate objectives should rely on source inspection, build checks, deterministic tooling, synthetic fixtures, and automated validation whenever possible.
 
 ### Logging
 
-Runtime output from this objective must be routed through the project logging infrastructure or an equivalent launcher that produces persistent `.log` files.
+Every meaningful executable AppleSilicon operation must leave a persistent `.log`.
 
-### Acceptance
-
-Capture locally:
+Default local artifact roots are:
 
 ```text
-artifacts/reference/
-  host-info.txt
-  qemu-version.txt
-  command-redacted.txt
-  serial.log
-  qemu.log
+.logs/
+.build/
 ```
 
-The repository should contain scripts/templates later, not proprietary inputs.
+These directories are ignored by Git.
+
+### Repository naming
+
+Project-owned directories are lowercase and dot-prefixed.
+
+Examples:
+
+```text
+.docs/
+.src/
+.src/.configs/
+.src/.patches/
+.src/.tools/
+.src/.fixtures/
+.src/.upstream/.inferno/
+```
+
+## Upstream reference
+
+The active pinned research base is:
+
+```text
+ChefKissInc/Inferno
+cc4302a99167abec69b714cfd00c38caece7e7de
+```
+
+The pinned upstream is kept pristine. AppleSilicon changes are represented as ordered project patches or project-owned tools/configuration around disposable prepared source trees.
+
+## Part 01 objective sequence
+
+### P1.01 — Logged VMApple Baseline Harness
+
+Status: **Implementation complete**
+
+Established mandatory persistent logging before deeper experiments.
+
+### P1.02 — Reproducible Inferno Build Baseline
+
+Status: **Implementation complete — runtime build deferred**
+
+Defined the pinned Inferno build contract and logged build harness.
+
+### P1.03 — VMApple Capability and Build-Gate Probe
+
+Status: **Implementation complete — runtime capability probe deferred**
+
+Established source/binary inspection of VMApple, accelerators, CPU models, and the original HVF build dependency.
+
+### P1.04 — Decouple VMApple Build From HVF
+
+Status: **Implementation complete — runtime build deferred**
+
+Added:
+
+```text
+.src/.patches/0001-vmapple-decouple-build-from-hvf.patch
+```
+
+The VMApple build gate no longer requires HVF in the prepared source. The Apple/HVF reference behavior remains otherwise intact.
+
+### P1.05 — Decouple VMApple Machine Realization From Apple PVG
+
+Status: **Implementation complete — runtime realization deferred**
+
+Added:
+
+```text
+.src/.patches/0002-vmapple-optional-apple-pvg.patch
+```
+
+VMApple now attempts to create `apple-gfx-mmio` through QEMU's safe optional-device path. When the Darwin-only PVG implementation is unavailable, the prepared research machine can continue without inventing fake GPU behavior.
+
+### P1.06 — Explicit Non-Host VMApple CPU Selection
+
+Status: **Implementation complete — runtime CPU probe deferred**
+
+Research confirmed that QEMU already routes an explicit `-cpu` model into `MachineState::cpu_type`, and VMApple creates its CPUs from that value.
+
+Controlled non-host profiles are:
+
+```text
+TCG + max
+TCG + apple-gxf
+```
+
+`host` remains the reference default and is not silently replaced.
+
+### P1.07 — TCG VMApple Pre-Boot Probe Harness
+
+Status: **Implementation complete — runtime launch deferred**
+
+Created the first complete controlled launch specification:
+
+```text
+VMApple
+ + P1.04
+ + P1.05
+ + TCG
+ + max/apple-gxf
+ + local authorized boot inputs
+ + finite execution window
+ + persistent diagnostics
+```
+
+The runtime harness records launcher output, serial/stderr evidence, QEMU debug output, trace capability information, timeout/exit classification, and does not store proprietary Apple inputs in the repository.
+
+Initial trace events:
+
+```text
+memory_region_ops_read
+memory_region_ops_write
+```
+
+Initial debug categories:
+
+```text
+guest_errors
+unimp
+int
+cpu_reset
+```
+
+### P1.08 — VMApple Trace Normalization and Earliest-Divergence Extraction
+
+Status: **Implementation complete — real trace comparison deferred**
+
+Added:
+
+```text
+.docs/P1.08.md
+.src/.configs/p1.08-compare.json
+.src/.tools/compare-boot-traces.py
+.src/.tools/prepare-p1.08.sh
+.src/.fixtures/.p1.08/
+```
+
+The comparator normalizes host-only QEMU trace noise while preserving guest-semantic MMIO data:
+
+```text
+event
+CPU index
+guest address
+value
+size
+region name
+ordering
+```
+
+It reports the earliest mismatch, classifies it, preserves raw/source-line evidence, and performs only bounded resynchronization.
+
+Synthetic fixtures validate:
+
+```text
+host-noise equivalence
+MMIO value divergence
+sequence insertion/resynchronization
+```
+
+No synthetic result is allowed to become `P01-DIVERGENCE-0001`.
+
+### P1.09 — Reference Trace Manifest and Real-Hardware Trace Preparation
+
+Status: **Next objective**
+
+P1.09 will define exactly what constitutes the reference side of the first real comparison:
+
+```text
+host identity/capabilities
+QEMU/Inferno revision
+VMApple configuration
+CPU/accelerator selection
+redacted command shape
+trace event set
+log/artifact hashes
+reference run metadata
+probe run metadata
+sanitization rules
+```
+
+It will also prepare the real-hardware/reference tracing workflow for behavior that cannot be explained from public source alone, without requiring immediate maintainer testing.
 
 ---
 
-## P01.O3 — Inventory the current VMApple hardware contract
+# Engineering objective map
 
-From upstream `hw/vmapple/vmapple.c`, record the currently modeled blocks and their addresses/interrupts.
+The detailed P1.xx sequence implements the original Part 01 engineering objectives as follows.
 
-Current upstream code includes a VMApple configuration region plus devices such as GICv3, UART, RTC, GPIO, PCIe, paravirtual graphics, AES, the VMApple backdoor interface, and Apple-specific virtio block behavior.
+## O1 — Freeze upstream reference
 
-The important discovery here is that **VMApple is not a virtual physical M1**.
+Implemented by P1.01–P1.03.
 
-It uses a deliberately virtualized machine contract containing several generic ARM/QEMU components. This is good for our initial goal because we do not need AIC/ANS/DART/AGX physical emulation simply to reproduce VMApple.
+The exact Inferno revision is pinned and all later source assumptions are checked against it.
 
-### Acceptance
+## O2 — Reproducible reference/probe build environment
 
-Create a machine-contract table containing:
+Implemented structurally by P1.02–P1.05.
+
+Actual final integration builds/runs remain deferred under project policy.
+
+## O3 — Inventory VMApple host dependencies
+
+Implemented progressively by P1.03–P1.05.
+
+Confirmed early dependencies included:
 
 ```text
-component
-QEMU model
-MMIO range
-IRQ
-required at boot?
-known guest driver
-host-dependent?
+HVF build gating
+Darwin-only Apple PVG realization
+host CPU default
 ```
 
----
+## O4 — Controlled CPU contract
 
-## P01.O4 — Inventory the CPU contract
+Implemented structurally by P1.06.
 
-Upstream VMApple currently defaults to:
+The known reference default remains:
 
 ```text
 ARM_CPU_TYPE_NAME("host")
 ```
 
-This is one of the most important lines in the current implementation.
-
-It means that on the known-good HVF path, the guest CPU model inherits the real Apple Silicon CPU exposed through the host virtualization layer.
-
-Our first CPU investigation therefore asks:
+The controlled non-host path can explicitly select:
 
 ```text
-What does `host` provide that a generic QEMU ARM CPU does not?
+max
+apple-gxf
 ```
 
-Collect at minimum:
+under TCG.
 
-- MIDR/MPIDR behavior visible to the guest,
-- ID_AA64* feature registers,
-- page-granule support,
-- pointer-authentication features,
-- timer configuration,
-- exception levels presented to the guest,
-- implementation-defined system register accesses,
-- Apple-specific registers/instructions reached by pre-boot/XNU,
-- behavior of secondary CPU startup.
+## O5 — Controlled TCG divergence run
 
-### Acceptance
+Runtime harness implemented by P1.07.
 
-Produce a first CPU requirement matrix:
+Actual guest execution is intentionally deferred.
 
-```text
-requirement | Apple host | QEMU max | generic ARM host | required by stage
-```
+## O6 — Differential tracing
 
-Unknown values are allowed. They must be marked unknown rather than guessed.
+Analysis implementation completed by P1.08.
+
+Real A/B trace collection is intentionally deferred.
+
+## O7 — Reference/real-hardware evidence preparation
+
+Begins with P1.09.
+
+If a future mismatch cannot be explained from QEMU, Inferno, XNU, or published documentation, authorized Apple Silicon reference tracing may use tools such as m1n1 where appropriate.
 
 ---
 
-## P01.O5 — Create the TCG divergence run
+# Part 01 success condition
 
-The first generic path should use TCG because it gives us full control of the guest CPU model.
+Part 01 is complete only when all of these are satisfied:
 
-Initial experiment shape:
-
-```bash
-qemu-system-aarch64 \
-  -accel tcg \
-  -cpu max \
-  -M vmapple,...
-```
-
-This is expected to fail.
-
-**The failure is the experiment.**
-
-Instrument:
+1. The pinned emulator tree and AppleSilicon patch chain are reproducible.
+2. The reference VMApple experiment is fully described with non-secret metadata.
+3. The controlled TCG VMApple experiment is fully described with the same comparison contract.
+4. Reference and probe runs produce deterministic persistent evidence.
+5. The trace normalization/comparison tooling can consume that evidence.
+6. The **first real divergence** is reproducible and precisely located.
+7. The divergence is promoted from candidate to:
 
 ```text
--d guest_errors,unimp,int,cpu_reset
--D apple-silicon-tcg.log
+P01-DIVERGENCE-0001
 ```
 
-Additional QEMU trace events should be enabled as required.
+8. The divergence is documented as a specific CPU/platform contract with a reproducer or regression check.
+9. The evidence shows what the next compatibility part should actually implement.
 
-The command must also run through the project logged-run infrastructure so launcher metadata and exit state survive even if QEMU's own trace output terminates unexpectedly.
+A GUI is not required.
 
-We are looking for the earliest meaningful difference, such as:
+A complete generic-ARM XNU boot is not required.
 
-```text
-unsupported system register
-undefined instruction
-unexpected CPU feature test
-page-table setup failure
-firmware assumption
-interrupt/timer divergence
-VMApple config mismatch
-```
+The core Part 01 deliverable is the **first understood incompatibility**.
 
-### Acceptance
+---
 
-The first failure must be reproducible from a clean start and written as:
+# Confirmed divergence report format
 
 ```text
 P01-DIVERGENCE-0001
@@ -290,135 +327,47 @@ Reproducer:
 Log file:
 ```
 
----
-
-## P01.O6 — Build differential tracing
-
-We need two traces:
-
-```text
-A: known-good Apple host + HVF + vmapple
-B: TCG + explicit non-host CPU + vmapple
-```
-
-Normalize volatile values, then compare the traces as early as possible in boot.
-
-Useful trace categories include:
-
-- CPU exceptions,
-- system-register accesses,
-- MMIO,
-- interrupts,
-- timer programming,
-- VMApple config reads,
-- block-device requests,
-- firmware transitions.
-
-### Acceptance
-
-A comparison tool or documented manual process identifies the earliest divergence without requiring visual inspection of megabytes of unrelated logs.
-
----
-
-## P01.O7 — Prepare real-hardware tracing for unknown Apple behavior
-
-If a behavior cannot be explained from QEMU, Inferno, XNU, or public documentation, use a real Apple Silicon reference machine and m1n1 where appropriate.
-
-Asahi documents running XNU/macOS under the m1n1 hypervisor and preloading hardware tracing modules.
-
-Primary documentation:
-
-<https://asahilinux.org/docs/sw/m1n1-hypervisor/>
-
-The research loop is:
-
-```text
-unknown guest expectation
-       ↓
-identify code/register/device
-       ↓
-trace authorized reference hardware
-       ↓
-record behavior
-       ↓
-implement minimum compatible model
-       ↓
-regression test
-```
-
-### Acceptance
-
-The repository has a documented trace format and no machine secrets are committed accidentally.
-
----
-
-# First code that should eventually be added
-
-Part 01 should not begin with an `AppleM1CPU` class containing hundreds of guessed registers.
-
-The first observable infrastructure now starts with:
-
-```text
-src/
-  tools/
-    run-logged.sh
-```
-
-Later Part 01 source work is expected to include:
-
-```text
-src/
-  patches/
-    0001-vmapple-allow-explicit-tcg-cpu.patch
-  tools/
-    compare-boot-traces.py
-  configs/
-    reference-hvf.example
-    tcg-probe.example
-```
-
-The initial VMApple patch should make it easy to select a non-`host` CPU for VMApple without changing unrelated device behavior.
-
-Then the trace comparison tells us what CPU compatibility code is actually necessary.
+Unknown values must remain marked unknown rather than guessed.
 
 ---
 
 # Part 01 non-goals
 
-Do not spend Part 01 implementing:
+Part 01 does not attempt to complete:
 
 - AGX GPU acceleration,
-- Secure Enclave completeness,
+- Secure Enclave emulation,
+- Activation Lock or account-security bypasses,
 - Touch ID,
-- Apple Intelligence/ANE,
+- ANE/Apple Intelligence,
 - sleep/wake,
 - Thunderbolt,
 - Wi-Fi,
 - audio,
 - OpenCore integration,
-- custom kexts,
-- physical M1 AIC/DART/ANS emulation.
+- custom compatibility kexts,
+- full physical M-series AIC/DART/ANS/AGX emulation.
 
-Those may become future parts if the selected guest-machine contract requires them.
+Those belong to later evidence-driven parts only if the selected guest-machine contract actually requires them.
 
 ---
 
-# Expected later direction
+# Later direction
 
-Part 02 is intentionally **not named yet**.
+Part 02 remains intentionally unnamed.
 
-Its title will be derived from the first real compatibility divergence discovered after the Part 01 baseline and probe objectives.
+Its title will be derived from `P01-DIVERGENCE-0001` rather than guessed in advance.
 
-For example, if the first blocker is an implementation-defined Apple system register, Part 02 might become:
+Examples only:
 
 ```text
 Part 02 — Apple CPU System Register Compatibility v1
 ```
 
-If it is a page-granule/MMU issue:
+or:
 
 ```text
 Part 02 — VMApple 16K Guest MMU Bring-Up
 ```
 
-This keeps the project evidence-driven instead of inventing an enormous roadmap whose ordering may be wrong.
+The first real evidence decides the next part.
