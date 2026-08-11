@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`1.0.0.0.0.0`**
+Current project version: **`2.0.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments, and implementation objectives for AppleSilicon.
 
@@ -10,20 +10,13 @@ This directory records the research, design decisions, compatibility contracts, 
 - [RESEARCH.md](RESEARCH.md) — existing projects, what they already solve, and what remains unsolved for our goal.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — intended system layers and where compatibility code belongs.
 - [PART-01-BASELINE.md](PART-01-BASELINE.md) — Part 01 objective tree and closure state.
-- [P1.01.md](P1.01.md) — mandatory logged execution infrastructure.
-- [P1.02.md](P1.02.md) — reproducible Inferno build baseline.
-- [P1.03.md](P1.03.md) — VMApple capability and build-gate probe.
-- [P1.04.md](P1.04.md) — decouple VMApple compilation from HVF.
-- [P1.05.md](P1.05.md) — make Apple PVG optional during VMApple machine construction.
-- [P1.06.md](P1.06.md) — explicit non-host VMApple CPU selection for TCG experiments.
-- [P1.07.md](P1.07.md) — complete logged TCG VMApple pre-boot probe harness.
-- [P1.08.md](P1.08.md) — trace normalization and earliest-divergence extraction.
-- [P1.09.md](P1.09.md) — privacy-safe reference/probe manifest contract and HVF reference preparation.
-- [P1.10.md](P1.10.md) — final Part 01 A/B evidence bundling and reproduced-divergence promotion gate.
+- [P1.01.md](P1.01.md) through [P1.10.md](P1.10.md) — completed Part 01 implementation sequence.
+- [PART-02-CPU-CONTRACT.md](PART-02-CPU-CONTRACT.md) — fixed Part 02 CPU compatibility objective tree.
+- [P2.01.md](P2.01.md) — Apple CPU system-register and feature inventory.
 
 ## Part and objective naming
 
-Large work is divided into parts. Each part is then divided into smaller numbered objectives.
+Large work is divided into parts. Each part is divided into smaller numbered objectives whose count is fixed when that part begins.
 
 Part 01 closes at:
 
@@ -33,7 +26,32 @@ P1.10
 
 There is no P1.11.
 
-The next project unit is Part 02.
+Part 02 is fixed at exactly:
+
+```text
+P2.01
+P2.02
+P2.03
+P2.04
+P2.05
+P2.06
+```
+
+There is no P2.07.
+
+New discoveries after the fixed final objective belong to a later part or an appropriate fix/emergency/hotfix release rather than silently extending the part.
+
+## Current Part 02 state
+
+P2.01 is implementation-complete at the static inventory level.
+
+It records exact source locks and a machine-readable CPU-focused inventory of Apple implementation-defined AArch64 registers while keeping every register's runtime priority unknown until evidence exists.
+
+The next objective is:
+
+```text
+P2.02 — Apple System Register Emulation Framework
+```
 
 ## Maintainer testing policy
 
@@ -42,8 +60,6 @@ The maintainer will not be asked to manually test every part, objective, update,
 Manual maintainer testing is reserved for the finished integration stage.
 
 Development-side validation is still expected. Source review, compilation, static checks, automated tests, emulator probes, regression tests, synthetic fixtures, and trace comparisons should be used whenever possible so that intermediate defects are discovered without depending on repeated maintainer testing.
-
-P1.10 completes the Part 01 development-side pipeline without performing the real HVF/TCG A/B experiment.
 
 ## Mandatory logging policy
 
@@ -59,31 +75,23 @@ Runtime logging must capture stdout and stderr together unless a later component
 
 Logs must not intentionally contain passwords, Apple account information, authentication tokens, private keys, tickets, raw VM machine identifiers, or other sensitive machine material.
 
-P1.01 defines the original logging rule. Later Part 01 objectives extend it to runtime probes, trace analysis, manifest collection, reference evidence, probe evidence packaging, and final promotion-gate validation.
+P2.01 continues this rule through `prepare-p2.01.sh`, which validates the CPU contract without launching a guest.
 
 ## Evidence policy
 
-A trace mismatch is not automatically a compatibility bug.
+A source-known Apple register is not automatically a VMApple requirement.
 
-Part 01 requires:
-
-```text
-P1.09 comparable A/B manifests
-verified trace-artifact hashes
-P1.08 earliest-divergence comparison
-runtime evidence origin
-at least two unique matching reproductions
-same contract fingerprint
-same divergence signature
-```
-
-before a local record may be named:
+Part 02 separates:
 
 ```text
-P01-DIVERGENCE-0001
+known physical Apple implementation-defined behavior
+from
+proven VMApple/macOS guest requirements
 ```
 
-Synthetic fixtures and self-check data are never eligible for real promotion.
+P2.01 therefore keeps imported register relevance, access behavior, runtime priority and implementation behavior unknown unless stronger evidence exists.
+
+The Part 01 runtime promotion rules remain the strongest evidence path once final integration testing is performed.
 
 ## Documentation rules
 
