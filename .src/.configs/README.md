@@ -9,6 +9,7 @@ p2.01-cpu-contract.json
 p2.02-framework-policy.json
 p2.03-sysreg-policy.json
 p2.04-feature-contract.json
+p2.05-regression-policy.json
 ```
 
 ## P2.01
@@ -25,19 +26,25 @@ p2.04-feature-contract.json
 
 ## P2.04
 
-`p2.04-feature-contract.json` defines the source-backed minimum architectural VMApple CPU profile for TCG `apple-gxf`:
+`p2.04-feature-contract.json` defines the source-backed minimum architectural VMApple CPU profile for TCG `apple-gxf`: PAuth presence, SSBS2, SME/SME2, PAN3, 4 KiB + 16 KiB stage-1 granules and range TLBI. Stronger supported `max` capabilities are preserved.
+
+## P2.05
+
+`p2.05-regression-policy.json` locks the exact contract/patch inputs used by the deterministic CPU regression suite.
+
+It protects:
 
 ```text
-PAuth presence
-SSBS2
-SME / SME2
-PAN3
-4 KiB stage-1 granules
-16 KiB stage-1 granules
-range TLBI
+P2.01 inventory
+P2.02 framework policy
+P2.03 sysreg policy
+P2.04 feature contract
+patch 0003
+patch 0004
+patch 0005
 ```
 
-The contract uses a minimum/preserve-stronger rule and explicitly defers non-ID platform contracts such as paravirtualized PAC/CTRR, GICv3 and topology.
+The policy also requires `apple-gxf` + TCG scope, untouched `max` control behavior, zero live P2.03 sysreg semantics, enforced P2.04 feature requirements and deterministic regression output.
 
 ## Secret/proprietary material rule
 
