@@ -1,8 +1,8 @@
 # Source
 
-Project version: **`4.2.0.0.0.0`**
+Project version: **`4.3.0.0.0.0`**
 
-The source tree contains closed Part 01 evidence, closed Part 02 CPU compatibility, closed Part 03 VMApple platform integration, and active Part 04 runtime-evidence work through P4.03.
+The source tree contains closed Part 01 evidence, closed Part 02 CPU compatibility, closed Part 03 VMApple platform integration, and active Part 04 runtime-evidence work through P4.04.
 
 ## Layout
 
@@ -35,7 +35,7 @@ The ordered source patch chain remains exactly:
 0005-arm-vmapple-feature-contract.patch
 ```
 
-P4.01 through P4.03 add no `0006` patch.
+P4.01 through P4.04 add no `0006` patch.
 
 ## Part 04 — Runtime evidence
 
@@ -47,33 +47,23 @@ Current state:
 P4.01  Runtime Session Provenance and Input Lock  complete
 P4.02  Integrated TCG Probe Capture               complete
 P4.03  Apple Silicon HVF Reference Capture        complete
-P4.04  Comparable A/B Session Assembly            NEXT
-P4.05  Reproducible Divergence Promotion
+P4.04  Comparable A/B Session Assembly            complete
+P4.05  Reproducible Divergence Promotion          NEXT
 P4.06  Part 04 Runtime Evidence Gate
 ```
 
 There is no P4.07.
 
-P4.02 defines a provenance-bound `vmapple / TCG / apple-gxf` probe capture.
+P4.02 defines the provenance-bound `vmapple / TCG / apple-gxf` probe capture; P4.03 defines the fail-closed `vmapple / HVF / host / Darwin arm64` primary reference capture.
 
-P4.03 defines the corresponding primary reference capture:
+P4.04 admits a pair only when its P4.01 plans, P4.02/P4.03 capture descriptors and P1.09 manifests agree on the full comparison contract. It additionally binds the same machine-UUID digest, P3.06 state and QEMU version string while allowing host-specific executable hashes to differ.
 
-```text
-vmapple / HVF / host
-Darwin arm64
-4G RAM
-4 vCPUs
-30-second observation
-```
-
-P4.03 fails closed without a real Darwin/arm64 Apple Silicon reference host and reuses the P1.09 reference runner/manifest format.
-
-Both roles keep firmware, AUX/root images, machine identity, hardware model and UUID content local. Generated capture descriptors store only sanitized metadata/digests.
+The final P4.04 artifact is a deterministic local `.build/p4.04/ab-session.json`. It is pair-admission metadata, not a trace divergence or promotion.
 
 ## Testing and artifacts
 
-`prepare-p4.01.sh`, `prepare-p4.02.sh` and `prepare-p4.03.sh` perform logged static validation without a guest.
+`prepare-p4.01.sh` through `prepare-p4.04.sh` perform logged static validation without requiring a guest for implementation completion.
 
-The P4.02/P4.03 runtime wrappers are implemented but real guest execution remains intentionally deferred to final integrated testing with the required local environments.
+The P4.02/P4.03 runtime wrappers and P4.04 A/B assembler are implemented, but real guest execution/pair assembly remains intentionally deferred to final integrated testing with the required local environments.
 
 No proprietary Apple firmware, macOS images, AUX/root storage artifacts, tickets, keys, authentic hardware secrets, machine-identity blobs or account secrets belong in `.src/`.
