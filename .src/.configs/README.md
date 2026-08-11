@@ -24,7 +24,10 @@ p3.02-identity.example.json
 p3.03-io-contract.json
 p3.04-storage-contract.json
 p3.05-peripheral-contract.json
+p3.06-integration-policy.json
 ```
+
+Part 03 is closed at P3.06.
 
 ### P3.01
 
@@ -38,7 +41,7 @@ p3.05-peripheral-contract.json
 
 ### P3.03
 
-`p3.03-io-contract.json` freezes the source-backed/reference wiring for GICv3, per-vCPU virtual timer PPI 27, PL011, PL031, PL061/power and pvpanic. It deliberately leaves exact power-button event semantics runtime-evidence gated and requires no new Inferno patch.
+`p3.03-io-contract.json` freezes the source-backed/reference wiring for GICv3, per-vCPU virtual timer PPI 27, PL011, PL031, PL061/power and pvpanic. Exact power-button event semantics remain runtime-evidence gated.
 
 ### P3.04
 
@@ -47,6 +50,10 @@ p3.05-peripheral-contract.json
 ### P3.05
 
 `p3.05-peripheral-contract.json` freezes generic GPEX/virtio/XHCI ownership, the VMApple macOS XHCI conditional-interrupter compatibility policy, Apple AES MMIO/reset/known command behavior, unresolved AES commands, and the host-framework-dependent Apple PVG boundary. P1.05's optional-PVG policy is preserved and no fake GPU or new Inferno patch is introduced.
+
+### P3.06
+
+`p3.06-integration-policy.json` binds the exact P3.01–P3.05 contract/validator blobs to the passing P2.06 CPU integration result and Part 01 evidence/promotion policy. It requires the compatibility patch series to remain exactly `0001` through `0005`, preserves all evidence-gated unknown semantics, freezes the root README blob, and closes Part 03 only after deterministic integration validation.
 
 ## Secret/proprietary material rule
 
