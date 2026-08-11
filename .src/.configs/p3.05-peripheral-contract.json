@@ -1,0 +1,211 @@
+{
+  "schema": 1,
+  "project_version": "3.4.0.0.0.0",
+  "part": "Part 03",
+  "objective": "P3.05",
+  "title": "PCIe, Peripheral, Crypto and Graphics Contract",
+  "scope": {
+    "machine": "vmapple",
+    "cpu_contract_owner": "Part 02",
+    "guest_runtime_deferred": true,
+    "inferno_source_patch_required": false
+  },
+  "source_locks": {
+    "inferno": {
+      "repository": "ChefKissInc/Inferno",
+      "revision": "cc4302a99167abec69b714cfd00c38caece7e7de",
+      "files": {
+        "hw/vmapple/vmapple.c": "89c04c09f705d987ee96c11c1f5f4fc79713bf2e",
+        "hw/vmapple/Kconfig": "2382b297672274f27c447b9168cab9425f01ed17",
+        "hw/vmapple/aes.c": "3f6c2721bf3d8d46cc21323ef6d2492e28a7020b",
+        "hw/usb/hcd-xhci-pci.c": "b93c80b09d8237a1d2a5df0f5c7262fd1a292324"
+      }
+    },
+    "project": {
+      "optional_pvg_patch": {
+        "path": ".src/.patches/0002-vmapple-optional-apple-pvg.patch",
+        "blob_sha": "04ac7e35c8c15bc6c2d7ef5b1cbc76f0c4875ecd"
+      }
+    },
+    "qemu_reference": {
+      "repository": "qemu/qemu",
+      "revision": "84f07211cc5b4fc6a371559bf8a5de4fb068e648",
+      "release": "11.1.0",
+      "files": {
+        "hw/vmapple/vmapple.c": "607181f5177b1c798a7504150ce29aa383b29993",
+        "hw/vmapple/Kconfig": "2382b297672274f27c447b9168cab9425f01ed17",
+        "hw/vmapple/aes.c": "553e688adbe7e2636b9514c27a2b180af5cc66e5",
+        "hw/usb/hcd-xhci-pci.c": "b124251ae3375bf3f6219f920e1d9305b4bc9427",
+        "hw/display/apple-gfx-mmio.m": "58beaadd1f108baa9cd0b500cd26c3281f416c4e",
+        "hw/display/meson.build": "ffecedbf709e0a1f34e0325755bd0978636a9cef",
+        "meson.build": "49a5baf5b52fd257001b81d4212a129a0315cd11",
+        "configs/devices/aarch64-softmmu/default.mak": "ad8028cfd482b948a3edc031f40551e0a8b9be00",
+        "docs/system/arm/vmapple.rst": "35c329ea5a812ea27b8ea1e6690576a85b8e30d1"
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "pcie_gpex",
+      "ownership": "generic_qemu",
+      "guest_contract": "reference_machine_contract",
+      "device": "gpex-pcihost",
+      "ecam_base": "0x40000000",
+      "ecam_size": "0x10000000",
+      "mmio_base": "0x50000000",
+      "mmio_size": "0x1fff0000",
+      "num_irqs": 16,
+      "spi_base": 32,
+      "spi_last": 47,
+      "action": "validate"
+    },
+    {
+      "id": "virtio_transport_defaults",
+      "ownership": "generic_qemu",
+      "guest_contract": "reference_machine_contract",
+      "disable_legacy": true,
+      "action": "preserve"
+    },
+    {
+      "id": "virtio_network",
+      "ownership": "generic_qemu",
+      "guest_contract": "optional_reference_component",
+      "device": "virtio-net-pci",
+      "creation": "from_configured_nic_backends",
+      "action": "preserve"
+    },
+    {
+      "id": "xhci_usb",
+      "ownership": "generic_qemu",
+      "guest_contract": "macos_compatibility_contract",
+      "device": "qemu-xhci",
+      "created_when_defaults_enabled": true,
+      "msi_default": "auto",
+      "msix_default": "auto",
+      "conditional_intr_mapping": true,
+      "pin_irq_event_target": "interrupter_0_when_msi_and_msix_inactive",
+      "action": "validate"
+    },
+    {
+      "id": "usb_default_hid",
+      "ownership": "generic_qemu",
+      "guest_contract": "optional_reference_component",
+      "devices": [
+        "usb-kbd",
+        "usb-tablet"
+      ],
+      "created_when_defaults_enabled": true,
+      "action": "preserve"
+    },
+    {
+      "id": "vmapple_aes_mmio",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "mmio1_base": "0x30220000",
+      "mmio1_size": "0x00004000",
+      "mmio2_base": "0x30230000",
+      "mmio2_size": "0x00004000",
+      "spi": 18,
+      "implemented_access_bytes": 4,
+      "action": "validate"
+    },
+    {
+      "id": "vmapple_aes_semantics",
+      "ownership": "vmapple_specific",
+      "guest_contract": "partial_public_emulation",
+      "implemented_commands": [
+        "KEY",
+        "IV",
+        "DATA",
+        "STORE_IV",
+        "FLAG"
+      ],
+      "declared_but_unimplemented_commands": [
+        "DSB",
+        "SKG",
+        "WRITE_REG"
+      ],
+      "cipher_modes": [
+        "ECB",
+        "CBC"
+      ],
+      "aes_key_bits": [
+        128,
+        192,
+        256
+      ],
+      "builtin_key_indices": [
+        1,
+        2,
+        3
+      ],
+      "builtin_key_classification": "public_emulator_placeholders_not_authentic_apple_secrets",
+      "runtime_requirement_of_unimplemented_commands": "unknown_requires_runtime_evidence",
+      "action": "investigate"
+    },
+    {
+      "id": "vmapple_aes_reset",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "status": "0x00003f80",
+      "queue_status": 2,
+      "irq_status": 0,
+      "irq_enable": 0,
+      "watermark": 0,
+      "action": "validate"
+    },
+    {
+      "id": "apple_pvg_mmio",
+      "ownership": "host_framework_dependent",
+      "guest_contract": "optional_reference_component",
+      "device": "apple-gfx-mmio",
+      "gfx_base": "0x30200000",
+      "gfx_size": "0x00010000",
+      "iosfc_base": "0x30210000",
+      "iosfc_size": "0x00010000",
+      "iosfc_spi": 16,
+      "gfx_spi": 17,
+      "host_dependencies": [
+        "ParavirtualizedGraphics.framework",
+        "Metal.framework"
+      ],
+      "action": "defer"
+    },
+    {
+      "id": "apple_pvg_optionalization",
+      "ownership": "host_framework_dependent",
+      "guest_contract": "project_non_darwin_compatibility_policy",
+      "source": ".src/.patches/0002-vmapple-optional-apple-pvg.patch",
+      "construction": "qdev_try_new",
+      "when_unavailable": "warn_and_continue_without_pvg",
+      "fake_gpu_allowed": false,
+      "action": "preserve"
+    },
+    {
+      "id": "modern_vmapple_graphics_status",
+      "ownership": "unknown_requires_evidence",
+      "guest_contract": "unresolved_upstream_status",
+      "qemu_issue": 2913,
+      "qemu_issue_status": "to_do",
+      "qemu_issue_summary": "vmapple machine unusable with macOS 15.4",
+      "official_documented_guest_support": "macOS_12_only",
+      "aarch64_default_build": "CONFIG_VMAPPLE=n",
+      "action": "defer"
+    }
+  ],
+  "rules": {
+    "generic_pcie_and_peripherals_are_preserved_until_evidence_disproves_compatibility": true,
+    "vmapple_virtio_transport_disables_legacy_mode": true,
+    "xhci_conditional_interrupt_mapping_must_remain_enabled": true,
+    "xhci_without_msi_or_msix_must_target_interrupter_zero_under_the_compatibility_policy": true,
+    "aes_declared_but_unimplemented_commands_are_not_invented": true,
+    "aes_builtin_constants_are_not_treated_as_real_apple_keys": true,
+    "apple_pvg_remains_host_framework_dependent": true,
+    "p1_05_optional_pvg_behavior_is_preserved": true,
+    "no_fake_gpu_is_introduced": true,
+    "modern_macos_graphics_compatibility_is_not_claimed": true,
+    "no_new_inferno_patch_for_p3_05": true,
+    "guest_runtime_deferred": true
+  },
+  "next_objective": "P3.06"
+}
