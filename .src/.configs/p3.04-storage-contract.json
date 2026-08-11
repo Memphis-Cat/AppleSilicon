@@ -1,0 +1,218 @@
+{
+  "schema": 1,
+  "project_version": "3.3.0.0.0.0",
+  "part": "Part 03",
+  "objective": "P3.04",
+  "title": "Boot Backdoor and Storage Contract",
+  "scope": {
+    "machine": "vmapple",
+    "cpu_contract_owner": "Part 02",
+    "guest_runtime_deferred": true,
+    "inferno_source_patch_required": false
+  },
+  "source_locks": {
+    "inferno": {
+      "repository": "ChefKissInc/Inferno",
+      "revision": "cc4302a99167abec69b714cfd00c38caece7e7de",
+      "files": {
+        "hw/vmapple/vmapple.c": "89c04c09f705d987ee96c11c1f5f4fc79713bf2e",
+        "hw/vmapple/bdif.c": "5ccd374581969c0e8c70714fbd82aa0bdb0e189f",
+        "hw/vmapple/virtio-blk.c": "5d990e63079714b0fc6deea0caf588f2be6a9241"
+      }
+    },
+    "qemu_reference": {
+      "repository": "qemu/qemu",
+      "revision": "84f07211cc5b4fc6a371559bf8a5de4fb068e648",
+      "release": "11.1.0",
+      "files": {
+        "hw/vmapple/vmapple.c": "607181f5177b1c798a7504150ce29aa383b29993",
+        "hw/vmapple/bdif.c": "4dc10c151d28245b07df2110b892534fda2471d6",
+        "hw/vmapple/virtio-blk.c": "9de9aaae0bfc743b25edb30e88f4ebe0c6fdbcfa",
+        "docs/system/arm/vmapple.rst": "35c329ea5a812ea27b8ea1e6690576a85b8e30d1",
+        "include/hw/pci/pci_ids.h": "16034aaa2c7e4ff8ff881a5f1b380f7d9016b5d4",
+        "qapi/virtio.json": "1fc4e38a44da0040fa53216d6bd3b899730b817e"
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "bdif_mmio",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "base": "0x30000000",
+      "size": "0x00200000",
+      "irq": null,
+      "action": "validate"
+    },
+    {
+      "id": "bdif_device_selectors",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "device_id_mask": "0xffff0000",
+      "root": "0x00000000",
+      "aux": "0x00010000",
+      "usb": "0x00100000",
+      "command_serviced": [
+        "root",
+        "aux"
+      ],
+      "usb_state": "declared_but_not_serviced_by_command_handler",
+      "action": "validate"
+    },
+    {
+      "id": "bdif_registers",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "status": {
+        "offset": "0x000",
+        "read_value": "0x1"
+      },
+      "cfg": {
+        "offset": "0x004",
+        "read_value": "0x2"
+      },
+      "unk1": {
+        "offset": "0x008",
+        "read_value": "0x420"
+      },
+      "busy": {
+        "offset": "0x010",
+        "read_value": "0x1"
+      },
+      "unk2": {
+        "offset": "0x400",
+        "read_value": "0x1"
+      },
+      "command": {
+        "offset": "0x408",
+        "write_value_semantics": "guest_physical_address_of_vblk_request"
+      },
+      "next_device": {
+        "offset": "0x420",
+        "root_read_value": "0x08000000",
+        "aux_read_value": "0x00010000",
+        "semantic_name": "opaque_reference_value"
+      },
+      "unk3": {
+        "offset": "0x434",
+        "read_value": "0x0"
+      },
+      "action": "validate"
+    },
+    {
+      "id": "bdif_dma_request",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "sector_bytes": 512,
+      "sector_struct_bytes": 16,
+      "request_command_bytes": 16,
+      "request_bytes": 48,
+      "max_data_bytes": 134217728,
+      "read_flags": "0x00030001",
+      "write_flags": "0x00010001",
+      "success_value": 0,
+      "failure_value": 1,
+      "completion_bytes": 1,
+      "field_endianness": "little_endian_to_cpu",
+      "action": "validate"
+    },
+    {
+      "id": "bdif_command_semantics",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "read_supported": true,
+      "write_supported": false,
+      "write_behavior": "recognized_but_returns_failure",
+      "sector_offset_formula": "sector*512+static_offset",
+      "static_offset": 0,
+      "read_destination": "guest_dma_buffer",
+      "completion_destination": "guest_retval_address",
+      "runtime_write_requirement": "unknown_requires_runtime_evidence",
+      "action": "validate"
+    },
+    {
+      "id": "storage_backend_topology",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "bdif_aux_backend": "IF_PFLASH unit 0 required",
+      "bdif_root_backend_preferred": "IF_PFLASH unit 1",
+      "bdif_root_backend_fallback": "IF_VIRTIO unit 0",
+      "runtime_aux_backend": "if=none drive attached to vmapple-virtio-blk-pci variant=aux",
+      "runtime_root_backend": "if=none drive attached to vmapple-virtio-blk-pci variant=root",
+      "reference_cli_duplicates_aux_and_root_files_between_preboot_and_runtime_backends": true,
+      "action": "validate"
+    },
+    {
+      "id": "vmapple_virtio_blk_pci_identity",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "device": "vmapple-virtio-blk-pci",
+      "pci_vendor_id": "0x106b",
+      "pci_device_id": "0x1a00",
+      "pci_class": "PCI_CLASS_STORAGE_SCSI",
+      "action": "validate"
+    },
+    {
+      "id": "vmapple_virtio_blk_variant",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "enum_order": [
+        "unspecified",
+        "root",
+        "aux"
+      ],
+      "valid_runtime_variants": [
+        "root",
+        "aux"
+      ],
+      "unspecified_behavior": "device_realization_error",
+      "action": "validate"
+    },
+    {
+      "id": "vmapple_virtio_blk_config_type",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "source_field": "virtio_blk_config.max_secure_erase_sectors",
+      "stored_value": "apple_type_variant",
+      "store_helper": "stl_he_p",
+      "config_size_mechanism": "VIRTIO_BLK_F_ZONED",
+      "zoned_semantics": "not_implemented_config_space_size_only_guest_expected_to_ignore",
+      "action": "validate"
+    },
+    {
+      "id": "vmapple_virtio_blk_barrier",
+      "ownership": "vmapple_specific",
+      "guest_contract": "reference_machine_contract",
+      "request_type": "0x00010000",
+      "implementation": "successful_no_op",
+      "completion": "VIRTIO_BLK_S_OK",
+      "diagnostic": "LOG_UNIMP",
+      "flush_semantics": "unknown_requires_runtime_evidence",
+      "action": "validate"
+    },
+    {
+      "id": "aux_image_input_contract",
+      "ownership": "unknown_requires_evidence",
+      "guest_contract": "reference_input_preparation",
+      "official_reference_trim_block_bytes": 16384,
+      "official_reference_trim_blocks_skipped": 1,
+      "trimmed_bytes": 16384,
+      "artifact_policy": "local_external_input_not_committed",
+      "action": "defer"
+    }
+  ],
+  "rules": {
+    "bdif_and_vmapple_virtio_blk_are_distinct_boot_phases": true,
+    "bdif_remains_read_only_until_runtime_evidence_requires_write_support": true,
+    "bdif_usb_selector_is_not_promoted_to_supported_storage": true,
+    "reference_backend_duplication_is_preserved": true,
+    "virtio_variant_unspecified_must_fail_realization": true,
+    "apple_pci_identity_is_preserved": true,
+    "apple_barrier_remains_no_op_until_evidence_requires_flush_semantics": true,
+    "zoned_feature_is_not_promoted_to_real_zoned_storage_support": true,
+    "no_proprietary_storage_or_firmware_artifacts_in_repo": true,
+    "no_new_inferno_patch_for_p3_04": true,
+    "guest_runtime_deferred": true
+  },
+  "next_objective": "P3.05"
+}
