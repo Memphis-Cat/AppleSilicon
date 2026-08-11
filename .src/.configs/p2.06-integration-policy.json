@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "project_version": "2.5.0.0.0.0",
+  "part": "Part 02",
+  "objective": "P2.06",
+  "title": "Part 02 Integration Gate",
+  "source_lock": {
+    "inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
+  },
+  "cpu_contract": {
+    "accelerator": "tcg",
+    "cpu": "apple-gxf",
+    "control_cpu": "max",
+    "machine": "vmapple"
+  },
+  "locked_artifacts": [
+    {
+      "path": ".src/.configs/p1.07-trace-events",
+      "git_blob_sha": "c3c86c183944d8145e7fea37959624f6d22ecfca",
+      "role": "trace_contract"
+    },
+    {
+      "path": ".src/.tools/run-p1.07-probe.sh",
+      "git_blob_sha": "82a46ad27e54f5ee483aecac606cc0943e94e94d",
+      "role": "runtime_probe"
+    },
+    {
+      "path": ".src/.configs/p1.09-manifest-policy.json",
+      "git_blob_sha": "ccaf2c515102aad4f24a370dc6d4078f7924e91f",
+      "role": "evidence_manifest"
+    },
+    {
+      "path": ".src/.configs/p1.10-promotion-policy.json",
+      "git_blob_sha": "aa8804320da885373e2779a704dde75e9ef3bc98",
+      "role": "divergence_gate"
+    },
+    {
+      "path": ".src/.configs/p2.05-regression-policy.json",
+      "git_blob_sha": "0e48602cbff1145b64f69a5ccc0e4a1afe028d5b",
+      "role": "cpu_regression_policy"
+    },
+    {
+      "path": ".src/.tools/cpu-contract-regression.py",
+      "git_blob_sha": "9ed2b662c6aa91f1d23ad5da092c793ef7c96ffe",
+      "role": "cpu_regression_tool"
+    },
+    {
+      "path": ".src/.tools/prepare-p2.05.sh",
+      "git_blob_sha": "a93f9264ff3e07d7b598ca794bf21b277ba28c32",
+      "role": "cpu_regression_prepare"
+    }
+  ],
+  "patch_series": [
+    ".src/.patches/0001-vmapple-decouple-build-from-hvf.patch",
+    ".src/.patches/0002-vmapple-optional-apple-pvg.patch",
+    ".src/.patches/0003-arm-apple-sysreg-framework.patch",
+    ".src/.patches/0004-arm-apple-sysreg-policy-model.patch",
+    ".src/.patches/0005-arm-vmapple-feature-contract.patch"
+  ],
+  "requirements": {
+    "p2_05_must_pass": true,
+    "prepared_source_must_be_pinned": true,
+    "patch_series_must_apply_cleanly": true,
+    "max_control_must_remain_isolated": true,
+    "apple_gxf_tcg_wiring_required": true,
+    "live_sysreg_policy_count_must_remain_zero": true,
+    "p1_07_probe_must_be_reused_not_forked": true,
+    "p1_09_evidence_contract_required": true,
+    "p1_10_promotion_gate_required": true,
+    "guest_runtime_deferred": true
+  },
+  "outputs": {
+    "manifest": ".build/p2.06/integration-manifest.json",
+    "prepared_source": ".build/p2.06/inferno-src"
+  },
+  "part_status_after_success": "closed_implementation_complete",
+  "next_part": "Part 03",
+  "next_objective": "P3.01"
+}
