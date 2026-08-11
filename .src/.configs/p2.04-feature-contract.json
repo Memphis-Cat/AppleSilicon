@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "project_version": "2.3.0.0.0.0",
+  "part": "Part 02",
+  "objective": "P2.04",
+  "title": "CPU Feature and ID-Register Compatibility",
+  "scope": {
+    "cpu": "apple-gxf",
+    "accelerator": "tcg",
+    "base_cpu": "max",
+    "policy": "minimum_required_preserve_stronger"
+  },
+  "source_locks": {
+    "xnu_vmapple": {
+      "repository": "apple-oss-distributions/xnu",
+      "revision": "f6217f891ac0bb64f3d375211650a4c1ff8ca1ea",
+      "path": "pexpert/pexpert/arm64/VMAPPLE.h",
+      "blob_sha": "08b35780a1dcf187af2ced7839d7045afb433de7"
+    },
+    "inferno": {
+      "repository": "ChefKissInc/Inferno",
+      "revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
+    }
+  },
+  "requirements": [
+    {
+      "id": "pauth",
+      "xnu_macro": "CPU_HAS_APPLE_PAC",
+      "qemu_test": "cpu_isar_feature(aa64_pauth, cpu)",
+      "action": "validate_existing_apple_gxf_path",
+      "status": "enforced"
+    },
+    {
+      "id": "ssbs2",
+      "xnu_macro": "HAS_ARM_FEAT_SSBS2",
+      "id_register": "ID_AA64PFR1_EL1.SSBS",
+      "minimum_encoding": 2,
+      "action": "raise_to_minimum",
+      "status": "enforced"
+    },
+    {
+      "id": "sme",
+      "xnu_macro": "HAS_ARM_FEAT_SME",
+      "id_register": "ID_AA64PFR1_EL1.SME",
+      "minimum_encoding": 1,
+      "action": "covered_by_sme2_minimum",
+      "status": "enforced"
+    },
+    {
+      "id": "sme2",
+      "xnu_macro": "HAS_ARM_FEAT_SME2",
+      "id_register": "ID_AA64PFR1_EL1.SME",
+      "minimum_encoding": 2,
+      "secondary_register": "ID_AA64SMFR0_EL1.SMEVER",
+      "secondary_minimum_encoding": 1,
+      "action": "raise_to_minimum",
+      "status": "enforced"
+    },
+    {
+      "id": "pan3",
+      "xnu_macro": "HAS_ARM_FEAT_PAN3",
+      "id_register": "ID_AA64MMFR1_EL1.PAN",
+      "minimum_encoding": 3,
+      "action": "raise_to_minimum",
+      "status": "enforced",
+      "note": "XNU's APPLEVIRTUALPLATFORM path separately tolerates SCTLR_EL1.EPAN as RaZ/WI; P2.04 changes ID exposure only."
+    },
+    {
+      "id": "tgran16",
+      "xnu_macro": "__ARM_16K_PG__",
+      "id_register": "ID_AA64MMFR0_EL1.TGRAN16",
+      "minimum_encoding": 1,
+      "action": "ensure_supported_preserve_stronger",
+      "status": "enforced"
+    },
+    {
+      "id": "tgran4",
+      "xnu_macro": "__ARM_MIXED_PAGE_SIZE__",
+      "id_register": "ID_AA64MMFR0_EL1.TGRAN4",
+      "action": "ensure_supported_preserve_stronger",
+      "status": "enforced",
+      "note": "Mixed page-size support requires both 4 KiB and 16 KiB stage-1 granules."
+    },
+    {
+      "id": "tlbirange",
+      "xnu_macro": "__ARM_RANGE_TLBI__",
+      "id_register": "ID_AA64ISAR0_EL1.TLB",
+      "required_encoding": 2,
+      "action": "set_required_encoding",
+      "status": "enforced"
+    }
+  ],
+  "deferred_non_id_contracts": [
+    {
+      "xnu_macro": "HAS_PARAVIRTUALIZED_PAC",
+      "reason": "paravirtualized PAC semantics are not defined by architectural ID registers"
+    },
+    {
+      "xnu_macro": "HAS_PARAVIRTUALIZED_CTRR",
+      "reason": "platform/device contract, not CPU ID-register exposure"
+    },
+    {
+      "xnu_macro": "HAS_GIC_V3",
+      "reason": "interrupt-controller machine contract, not CPU ID-register exposure"
+    },
+    {
+      "xnu_macro": "NO_ECORE",
+      "reason": "topology/platform policy, not an architectural ID-register field"
+    },
+    {
+      "xnu_macro": "ARM_PARAMETERIZED_PMAP",
+      "reason": "XNU software configuration, not an emulated CPU feature"
+    }
+  ],
+  "rules": {
+    "do_not_modify_max_cpu": true,
+    "do_not_modify_host_hvf_or_kvm": true,
+    "do_not_mask_stronger_supported_features": true,
+    "do_not_claim_paravirtualized_pac_complete": true,
+    "sysreg_semantics_remain_owned_by_p2_03": true,
+    "guest_runtime_deferred": true
+  },
+  "next_objective": "P2.05"
+}
