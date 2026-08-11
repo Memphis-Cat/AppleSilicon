@@ -18,23 +18,18 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-3.0.0.0.0.0
+3.1.0.0.0.0
 ```
 
-This major update starts Part 03, **VMApple Platform Contract**, and implements P3.01, **Platform Contract Inventory and Ownership Map**.
+This normal update implements P3.02, **Configuration and Platform Identity Contract**.
 
-P3.01 source-locks the non-CPU VMApple machine/device baseline, creates a machine-readable inventory of the platform contract, and assigns each component to one later Part 03 objective using four ownership classes:
+P3.02 source-locks the VMApple configuration-region behavior, records the structural versus reference-default identity fields, adds a privacy-safe local identity profile compiler, and preserves machine-derived CPU count, RAM size, random value and CPU-ID generation.
 
-```text
-generic_qemu
-vmapple_specific
-host_framework_dependent
-unknown_requires_evidence
-```
+It also records an unresolved source-layout discrepancy between the declared `uint32_t cpu_ids[0x80]` array and the adjacent offsets documented for `scratch`, `serial`, `model` and `soc_name`. The discrepancy remains evidence-gated; P3.02 does not patch the layout from inference alone.
 
-The inventory deliberately has no automatic `implement` action. Apple-specific presence does not by itself prove a missing or boot-critical behavior.
+No Inferno source patch is required for P3.02 because existing QEMU device properties and `-global` configuration are sufficient to express controlled identity experiments.
 
-Part 03 is fixed at exactly six objectives:
+Part 03 remains fixed at exactly six objectives:
 
 ```text
 P3.01 — Platform Contract Inventory and Ownership Map
@@ -47,9 +42,9 @@ P3.06 — Part 03 Integration Gate
 
 There is no P3.07.
 
-P3.02 is next.
+P3.03 is next.
 
-No real macOS/HVF/TCG guest execution is claimed for P3.01. The repository root `README.md` remains intentionally unchanged.
+No real macOS/HVF/TCG guest execution or real platform identity is claimed for P3.02. The repository root `README.md` remains intentionally unchanged.
 
 ## Reset behavior
 
@@ -65,4 +60,5 @@ Examples:
 2.3.0.0.0.0 -> 2.4.0.0.0.0
 2.4.0.0.0.0 -> 2.5.0.0.0.0
 2.5.0.0.0.0 -> 3.0.0.0.0.0
+3.0.0.0.0.0 -> 3.1.0.0.0.0
 ```
