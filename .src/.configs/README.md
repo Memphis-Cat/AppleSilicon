@@ -22,6 +22,7 @@ p3.01-platform-contract.json
 p3.02-identity-contract.json
 p3.02-identity.example.json
 p3.03-io-contract.json
+p3.04-storage-contract.json
 ```
 
 ### P3.01
@@ -37,6 +38,10 @@ p3.03-io-contract.json
 ### P3.03
 
 `p3.03-io-contract.json` freezes the source-backed/reference wiring for GICv3, per-vCPU virtual timer PPI 27, PL011, PL031, PL061/power and pvpanic. It deliberately leaves exact power-button event semantics runtime-evidence gated and requires no new Inferno patch.
+
+### P3.04
+
+`p3.04-storage-contract.json` freezes the two-phase VMApple storage contract: BDIF MMIO/DMA pre-boot access, AUX/root backend topology, Apple `vmapple-virtio-blk-pci` identity/variants/config field and the current successful no-op Apple barrier. BDIF writes and real barrier flush semantics remain runtime-evidence gated.
 
 ## Secret/proprietary material rule
 
