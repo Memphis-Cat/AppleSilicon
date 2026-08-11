@@ -1,8 +1,8 @@
 # Part 02 — Apple CPU Compatibility Contract
 
-Project version: **`2.0.0.0.0.0`**
+Project version: **`2.1.0.0.0.0`**
 
-Status: **Active — P2.01 implemented**
+Status: **Active — P2.01 and P2.02 implemented**
 
 ## Purpose
 
@@ -35,45 +35,41 @@ If new CPU requirements are discovered after P2.06, they belong to a later part 
 
 Status: **Implementation complete — static inventory only**
 
-P2.01 creates a machine-readable contract containing:
+P2.01 creates a machine-readable contract containing exact source identities, Apple implementation-defined system-register encodings, register families, feature notes, evidence provenance, runtime priority, and implementation state.
 
-- exact source identities,
-- Apple implementation-defined system-register encodings,
-- register families,
-- architectural/virtual-platform feature notes,
-- evidence provenance,
-- runtime priority,
-- implementation state.
-
-No register in P2.01 is automatically considered required by macOS.
-
-A register may exist on physical Apple Silicon and still be irrelevant to VMApple. Therefore every inventory entry begins with:
-
-```text
-runtime_priority = unknown
-implementation_state = inventory_only
-xnu_relevance = unknown
-```
-
-unless a later objective has direct evidence allowing a stronger statement.
+A register may exist on physical Apple Silicon and still be irrelevant to VMApple. Every imported entry therefore begins with unknown relevance/priority and inventory-only implementation state.
 
 ## P2.02 — Apple System Register Emulation Framework
 
-Status: **Next**
+Status: **Implementation complete — framework only**
 
-P2.02 will create the project-owned QEMU/Inferno registration layer for Apple implementation-defined AArch64 system registers.
+P2.02 creates the project-owned QEMU/Inferno registration layer for Apple implementation-defined AArch64 system registers.
 
-It will use QEMU's existing ARM coprocessor/system-register infrastructure rather than implementing a second instruction decoder.
+It uses QEMU's existing `ARMCPRegInfo`/cpreg infrastructure rather than implementing a second MRS/MSR decoder.
 
-P2.02 will establish registration, storage and trap plumbing only. It will not invent register semantics that are still unknown.
+The framework introduces an encoding-only `AppleSysRegSpec`, a fail-closed explicit-undefined registration helper, and a TCG-only integration point in Inferno's existing `apple-gxf` CPU initializer.
+
+Unknown semantics remain unknown. P2.02 deliberately registers **zero** guest-visible Apple sysreg policies by default. It does not add read-as-zero, write-ignore, constant, reset, or stored-state semantics.
+
+The project patch is:
+
+```text
+.src/.patches/0003-arm-apple-sysreg-framework.patch
+```
+
+The development-side validator is:
+
+```text
+.src/.tools/prepare-p2.02.sh
+```
 
 ## P2.03 — Register Read/Write/Reset Policy Model
 
-Status: **Planned**
+Status: **Next**
 
 P2.03 will make register behavior explicit and data-driven.
 
-Future policies may include behavior such as:
+Candidate policy classes may include:
 
 ```text
 stored state
@@ -84,7 +80,7 @@ callback-driven behavior
 access trap
 ```
 
-but only where evidence justifies that policy.
+but a policy may only be attached where its evidence and intended scope are recorded. Unknown behavior must remain fail-closed rather than silently falling into a convenient default.
 
 ## P2.04 — CPU Feature and ID-Register Compatibility
 
@@ -98,13 +94,7 @@ This includes the guest-visible contract around feature/ID registers, translatio
 
 Status: **Planned**
 
-P2.05 will provide a non-guest regression harness that verifies:
-
-- every registered Apple sysreg has one encoding,
-- no two incompatible definitions collide,
-- reset/access policy is deterministic,
-- configured CPU feature exposure matches the contract,
-- unknown behavior remains explicitly unknown instead of silently defaulting.
+P2.05 will provide a non-guest regression harness that verifies registered Apple sysregs, encoding uniqueness, reset/access policy determinism, configured CPU feature exposure, and preservation of explicitly unknown behavior.
 
 Every meaningful execution will write a `.log`.
 
@@ -114,7 +104,7 @@ Status: **Planned — final Part 02 objective**
 
 P2.06 will combine the Part 02 CPU compatibility work with the Part 01 prepared VMApple/TCG path.
 
-The integration gate will remain compatible with the maintainer testing rule: it can provide deterministic source/build/regression validation now, while real macOS execution remains reserved for final project integration testing.
+The integration gate will remain compatible with the maintainer testing rule: deterministic source/build/regression validation is allowed during development, while real macOS execution remains reserved for final project integration testing.
 
 After P2.06, Part 02 is closed.
 
@@ -135,9 +125,7 @@ A lower-confidence source must not silently override higher-confidence evidence.
 
 Part 02 deliberately separates these concepts.
 
-Physical Apple Silicon contains many Apple implementation-defined CPU registers. m1n1 documents a large set of them.
-
-VMApple is a virtual machine hardware contract. Public XNU contains `APPLEVIRTUALPLATFORM`/`VMAPPLE` behavior that can differ from a physical Apple platform.
+Physical Apple Silicon contains many Apple implementation-defined CPU registers. VMApple is a virtual machine hardware contract and public XNU contains virtual-platform behavior that can differ from a physical Apple platform.
 
 Therefore:
 
@@ -147,20 +135,11 @@ known on Apple hardware
 proven required by VMApple
 ```
 
-P2.01 records the first fact without manufacturing the second.
+P2.01 records known encodings. P2.02 provides safe registration plumbing. Neither step manufactures VMApple requirements.
 
 ## Current source locks
 
-The machine-readable P2.01 contract records exact source revisions/blobs for:
-
-```text
-Apple XNU
-QEMU
-Asahi m1n1
-ChefKiss Inferno
-```
-
-Those identities are part of the research contract so later updates can detect source drift.
+The machine-readable P2.01 contract records exact source revisions/blobs for Apple XNU, QEMU, Asahi m1n1 and ChefKiss Inferno. P2.02 continues to target the pinned Inferno revision rather than an unreviewed moving branch.
 
 ## Logging and testing
 
