@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`2.3.0.0.0.0`**
+Current project version: **`2.4.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments and implementation objectives for AppleSilicon.
 
@@ -16,6 +16,7 @@ This directory records the research, design decisions, compatibility contracts, 
 - [P2.02.md](P2.02.md) — fail-closed Apple sysreg registration framework.
 - [P2.03.md](P2.03.md) — evidence-gated read/write/reset/access policy model.
 - [P2.04.md](P2.04.md) — VMApple architectural feature and ID-register minimum profile.
+- [P2.05.md](P2.05.md) — deterministic non-guest CPU contract regression harness.
 
 ## Part boundaries
 
@@ -30,11 +31,11 @@ P2.01  complete
 P2.02  complete
 P2.03  complete
 P2.04  complete
-P2.05  NEXT
-P2.06  final Part 02 objective
+P2.05  complete
+P2.06  NEXT / final Part 02 objective
 ```
 
-P2.04 derives the architectural CPU-visible minimum from the locked XNU `VMAPPLE.h` contract and scopes it to the TCG `apple-gxf` CPU. It covers PAuth presence, SSBS2, SME/SME2, PAN3, 4 KiB + 16 KiB stage-1 translation granules and range TLBI while preserving stronger QEMU `max` capabilities.
+P2.05 locks and cross-checks the P2.01–P2.04 contracts, validates the complete ordered patch series on the pinned Inferno source, checks `max` isolation and TCG `apple-gxf` wiring, and emits a deterministic SHA-256-fingerprinted regression result.
 
 Apple implementation-defined sysreg semantics remain separate and P2.03's live semantic table remains empty until evidence promotes a concrete register behavior.
 
@@ -48,7 +49,7 @@ Development-side source inspection, compilation, static checks, automated tests,
 
 Every meaningful executable AppleSilicon operation must leave a `.log` artifact under `.logs/` unless a later component explicitly documents another local output contract.
 
-P2.04 adds `.src/.tools/prepare-p2.04.sh`, which validates the source locks, feature contract and ordered patch series without launching a macOS guest.
+P2.05 adds `.src/.tools/prepare-p2.05.sh`, which writes a logged deterministic CPU-contract regression without launching a macOS guest.
 
 ## Evidence policy
 
