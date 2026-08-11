@@ -1,0 +1,23 @@
+diff --git a/hw/vmapple/Kconfig b/hw/vmapple/Kconfig
+--- a/hw/vmapple/Kconfig
++++ b/hw/vmapple/Kconfig
+@@ -14,8 +14,8 @@ config VMAPPLE_VIRTIO_BLK
+ config VMAPPLE
+     bool
+     depends on ARM
+-    depends on HVF
++    depends on AARCH64
+     default y if ARM
+     imply PCI_DEVICES
+     select ARM_GICV3
+diff --git a/hw/vmapple/vmapple.c b/hw/vmapple/vmapple.c
+--- a/hw/vmapple/vmapple.c
++++ b/hw/vmapple/vmapple.c
+@@ -43,7 +43,6 @@
+ #include "cpu.h"
+ #include "qobject/qlist.h"
+ #include "standard-headers/linux/input.h"
+-#include "system/hvf.h"
+ #include "system/reset.h"
+ #include "system/runstate.h"
+ #include "system/system.h"
