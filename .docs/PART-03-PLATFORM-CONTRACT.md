@@ -1,8 +1,8 @@
 # Part 03 — VMApple Platform Contract
 
-Project version: **`3.3.0.0.0.0`**
+Project version: **`3.4.0.0.0.0`**
 
-Status: **Active — P3.01 through P3.04 implemented**
+Status: **Active — P3.01 through P3.05 implemented**
 
 ## Purpose
 
@@ -48,19 +48,19 @@ These describe where behavior comes from, not whether it is correct.
 
 ### `generic_qemu`
 
-Existing generic QEMU/Arm hardware used by VMApple, such as GICv3, PL011, PL031 and PL061.
+Existing generic QEMU/Arm hardware used by VMApple, such as GICv3, PL011, GPEX PCIe, XHCI and virtio devices.
 
 Default action: preserve or validate.
 
 ### `vmapple_specific`
 
-Project/device behavior that intentionally models the VMApple virtual-Mac contract, such as the configuration region, boot backdoor and Apple-flavored virtio block device.
+Project/device behavior that intentionally models the VMApple virtual-Mac contract, such as the configuration region, boot backdoor, Apple-flavored virtio block and Apple AES device.
 
 Default action: validate against evidence before changing semantics.
 
 ### `host_framework_dependent`
 
-A path whose original implementation relies on host-only Apple frameworks, currently represented by Apple PVG graphics.
+A path whose original implementation relies on host-only Apple frameworks, represented by Apple PVG graphics.
 
 Default action: defer or investigate.
 
@@ -143,8 +143,6 @@ runtime:  vmapple-virtio-blk-pci variant=aux/root
 
 It locks the BDIF window at `0x30000000/0x00200000`, the source-known BDIF register/selector values, 512-byte sector and 128 MiB request limits, read-only observed pre-boot behavior, backend attachment order/fallback, Apple PCI identity `106b:1a00`, AUX/root variant contract, Apple type-field placement and the successful no-op Apple barrier.
 
-The official QEMU VMApple launch topology duplicates AUX/root artifacts between pflash and `if=none` backends so the pre-boot BDIF path and later virtio path can access the same reference storage. P3.04 preserves that topology.
-
 No P3.04 Inferno patch is added. BDIF write requirements and real barrier/flush semantics remain runtime-evidence gated.
 
 Project files:
@@ -158,15 +156,50 @@ Project files:
 
 ## P3.05 — PCIe, Peripheral, Crypto and Graphics Contract
 
-Status: **Next**
+Status: **Implementation complete — runtime peripheral/AES/graphics validation deferred**
 
-P3.05 owns generic PCIe/peripheral validation plus Apple-specific AES and the host-framework-dependent Apple PVG graphics path.
+P3.05 freezes the remaining non-CPU peripheral ownership boundary:
+
+```text
+generic QEMU
+├── GPEX PCIe
+├── disable-legacy virtio PCI transport
+├── virtio-net-pci
+├── qemu-xhci
+├── usb-kbd
+└── usb-tablet
+
+VMApple-specific
+└── Apple AES MMIO
+
+host-framework-dependent
+└── apple-gfx-mmio / Apple PVG
+```
+
+The PCIe reference geometry remains ECAM `0x40000000/0x10000000`, MMIO `0x50000000/0x1fff0000`, and 16 GPEX interrupt lines at SPI 32 through 47.
+
+Pinned Inferno already includes VMApple's macOS XHCI compatibility defaults: virtio legacy transport is disabled and `conditional-intr-mapping=on` is applied to XHCI. Therefore no P3.05 USB backport is required.
+
+The Apple AES public model remains partial but explicit. KEY, IV, DATA, STORE_IV and FLAG are implemented; DSB, SKG and WRITE_REG are declared but not implemented and remain runtime-evidence gated. Public builtin-key constants are classified as emulator placeholders, not authentic Apple secrets.
+
+Apple PVG directly depends on Apple's ParavirtualizedGraphics and Metal host frameworks. P1.05's `qdev_try_new` optionalization remains the portability policy: use real PVG when present, otherwise warn and continue without graphics. No fake GPU is introduced and no modern macOS graphics compatibility is claimed.
+
+P3.05 adds no new Inferno patch.
+
+Project files:
+
+```text
+.docs/P3.05.md
+.src/.configs/p3.05-peripheral-contract.json
+.src/.tools/platform-peripheral-contract.py
+.src/.tools/prepare-p3.05.sh
+```
 
 ## P3.06 — Part 03 Integration Gate
 
-Status: **Planned — final Part 03 objective**
+Status: **Next — final Part 03 objective**
 
-P3.06 combines validated Part 03 platform contracts with the closed Part 02 CPU compatibility layer and Part 01 evidence pipeline.
+P3.06 combines the P3.01–P3.05 platform contracts with the closed Part 02 CPU compatibility layer and Part 01 evidence pipeline, verifies ownership/integration invariants, and closes Part 03 without extending the objective count.
 
 After P3.06, Part 03 is closed.
 
