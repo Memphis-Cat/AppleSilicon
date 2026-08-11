@@ -71,16 +71,16 @@ Example:
 ## Current version
 
 ```text
-1.0.0.0.0.0
+2.0.0.0.0.0
 ```
 
-This major update implements P1.10, **Controlled A/B Evidence Bundle and Divergence Promotion Gate**, and closes the Part 01 implementation sequence.
+This major update begins **Part 02 — Apple CPU Compatibility Contract** and implements P2.01, **Apple CPU System Register and Feature Inventory**.
 
-P1.10 connects the P1.09 manifest contract, P1.08 trace comparator, P1.07 probe evidence, and P1.09 HVF reference evidence into a fail-closed candidate/promotion pipeline. It verifies trace-artifact hashes, blocks synthetic/example evidence, fingerprints the full comparison contract, derives a stable earliest-divergence signature, and requires at least two unique matching runtime A/B reproductions before a local `P01-DIVERGENCE-0001` record can be created.
+P2.01 locks exact XNU, QEMU, m1n1 and Inferno source identities; records a machine-readable CPU-focused Apple implementation-defined register inventory; distinguishes physical-Apple register evidence from VMApple requirements; and adds a deterministic validator plus logged preparation harness.
 
-P1.10 also adds a post-run probe collector so an already completed P1.07 runtime can be converted into the P1.09 probe-manifest contract without rerunning QEMU.
+No register is marked runtime-required and no reset/read/write semantics are invented in P2.01. Real guest execution remains deferred under the maintainer's final-integration testing rule.
 
-Real VM execution and real divergence promotion remain intentionally deferred under the project owner's final-testing-only rule.
+Part 02 has a fixed six-objective sequence and ends at P2.06. There is no P2.07.
 
 The root `README.md` remains intentionally unchanged.
 
@@ -94,6 +94,7 @@ Examples:
 0.1.0.0.0.7 -> 0.1.0.1.0.0
 0.1.0.4.0.3 -> 0.2.0.0.0.0
 0.9.0.0.0.0 -> 1.0.0.0.0.0
+1.9.0.0.0.0 -> 2.0.0.0.0.0
 ```
 
 Emergency releases are intentionally allowed to break the normal cadence because urgency is the defining property of that field.
