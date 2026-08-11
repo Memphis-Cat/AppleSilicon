@@ -18,14 +18,16 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-3.3.0.0.0.0
+3.4.0.0.0.0
 ```
 
-This normal update implements P3.04, **Boot Backdoor and Storage Contract**.
+This normal update implements P3.05, **PCIe, Peripheral, Crypto and Graphics Contract**.
 
-P3.04 freezes VMApple's two-phase storage path: the BDIF MMIO/DMA pre-boot backdoor and the later Apple-flavored `vmapple-virtio-blk-pci` AUX/root devices. It locks the BDIF window/register/selectors, 512-byte sector and 128 MiB request limits, read-only observed pre-boot behavior, reference backend topology, Apple PCI identity `106b:1a00`, AUX/root variants, Apple type-field placement and the current successful no-op Apple barrier.
+P3.05 freezes the remaining non-CPU VMApple peripheral ownership boundary. Generic GPEX PCIe, virtio transport/networking and QEMU XHCI remain preserved; pinned Inferno already carries the macOS XHCI `conditional-intr-mapping=on` compatibility behavior and VMApple's `disable-legacy=on` virtio default.
 
-Pinned Inferno and upstream QEMU 11.1.0 retain the same relevant semantics, so P3.04 adds no new Inferno patch. BDIF write requirements and real barrier/flush ordering remain runtime-evidence gated rather than inferred.
+The Apple AES MMIO geometry/reset/public command set is source-locked while DSB, SKG and WRITE_REG remain evidence-gated because the public command processor does not implement them. Builtin AES constants are classified as emulator placeholders rather than authentic Apple hardware secrets.
+
+Apple PVG remains host-framework dependent. P1.05's optional `qdev_try_new` behavior is preserved: real Apple PVG is used when available, otherwise VMApple warns and continues without it. P3.05 introduces no fake GPU and no new Inferno patch.
 
 Part 03 remains fixed at exactly six objectives:
 
@@ -40,9 +42,9 @@ P3.06 — Part 03 Integration Gate
 
 There is no P3.07.
 
-P3.05 is next.
+P3.06 is next and is the final Part 03 objective.
 
-No real macOS/HVF/TCG guest execution is claimed for P3.04. The repository root `README.md` remains intentionally unchanged.
+No real macOS/HVF/TCG guest execution is claimed for P3.05. The repository root `README.md` remains intentionally unchanged.
 
 ## Reset behavior
 
@@ -61,4 +63,5 @@ Examples:
 3.0.0.0.0.0 -> 3.1.0.0.0.0
 3.1.0.0.0.0 -> 3.2.0.0.0.0
 3.2.0.0.0.0 -> 3.3.0.0.0.0
+3.3.0.0.0.0 -> 3.4.0.0.0.0
 ```
