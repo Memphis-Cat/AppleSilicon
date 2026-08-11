@@ -1,10 +1,8 @@
 # Source
 
-Project version: **`1.0.0.0.0.0`**
+Project version: **`2.0.0.0.0.0`**
 
-The source tree now contains the complete Part 01 research/evidence pipeline.
-
-The project still does not invent a broad fake Apple CPU implementation before measuring what the guest actually requires.
+The source tree contains the complete Part 01 research/evidence pipeline and now begins Part 02's Apple CPU compatibility layer.
 
 ## Current layout
 
@@ -13,64 +11,65 @@ The project still does not invent a broad fake Apple CPU implementation before m
 ├── .upstream/
 │   └── .inferno/       # pinned upstream reference/submodule
 ├── .patches/           # ordered VMApple compatibility research patches
-├── .tools/             # build, probe, trace, manifest, evidence, and promotion tools
-├── .configs/           # non-secret experiment configs and policies
+├── .tools/             # build, probe, trace, evidence, CPU-contract and validation tools
+├── .configs/           # non-secret experiment configs, policies and CPU contracts
 └── .fixtures/          # sanitized deterministic development fixtures
 ```
 
 ## Upstream strategy
 
-The active reference remains ChefKiss Inferno, pinned to the exact revision recorded in the project documentation and submodule.
+The active VMApple implementation base remains ChefKiss Inferno at the exact pinned submodule revision.
 
-Upstream QEMU remains the canonical reference for the clean `vmapple` implementation and tracing behavior.
+Upstream QEMU is the reference for the ARM system-register registration API and VMApple implementation behavior.
+
+Apple XNU provides public guest-side ARM64/virtual-platform evidence. Asahi m1n1 provides open source Apple implementation-defined system-register encodings and authorized-hardware research tooling.
 
 AppleSilicon-specific changes stay reviewable as project patches/tools around a pristine upstream checkout rather than being mixed into an unexplained source dump.
 
-## Part 01 source chain
+## Part 01 closure
 
-Part 01 now provides:
+Part 01 is closed at P1.10. There is no P1.11.
 
-```text
-logged runs
-reproducible Inferno build description
-VMApple capability probing
-HVF build-gate decoupling
-optional Apple PVG realization
-explicit TCG CPU profiles
-finite TCG probe runtime
-trace normalization/comparison
-privacy-safe A/B manifests
-fail-closed HVF reference runtime
-post-run probe manifest collection
-A/B evidence bundling
-reproduced-divergence promotion gate
-```
+Its evidence tools remain available to provide real runtime evidence during final integration testing.
 
-The final Part 01 tool is:
+## Part 02 source chain
+
+Part 02 is fixed at six objectives and closes at P2.06. There is no P2.07.
+
+P2.01 adds:
 
 ```text
-.src/.tools/evidence-bundle.py
+.src/.configs/p2.01-cpu-contract.json
+.src/.tools/cpu-contract.py
+.src/.tools/prepare-p2.01.sh
 ```
 
-It cannot promote a synthetic or one-off mismatch into `P01-DIVERGENCE-0001`. At least two unique matching runtime A/B pairs are required.
+The machine-readable contract currently inventories CPU-focused Apple implementation-defined register groups:
+
+```text
+hid_ehid
+timer
+amx
+gxf_sprr
+pauth_control
+control_hypervisor
+```
+
+P2.01 is deliberately inventory-only. Every register starts with unknown runtime priority and unknown XNU relevance. No reset value, read value, writable mask, side effect or trap policy is fabricated.
+
+The next source objective is:
+
+```text
+P2.02 — Apple System Register Emulation Framework
+```
+
+P2.02 will use QEMU's existing ARM system-register infrastructure rather than creating a parallel instruction decoder.
 
 ## Maintainer testing policy
 
 Intermediate source changes do not depend on the maintainer manually testing every objective or release. Development-side source checks, deterministic fixtures, regression tools, and logs provide the intermediate evidence.
 
-Real reference/probe execution is reserved for the finished integration stage.
-
-## Part 01 closure
-
-Part 01 closes at:
-
-```text
-P1.10
-```
-
-There is no P1.11.
-
-The next source work belongs to Part 02 and should implement the specific hardware/CPU/platform contract identified by the first real promoted Part 01 divergence rather than guessing a large Apple Silicon model in advance.
+Real reference/probe/macOS execution is reserved for the finished integration stage.
 
 ## No proprietary Apple artifacts
 
