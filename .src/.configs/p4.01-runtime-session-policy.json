@@ -54,6 +54,14 @@
   "optional_guest_inputs": [
     "hardware_model"
   ],
+  "runtime_parameters": {
+    "machine_uuid": {
+      "required": true,
+      "store_raw_value": false,
+      "store_sha256": true,
+      "normalization": "lowercase_canonical_uuid"
+    }
+  },
   "input_digest": {
     "algorithm": "sha256",
     "store_bytes": true,
@@ -91,6 +99,7 @@
     "qemu_binary_sha256_required": true,
     "qemu_version_required": true,
     "qemu_role_capabilities_must_be_verified": true,
+    "machine_uuid_digest_required": true,
     "all_required_inputs_must_be_hashed_before_execution": true,
     "trace_contract_must_match_part_01": true,
     "session_plan_must_be_deterministic": true,
