@@ -1,8 +1,8 @@
 # Source
 
-Project version: **`3.3.0.0.0.0`**
+Project version: **`3.4.0.0.0.0`**
 
-The source tree contains the closed Part 01 evidence pipeline, the closed Part 02 CPU compatibility contract, and active Part 03 VMApple platform-contract work through P3.04.
+The source tree contains the closed Part 01 evidence pipeline, the closed Part 02 CPU compatibility contract, and active Part 03 VMApple platform-contract work through P3.05.
 
 ## Layout
 
@@ -44,22 +44,30 @@ P3.01  platform ownership inventory
 P3.02  configuration and platform identity
 P3.03  interrupt, timer, power and console
 P3.04  boot backdoor and storage
+P3.05  PCIe, peripheral, crypto and graphics
 ```
 
-P3.04 freezes the source-backed two-phase VMApple storage model:
+P3.05 freezes the remaining peripheral boundary:
 
 ```text
-BDIF MMIO/DMA pre-boot reads
-        +
-Apple vmapple-virtio-blk-pci AUX/root runtime devices
+generic QEMU:
+  GPEX PCIe + virtio + qemu-xhci + USB HID
+
+VMApple-specific:
+  Apple AES public MMIO model
+
+host-framework-dependent:
+  Apple PVG / apple-gfx-mmio
 ```
 
-It adds no new Inferno patch. BDIF write requirements and real Apple barrier flush/ordering semantics remain evidence-gated.
+Pinned Inferno already carries VMApple's macOS XHCI conditional-interrupter workaround, so no USB backport is added. The Apple AES unresolved commands remain evidence-gated. P1.05's optional real-PVG path is preserved and no fake GPU is introduced.
+
+P3.05 adds no new Inferno patch; the ordered patch series remains `0001` through `0005`.
 
 The next source objective is:
 
 ```text
-P3.05 — PCIe, Peripheral, Crypto and Graphics Contract
+P3.06 — Part 03 Integration Gate
 ```
 
 P3.06 is the final Part 03 objective; there is no P3.07.
@@ -68,4 +76,4 @@ P3.06 is the final Part 03 objective; there is no P3.07.
 
 Intermediate objectives rely on development-side validation and persistent `.logs/` artifacts rather than repeated maintainer testing. Real macOS execution remains reserved for final integration.
 
-No proprietary Apple firmware, macOS images, AUX/root storage artifacts, tickets, keys, machine-identity blobs or account secrets belong in `.src/`.
+No proprietary Apple firmware, macOS images, AUX/root storage artifacts, tickets, keys, authentic hardware secrets, machine-identity blobs or account secrets belong in `.src/`.
