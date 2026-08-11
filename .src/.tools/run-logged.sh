@@ -4,7 +4,7 @@ set -uo pipefail
 
 VERSION="0.2.0.0.0.0"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-LOG_DIR="${APPLESILICON_LOG_DIR:-${ROOT_DIR}/logs}"
+LOG_DIR="${APPLESILICON_LOG_DIR:-${ROOT_DIR}/.logs}"
 
 mkdir -p "${LOG_DIR}"
 
