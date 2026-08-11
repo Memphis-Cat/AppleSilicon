@@ -18,24 +18,31 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-2.4.0.0.0.0
+2.5.0.0.0.0
 ```
 
-This normal update implements P2.05, **Deterministic CPU Contract Regression Harness**.
+This normal update implements P2.06, **Part 02 Integration Gate**, and closes Part 02.
 
-P2.05 does not add new guest-visible CPU behavior. It locks the exact Part 02 contracts/patches through P2.04, cross-checks their invariants, prepares the complete ordered patch series on the pinned Inferno source, inspects the resulting TCG `apple-gxf` integration, and emits a deterministic CPU-contract regression result with a SHA-256 suite fingerprint.
-
-The canonical result is written to:
+P2.06 binds the validated Part 02 CPU compatibility component to the Part 01 VMApple/TCG probe and evidence pipeline. It requires a passing P2.05 deterministic regression, prepares the exact pinned Inferno source with patches `0001` through `0005`, validates `vmapple + TCG + apple-gxf` integration invariants, and emits:
 
 ```text
-.build/p2.05/cpu-contract-regression.json
+.build/p2.06/integration-manifest.json
 ```
 
-The logged harness runs the regression twice against the same prepared source and requires byte-identical JSON. Unknown Apple implementation-defined sysreg semantics remain fail-closed and P2.03's live semantic policy count remains zero.
+The integration manifest has a deterministic SHA-256 integration fingerprint and records that Part 02 is implementation-complete and closed.
 
-Real macOS/HVF/TCG guest execution remains deferred under the final-integration testing rule.
+The runtime wrapper reuses the P1.07 probe after capability-gating `vmapple`, TCG and `apple-gxf`; observational runtime results remain subject to the Part 01 evidence and promotion gates.
 
-Part 02 remains fixed at six objectives. P2.06 is next and is the final Part 02 objective. There is no P2.07.
+No real macOS/HVF/TCG guest execution is claimed for P2.06 implementation completion.
+
+Part 02 remains fixed at six objectives and is now closed. There is no P2.07.
+
+The next progression point is:
+
+```text
+Part 03 — VMApple Platform Contract
+P3.01 — Platform Contract Inventory and Ownership Map
+```
 
 The repository root `README.md` remains intentionally unchanged.
 
@@ -51,4 +58,5 @@ Examples:
 0.9.0.0.0.0 -> 1.0.0.0.0.0
 1.9.0.0.0.0 -> 2.0.0.0.0.0
 2.3.0.0.0.0 -> 2.4.0.0.0.0
+2.4.0.0.0.0 -> 2.5.0.0.0.0
 ```
