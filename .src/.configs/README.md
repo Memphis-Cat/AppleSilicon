@@ -14,6 +14,7 @@ Part 03 platform contracts are closed at P3.06.
 p4.01-runtime-session-policy.json
 p4.02-probe-capture-policy.json
 p4.03-reference-capture-policy.json
+p4.04-ab-session-policy.json
 ```
 
 ### P4.01
@@ -25,32 +26,17 @@ probe      vmapple / TCG / apple-gxf
 reference  vmapple / HVF / host / Darwin arm64
 ```
 
-### P4.02
+### P4.02 / P4.03
 
-Defines the integrated TCG probe capture and locks:
+Define provenance-bound runtime capture contracts using 4G RAM, 4 vCPUs, a 30-second observation and 3-second grace period. P4.03 additionally fails closed without Darwin/arm64 + HVF + `host`.
 
-```text
-RAM      4G / 4096 MiB
-SMP      4
-window   30 seconds
-grace    3 seconds
-```
+### P4.04
 
-It binds the resulting P1.09-compatible probe manifest to the P4.01 provenance fingerprint without promoting a divergence.
+Defines the A/B admission contract. It requires the P4.01 plans, P4.02/P4.03 captures and authoritative P1.09 manifests to agree on shared P3.06 state, hashed machine UUID, guest inputs, trace/debug configuration, RAM/SMP and QEMU version. Host-specific QEMU executable digests may differ.
 
-### P4.03
+A P4.04 bundle is pair-admission metadata only; P1.08/P1.10 remain authoritative for trace comparison and promotion.
 
-Defines the Apple Silicon reference capture using the same comparison-sensitive RAM/SMP/window contract as P4.02, with mandatory:
-
-```text
-host         Darwin arm64
-accelerator  HVF
-CPU          host
-```
-
-The reference path must fail closed when Apple Silicon/HVF is unavailable. It reuses the P1.09 reference manifest rather than defining a replacement evidence format.
-
-P4.04 is next. Part 04 remains fixed at P4.01 through P4.06; there is no P4.07.
+P4.05 is next. Part 04 remains fixed at P4.01 through P4.06; there is no P4.07.
 
 ## Secret/proprietary material rule
 
