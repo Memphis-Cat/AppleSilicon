@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`2.0.0.0.0.0`**
+Current project version: **`2.1.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments, and implementation objectives for AppleSilicon.
 
@@ -13,6 +13,7 @@ This directory records the research, design decisions, compatibility contracts, 
 - [P1.01.md](P1.01.md) through [P1.10.md](P1.10.md) — completed Part 01 implementation sequence.
 - [PART-02-CPU-CONTRACT.md](PART-02-CPU-CONTRACT.md) — fixed Part 02 CPU compatibility objective tree.
 - [P2.01.md](P2.01.md) — Apple CPU system-register and feature inventory.
+- [P2.02.md](P2.02.md) — fail-closed Apple AArch64 system-register registration framework.
 
 ## Part and objective naming
 
@@ -43,14 +44,16 @@ New discoveries after the fixed final objective belong to a later part or an app
 
 ## Current Part 02 state
 
-P2.01 is implementation-complete at the static inventory level.
+P2.01 and P2.02 are implementation-complete at the development/static level.
 
-It records exact source locks and a machine-readable CPU-focused inventory of Apple implementation-defined AArch64 registers while keeping every register's runtime priority unknown until evidence exists.
+P2.01 records exact source locks and a machine-readable CPU-focused inventory of Apple implementation-defined AArch64 registers while keeping every register's runtime priority unknown until evidence exists.
+
+P2.02 adds the project-owned bridge from encoding-only Apple register metadata to QEMU/Inferno `ARMCPRegInfo`, wires it only into the TCG `apple-gxf` path, and deliberately installs zero guest-visible register policies by default.
 
 The next objective is:
 
 ```text
-P2.02 — Apple System Register Emulation Framework
+P2.03 — Register Read/Write/Reset Policy Model
 ```
 
 ## Maintainer testing policy
@@ -75,7 +78,7 @@ Runtime logging must capture stdout and stderr together unless a later component
 
 Logs must not intentionally contain passwords, Apple account information, authentication tokens, private keys, tickets, raw VM machine identifiers, or other sensitive machine material.
 
-P2.01 continues this rule through `prepare-p2.01.sh`, which validates the CPU contract without launching a guest.
+P2.01 continues this rule through `prepare-p2.01.sh`. P2.02 adds `prepare-p2.02.sh`, which validates the ordered patch series and fail-closed framework in a disposable source tree without launching a guest.
 
 ## Evidence policy
 
@@ -90,6 +93,8 @@ proven VMApple/macOS guest requirements
 ```
 
 P2.01 therefore keeps imported register relevance, access behavior, runtime priority and implementation behavior unknown unless stronger evidence exists.
+
+P2.02 preserves that distinction by providing registration plumbing without installing a default policy table.
 
 The Part 01 runtime promotion rules remain the strongest evidence path once final integration testing is performed.
 
