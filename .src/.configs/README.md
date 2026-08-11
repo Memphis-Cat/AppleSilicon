@@ -16,6 +16,7 @@ p1.09-reference.example.json
 p1.09-probe.example.json
 p1.10-promotion-policy.json
 p2.01-cpu-contract.json
+p2.02-framework-policy.json
 ```
 
 ## Part 01
@@ -30,17 +31,7 @@ p2.01-cpu-contract.json
 
 `p2.01-cpu-contract.json` is the static source-locked Apple CPU contract inventory.
 
-It records:
-
-```text
-exact XNU source identity
-exact QEMU cpregs source identity
-exact m1n1 register-source identity
-pinned Inferno revision
-Apple implementation-defined register encodings
-feature-contract observations
-explicit deferred register families
-```
+It records exact XNU/QEMU/m1n1 source identities, the pinned Inferno revision, Apple implementation-defined register encodings, feature-contract observations, and explicit deferred families.
 
 Every P2.01 register remains:
 
@@ -51,6 +42,24 @@ implementation_state = inventory_only
 ```
 
 The contract must not contain guessed reset values, fake register semantics or claims that a physical Apple register is required by VMApple merely because the register is known.
+
+`p2.02-framework-policy.json` defines the source-level safety boundary for the first Apple sysreg framework:
+
+```text
+enabled CPU      = apple-gxf
+accelerator      = tcg
+control CPU      = max
+unknown access   = CP_ACCESS_UNDEFINED
+GDB exposure     = false
+migration state  = false
+invented values  = false
+invented effects = false
+invented resets  = false
+```
+
+Its six representative registers are validation references—one from each P2.01 group. They are cross-checked against the P2.01 inventory but are **not** installed as guest-visible policies by P2.02.
+
+P2.03 owns the first evidence-backed read/write/reset policy table.
 
 ## Secret/proprietary material rule
 
