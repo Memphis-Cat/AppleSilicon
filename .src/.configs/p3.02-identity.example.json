@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "project_version": "3.1.0.0.0.0",
+  "objective": "P3.02",
+  "synthetic": true,
+  "example_only": true,
+  "machine_uuid": "0x13579bdf2468ace0",
+  "identity": {
+    "serial": "P3EXAMPLE",
+    "model": null,
+    "soc_name": null,
+    "mac_en0": "02:00:00:03:02:00",
+    "mac_en1": "02:00:00:03:02:01",
+    "mac_wifi0": "02:00:00:03:02:02",
+    "mac_bt0": "02:00:00:03:02:03"
+  },
+  "installer": {
+    "run_installer1": 0,
+    "run_installer2": 0
+  }
+}
