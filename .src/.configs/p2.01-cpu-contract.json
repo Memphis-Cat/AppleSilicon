@@ -1,0 +1,1926 @@
+{
+  "schema": 1,
+  "project_version": "2.0.0.0.0.0",
+  "part": "Part 02",
+  "objective": "P2.01",
+  "title": "Apple CPU System Register and Feature Inventory",
+  "status": "inventory_only",
+  "sources": {
+    "xnu_proc_reg": {
+      "repository": "apple-oss-distributions/xnu",
+      "revision": "f6217f891ac0bb64f3d375211650a4c1ff8ca1ea",
+      "path": "osfmk/arm64/proc_reg.h",
+      "blob_sha": "2b6d7231cb1db4ee4f1a26e4775b5284de332acf",
+      "role": "public_xnu_guest_contract_evidence"
+    },
+    "qemu_cpregs": {
+      "repository": "qemu/qemu",
+      "revision": "3e3ccab106f879b1512f8e0d51a827dd4de30e22",
+      "path": "target/arm/cpregs.h",
+      "blob_sha": "391c0e322b7097ccf05b9fc2edc04b0e5cc821e7",
+      "role": "future_emulation_registration_api"
+    },
+    "m1n1_cpu_regs": {
+      "repository": "AsahiLinux/m1n1",
+      "revision": "06a4601a351ebfd1abb6abba9a44c34e40d94776",
+      "path": "src/cpu_regs.h",
+      "blob_sha": "f40cc8a9e507418e204522be121ac262b314ca41",
+      "role": "apple_implementation_defined_register_encoding_reference"
+    },
+    "inferno": {
+      "repository": "ChefKissInc/Inferno",
+      "revision": "cc4302a99167abec69b714cfd00c38caece7e7de",
+      "role": "pinned_vmapple_tcg_implementation_base"
+    }
+  },
+  "rules": {
+    "runtime_priority_values": [
+      "unknown"
+    ],
+    "implementation_state_values": [
+      "inventory_only"
+    ],
+    "observed_access_values": [
+      "read",
+      "write"
+    ],
+    "do_not_infer_requirement_from_presence": true,
+    "no_register_is_required_until_evidence_promotes_it": true,
+    "no_default_values_are_invented": true
+  },
+  "features": [
+    {
+      "name": "vmapple_virtual_platform_tolerance",
+      "class": "xnu_virtual_platform_contract",
+      "source_evidence": [
+        "xnu_proc_reg"
+      ],
+      "facts": [
+        "XNU contains APPLEVIRTUALPLATFORM-specific ARM64 behavior.",
+        "SCTLR_EL1.EPAN is treated as optional on the Apple virtual platform and may be read-as-zero/write-ignored on some hosts."
+      ],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only"
+    },
+    {
+      "name": "pointer_authentication",
+      "class": "architectural_feature_with_apple_policy",
+      "source_evidence": [
+        "xnu_proc_reg",
+        "m1n1_cpu_regs"
+      ],
+      "facts": [
+        "XNU conditionally configures SCTLR pointer-authentication key enables under HAS_APPLE_PAC.",
+        "m1n1 records Apple implementation-defined APCTL/APSTS/APVMKEY control registers separately from architectural PAuth registers."
+      ],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only"
+    },
+    {
+      "name": "translation_granules",
+      "class": "architectural_mmu_feature",
+      "source_evidence": [
+        "xnu_proc_reg"
+      ],
+      "facts": [
+        "XNU defines both 16 KiB and 4 KiB TCR translation-granule encodings and has mixed-page-size support paths.",
+        "P2.01 does not infer which exact granule combination the future VMApple guest run will require."
+      ],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only"
+    },
+    {
+      "name": "apple_implementation_defined_sysregs",
+      "class": "implementation_defined_register_space",
+      "source_evidence": [
+        "m1n1_cpu_regs",
+        "qemu_cpregs"
+      ],
+      "facts": [
+        "m1n1 documents Apple system-register encodings in op0/op1/CRn/CRm/op2 form.",
+        "QEMU ARMCPRegInfo supports AArch64 system-register encodings and read/write/access/reset callbacks."
+      ],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only"
+    },
+    {
+      "name": "gxf_sprr",
+      "class": "apple_implementation_defined_feature_family",
+      "source_evidence": [
+        "m1n1_cpu_regs"
+      ],
+      "facts": [
+        "m1n1 documents GXF and SPRR configuration, status, permission, and guarded-state register encodings.",
+        "P2.01 does not claim VMApple requires these registers."
+      ],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only"
+    },
+    {
+      "name": "amx_control",
+      "class": "apple_implementation_defined_feature_family",
+      "source_evidence": [
+        "m1n1_cpu_regs"
+      ],
+      "facts": [
+        "m1n1 documents AMX context/state/control system-register encodings.",
+        "No AMX execution semantics are implemented by P2.01."
+      ],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only"
+    }
+  ],
+  "registers": [
+    {
+      "name": "HID0",
+      "architectural_name": "S3_0_C15_C0_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 0,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "EHID0",
+      "architectural_name": "S3_0_C15_C0_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 0,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID1",
+      "architectural_name": "S3_0_C15_C1_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 1,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "EHID1",
+      "architectural_name": "S3_0_C15_C1_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 1,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID3",
+      "architectural_name": "S3_0_C15_C3_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 3,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "EHID3",
+      "architectural_name": "S3_0_C15_C3_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 3,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID4",
+      "architectural_name": "S3_0_C15_C4_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 4,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "EHID4",
+      "architectural_name": "S3_0_C15_C4_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 4,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID5",
+      "architectural_name": "S3_0_C15_C5_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 5,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID6",
+      "architectural_name": "S3_0_C15_C6_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 6,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID7",
+      "architectural_name": "S3_0_C15_C7_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 7,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "EHID7",
+      "architectural_name": "S3_0_C15_C7_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 7,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID8",
+      "architectural_name": "S3_0_C15_C8_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 8,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID9",
+      "architectural_name": "S3_0_C15_C9_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 9,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "EHID9",
+      "architectural_name": "S3_0_C15_C9_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 9,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID10",
+      "architectural_name": "S3_0_C15_C10_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 10,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "EHID10",
+      "architectural_name": "S3_0_C15_C10_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 10,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID11",
+      "architectural_name": "S3_0_C15_C11_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 11,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID11_LEGACY",
+      "architectural_name": "S3_0_C15_C13_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 13,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "EHID11",
+      "architectural_name": "S3_0_C15_C11_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 11,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID12",
+      "architectural_name": "S3_0_C15_C12_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 12,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID13",
+      "architectural_name": "S3_0_C15_C14_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 14,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID14",
+      "architectural_name": "S3_0_C15_C15_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 15,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID16",
+      "architectural_name": "S3_0_C15_C15_2",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 15,
+        "op2": 2
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID18",
+      "architectural_name": "S3_0_C15_C11_2",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 11,
+        "op2": 2
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "EHID18",
+      "architectural_name": "S3_0_C15_C11_3",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 11,
+        "op2": 3
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "EHID20",
+      "architectural_name": "S3_0_C15_C1_2",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 1,
+        "op2": 2
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID21",
+      "architectural_name": "S3_0_C15_C1_3",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 1,
+        "op2": 3
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID26",
+      "architectural_name": "S3_0_C15_C0_3",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 0,
+        "op2": 3
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "HID27",
+      "architectural_name": "S3_0_C15_C0_4",
+      "encoding": {
+        "op0": 3,
+        "op1": 0,
+        "crn": 15,
+        "crm": 0,
+        "op2": 4
+      },
+      "class": "apple_implementation_defined",
+      "group": "hid_ehid",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "CNTVCT_ALIAS_EL0",
+      "architectural_name": "S3_4_C15_C10_6",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 10,
+        "op2": 6
+      },
+      "class": "apple_implementation_defined",
+      "group": "timer",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "AGTCNTRDIR_EL1",
+      "architectural_name": "S3_1_C15_C1_5",
+      "encoding": {
+        "op0": 3,
+        "op1": 1,
+        "crn": 15,
+        "crm": 1,
+        "op2": 5
+      },
+      "class": "apple_implementation_defined",
+      "group": "timer",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "AGTCNTRDIR_EL12",
+      "architectural_name": "S3_4_C15_C14_6",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 14,
+        "op2": 6
+      },
+      "class": "apple_implementation_defined",
+      "group": "timer",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "AMX_CTX_EL1",
+      "architectural_name": "S3_4_C15_C5_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 5,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "amx",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "AMX_STATE_T",
+      "architectural_name": "S3_4_C15_C1_3",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 1,
+        "op2": 3
+      },
+      "class": "apple_implementation_defined",
+      "group": "amx",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "AMX_CTL_EL1",
+      "architectural_name": "S3_4_C15_C1_4",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 1,
+        "op2": 4
+      },
+      "class": "apple_implementation_defined",
+      "group": "amx",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "AMX_CTL_EL2",
+      "architectural_name": "S3_4_C15_C4_7",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 4,
+        "op2": 7
+      },
+      "class": "apple_implementation_defined",
+      "group": "amx",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "AMX_CTL_EL12",
+      "architectural_name": "S3_4_C15_C4_6",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 4,
+        "op2": 6
+      },
+      "class": "apple_implementation_defined",
+      "group": "amx",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "SPRR_CONFIG_EL1",
+      "architectural_name": "S3_6_C15_C1_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 1,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "GXF_CONFIG_EL1",
+      "architectural_name": "S3_6_C15_C1_2",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 1,
+        "op2": 2
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "GXF_STATUS_EL1",
+      "architectural_name": "S3_6_C15_C8_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 8,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "GXF_ABORT_EL1",
+      "architectural_name": "S3_6_C15_C8_2",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 8,
+        "op2": 2
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "GXF_ENTER_EL1",
+      "architectural_name": "S3_6_C15_C8_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 8,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "GXF_ABORT_EL12",
+      "architectural_name": "S3_6_C15_C15_3",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 15,
+        "op2": 3
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "GXF_ENTER_EL12",
+      "architectural_name": "S3_6_C15_C15_2",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 15,
+        "op2": 2
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "SPRR_PERM_EL0",
+      "architectural_name": "S3_6_C15_C1_5",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 1,
+        "op2": 5
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "SPRR_PERM_EL1",
+      "architectural_name": "S3_6_C15_C1_6",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 1,
+        "op2": 6
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "SPRR_PERM_EL02",
+      "architectural_name": "S3_4_C15_C5_2",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 5,
+        "op2": 2
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "SPRR_PERM_EL12",
+      "architectural_name": "S3_6_C15_C15_7",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 15,
+        "op2": 7
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "TPIDR_GL1",
+      "architectural_name": "S3_6_C15_C10_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 10,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "VBAR_GL1",
+      "architectural_name": "S3_6_C15_C10_2",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 10,
+        "op2": 2
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "SPSR_GL1",
+      "architectural_name": "S3_6_C15_C10_3",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 10,
+        "op2": 3
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "ASPSR_GL1",
+      "architectural_name": "S3_6_C15_C10_4",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 10,
+        "op2": 4
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "ESR_GL1",
+      "architectural_name": "S3_6_C15_C10_5",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 10,
+        "op2": 5
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "ELR_GL1",
+      "architectural_name": "S3_6_C15_C10_6",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 10,
+        "op2": 6
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "FAR_GL1",
+      "architectural_name": "S3_6_C15_C10_7",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 10,
+        "op2": 7
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "VBAR_GL12",
+      "architectural_name": "S3_6_C15_C9_2",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 9,
+        "op2": 2
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "SPSR_GL12",
+      "architectural_name": "S3_6_C15_C9_3",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 9,
+        "op2": 3
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "ASPSR_GL12",
+      "architectural_name": "S3_6_C15_C9_4",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 9,
+        "op2": 4
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "ESR_GL12",
+      "architectural_name": "S3_6_C15_C9_5",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 9,
+        "op2": 5
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "ELR_GL12",
+      "architectural_name": "S3_6_C15_C9_6",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 9,
+        "op2": 6
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "SP_GL12",
+      "architectural_name": "S3_6_C15_C10_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 10,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "AFSR1_GL1",
+      "architectural_name": "S3_6_C15_C0_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 0,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "gxf_sprr",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "APVMKEYLO_EL2",
+      "architectural_name": "S3_6_C15_C14_4",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 14,
+        "op2": 4
+      },
+      "class": "apple_implementation_defined",
+      "group": "pauth_control",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "APVMKEYHI_EL2",
+      "architectural_name": "S3_6_C15_C14_5",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 14,
+        "op2": 5
+      },
+      "class": "apple_implementation_defined",
+      "group": "pauth_control",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "APSTS_EL12",
+      "architectural_name": "S3_6_C15_C14_7",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 14,
+        "op2": 7
+      },
+      "class": "apple_implementation_defined",
+      "group": "pauth_control",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "APCTL_EL1",
+      "architectural_name": "S3_4_C15_C0_4",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 0,
+        "op2": 4
+      },
+      "class": "apple_implementation_defined",
+      "group": "pauth_control",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "APCTL_EL2",
+      "architectural_name": "S3_6_C15_C12_2",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 12,
+        "op2": 2
+      },
+      "class": "apple_implementation_defined",
+      "group": "pauth_control",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "APCTL_EL12",
+      "architectural_name": "S3_6_C15_C15_0",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 15,
+        "op2": 0
+      },
+      "class": "apple_implementation_defined",
+      "group": "pauth_control",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "ACTLR_EL12",
+      "architectural_name": "S3_6_C15_C14_6",
+      "encoding": {
+        "op0": 3,
+        "op1": 6,
+        "crn": 15,
+        "crm": 14,
+        "op2": 6
+      },
+      "class": "apple_implementation_defined",
+      "group": "control_hypervisor",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "AHCR_EL2",
+      "architectural_name": "S3_4_C15_C12_1",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 12,
+        "op2": 1
+      },
+      "class": "apple_implementation_defined",
+      "group": "control_hypervisor",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "VM_TMR_FIQ_ENA_EL2",
+      "architectural_name": "S3_5_C15_C1_3",
+      "encoding": {
+        "op0": 3,
+        "op1": 5,
+        "crn": 15,
+        "crm": 1,
+        "op2": 3
+      },
+      "class": "apple_implementation_defined",
+      "group": "control_hypervisor",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "SPR_LOCKDOWN_EL2",
+      "architectural_name": "S3_4_C15_C0_5",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 0,
+        "op2": 5
+      },
+      "class": "apple_implementation_defined",
+      "group": "control_hypervisor",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    },
+    {
+      "name": "SPR_LOCKDOWN_EL1",
+      "architectural_name": "S3_4_C15_C0_6",
+      "encoding": {
+        "op0": 3,
+        "op1": 4,
+        "crn": 15,
+        "crm": 0,
+        "op2": 6
+      },
+      "class": "apple_implementation_defined",
+      "group": "control_hypervisor",
+      "source_evidence": [
+        {
+          "source": "m1n1_cpu_regs",
+          "scope": "m1n1_known"
+        }
+      ],
+      "xnu_relevance": "unknown",
+      "observed_access": [],
+      "runtime_priority": "unknown",
+      "implementation_state": "inventory_only",
+      "notes": ""
+    }
+  ],
+  "deferred_families": [
+    {
+      "name": "apple_pmu_upm",
+      "reason": "m1n1 documents a large Apple PMU/UPM register space; P2.01 records that family as known but does not pull every counter selector into the initial CPU boot contract."
+    },
+    {
+      "name": "apple_error_status",
+      "reason": "m1n1 documents LSU/L2/FED/MMU error-status registers; runtime relevance is unknown until evidence exists."
+    },
+    {
+      "name": "apple_energy_accumulators",
+      "reason": "m1n1 documents core energy accumulator registers; not assumed to be required for earliest VMApple bring-up."
+    }
+  ],
+  "next_objective": "P2.02"
+}
