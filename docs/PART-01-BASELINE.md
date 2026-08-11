@@ -1,6 +1,6 @@
 # Part 01 — VMApple Baseline and Host-Dependency Map
 
-Project version: **`0.1.0.0.0.0`**
+Project version: **`0.2.0.0.0.0`**
 
 Status: **Documentation / research phase**
 
@@ -14,6 +14,34 @@ This part does **not** attempt to implement every missing Apple Silicon componen
 
 It creates the environment in which every later component can be discovered and implemented one at a time.
 
+## Sub-objectives
+
+Part 01 is split into smaller objectives. The first detailed objective is:
+
+- [P1.01 — Logged VMApple Baseline Harness](P1.01.md)
+
+P1.01 establishes mandatory persistent `.log` output before deeper VMApple experiments begin.
+
+Later objectives will continue the sequence as `P1.02`, `P1.03`, and so on rather than requiring Part 01 to be completed all at once.
+
+## Maintainer testing rule
+
+The maintainer will not be asked to manually test every Part 01 objective or intermediate release.
+
+Manual maintainer testing is reserved for the finished integration stage. Development-side build checks, source inspection, automated tests, emulator probes, and generated logs should be used during the project instead.
+
+## Logging rule
+
+Every meaningful runtime experiment in Part 01 must create a persistent `.log` file, including failed runs.
+
+The default location is:
+
+```text
+logs/AppleSilicon-YYYYMMDD-HHMMSS-PID.log
+```
+
+Console output alone is not accepted as the only record of a runtime experiment.
+
 ---
 
 # Part 01 success condition
@@ -21,8 +49,8 @@ It creates the environment in which every later component can be discovered and 
 Part 01 is complete when all of the following are true:
 
 1. We can build the pinned emulator/reference tree reproducibly.
-2. We can reproduce a known-good VMApple boot on a supported Apple Silicon reference host using legally obtained local guest material.
-3. We have deterministic serial/QEMU logging from that reference boot.
+2. We have a documented known-good VMApple reference path using legally obtained local guest material where authorized development hardware is available.
+3. We have deterministic serial/QEMU logging from reference and probe runs.
 4. We can force the same VMApple machine toward a non-host CPU path under TCG.
 5. The first divergence/failure between the known-good Apple-host path and the generic virtual CPU path is identified precisely.
 6. That divergence is recorded as a named CPU/platform contract with a regression test or minimal reproducer.
@@ -32,7 +60,7 @@ A GUI is not required.
 
 A complete XNU boot is not required on the generic CPU path.
 
-The important output is the **first understood incompatibility**, because that becomes Part 02.
+The important output is the **first understood incompatibility**, because that becomes the next compatibility objective.
 
 ---
 
@@ -113,11 +141,15 @@ Do not commit:
 - Apple keys,
 - extracted proprietary firmware.
 
-All such material remains local to the authorized test machine.
+All such material remains local to the authorized development machine.
+
+### Logging
+
+Runtime output from this objective must be routed through the project logging infrastructure or an equivalent launcher that produces persistent `.log` files.
 
 ### Acceptance
 
-Capture:
+Capture locally:
 
 ```text
 artifacts/reference/
@@ -226,6 +258,8 @@ Instrument:
 
 Additional QEMU trace events should be enabled as required.
 
+The command must also run through the project logged-run infrastructure so launcher metadata and exit state survive even if QEMU's own trace output terminates unexpectedly.
+
 We are looking for the earliest meaningful difference, such as:
 
 ```text
@@ -253,6 +287,7 @@ Expected result:
 Reference evidence:
 Hypothesis:
 Reproducer:
+Log file:
 ```
 
 ---
@@ -321,7 +356,15 @@ The repository has a documented trace format and no machine secrets are committe
 
 Part 01 should not begin with an `AppleM1CPU` class containing hundreds of guessed registers.
 
-The first code additions should be boring and observable:
+The first observable infrastructure now starts with:
+
+```text
+src/
+  tools/
+    run-logged.sh
+```
+
+Later Part 01 source work is expected to include:
 
 ```text
 src/
@@ -334,7 +377,7 @@ src/
     tcg-probe.example
 ```
 
-The initial patch should make it easy to select a non-`host` CPU for VMApple without changing unrelated device behavior.
+The initial VMApple patch should make it easy to select a non-`host` CPU for VMApple without changing unrelated device behavior.
 
 Then the trace comparison tells us what CPU compatibility code is actually necessary.
 
@@ -360,11 +403,11 @@ Those may become future parts if the selected guest-machine contract requires th
 
 ---
 
-# Expected Part 02
+# Expected later direction
 
 Part 02 is intentionally **not named yet**.
 
-Its title will be derived from `P01-DIVERGENCE-0001`.
+Its title will be derived from the first real compatibility divergence discovered after the Part 01 baseline and probe objectives.
 
 For example, if the first blocker is an implementation-defined Apple system register, Part 02 might become:
 
