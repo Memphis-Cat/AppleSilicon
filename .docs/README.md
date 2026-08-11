@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`4.3.0.0.0.0`**
+Current project version: **`4.4.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments and implementation objectives for AppleSilicon.
 
@@ -20,6 +20,7 @@ This directory records the research, design decisions, compatibility contracts, 
 - [P4.02.md](P4.02.md) — integrated TCG probe capture.
 - [P4.03.md](P4.03.md) — Apple Silicon HVF reference capture.
 - [P4.04.md](P4.04.md) — comparable A/B session assembly.
+- [P4.05.md](P4.05.md) — reproducible divergence promotion.
 
 ## Part boundaries
 
@@ -35,11 +36,11 @@ P4.01  complete
 P4.02  complete
 P4.03  complete
 P4.04  complete
-P4.05  NEXT
-P4.06  final Part 04 objective
+P4.05  complete
+P4.06  NEXT / final Part 04 objective
 ```
 
-P4.04 binds the P4.01 plans, P4.02/P4.03 capture descriptors and P1.09 manifests into one deterministic A/B admission record. It additionally requires equal machine-UUID digest, equal P3.06 state and equal QEMU version string while preserving the expected host/HVF-vs-TCG/CPU differences.
+P4.05 requires at least two independent P4.04-admitted runtime pairs, regenerates their candidates through the existing P1.10/P1.08 path, requires one reproduced divergence signature and one P1.09 contract fingerprint, and delegates the authoritative promotion to P1.10.
 
 ## Maintainer testing policy
 
@@ -51,11 +52,11 @@ Development-side source inspection, compilation, static checks, automated tests,
 
 Every meaningful executable AppleSilicon operation must leave a `.log` artifact under `.logs/` unless a later component explicitly documents another local output contract.
 
-P4.04 provides a logged static preparation harness and logged deterministic A/B assembler.
+P4.05 provides a logged static preparation harness and deterministic promotion wrapper.
 
 ## Evidence policy
 
-P4.02/P4.03 capture descriptors establish runtime provenance. P4.04 establishes pair admissibility. Part 01 remains authoritative for actual trace normalization/comparison and divergence promotion.
+P4.02/P4.03 establish runtime provenance, P4.04 establishes pair admissibility, and P4.05 orchestrates reproducible promotion while preserving P1.08/P1.10 as the trace/promotion authorities.
 
 ## Root README rule
 
