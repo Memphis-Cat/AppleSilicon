@@ -1,0 +1,185 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: AppleSilicon Project <noreply@example.invalid>
+Date: Tue, 11 Aug 2026 19:10:00 +0100
+Subject: [PATCH] target/arm: add VMApple architectural feature profile
+
+P2.04 turns XNU's public VMAPPLE architectural feature declarations into a
+project-owned minimum ID-register contract for the TCG apple-gxf CPU.
+
+The profile preserves stronger QEMU max features and does not alter max,
+host/HVF, or KVM CPU behavior. Apple implementation-defined sysreg semantics
+remain owned by P2.03.
+
+The profile enforces the architectural CPU-visible subset declared by
+VMAPPLE.h: PAuth presence, SSBS2, SME/SME2, PAN3, 4K+16K stage-1
+translation granules, and range TLBI. Platform contracts such as GICv3,
+paravirtualized PAC/CTRR, and topology are deliberately outside this patch.
+---
+
+diff --git a/target/arm/apple-cpu-features.h b/target/arm/apple-cpu-features.h
+new file mode 100644
+--- /dev/null
++++ b/target/arm/apple-cpu-features.h
+@@ -0,0 +1,17 @@
++/*
++ * VMApple architectural CPU feature profile
++ *
++ * SPDX-License-Identifier: GPL-2.0-or-later
++ */
++
++#ifndef TARGET_ARM_APPLE_CPU_FEATURES_H
++#define TARGET_ARM_APPLE_CPU_FEATURES_H
++
++#include "cpu.h"
++
++/*
++ * Apply and validate the source-backed minimum architectural feature
++ * contract for the TCG apple-gxf VMApple research CPU.
++ */
++void apple_cpu_feature_profile_init(ARMCPU *cpu);
++
++#endif /* TARGET_ARM_APPLE_CPU_FEATURES_H */
+diff --git a/target/arm/apple-cpu-features.c b/target/arm/apple-cpu-features.c
+new file mode 100644
+--- /dev/null
++++ b/target/arm/apple-cpu-features.c
+@@ -0,0 +1,106 @@
++/*
++ * VMApple architectural CPU feature profile
++ *
++ * SPDX-License-Identifier: GPL-2.0-or-later
++ */
++
++#include "qemu/osdep.h"
++#include "apple-cpu-features.h"
++#include "cpu-features.h"
++
++static void apple_cpu_require_ssbs2(ARMISARegisters *isar)
++{
++    uint64_t value = GET_IDREG(isar, ID_AA64PFR1);
++
++    if (FIELD_EX64_IDREG(isar, ID_AA64PFR1, SSBS) < 2) {
++        value = REG_FIELD_DP64(value, ID_AA64PFR1, SSBS, 2);
++        SET_IDREG(isar, ID_AA64PFR1, value);
++    }
++}
++
++static void apple_cpu_require_sme2(ARMISARegisters *isar)
++{
++    uint64_t value = GET_IDREG(isar, ID_AA64PFR1);
++
++    if (FIELD_EX64_IDREG(isar, ID_AA64PFR1, SME) < 2) {
++        value = REG_FIELD_DP64(value, ID_AA64PFR1, SME, 2);
++        SET_IDREG(isar, ID_AA64PFR1, value);
++    }
++
++    value = GET_IDREG(isar, ID_AA64SMFR0);
++    if (FIELD_EX64_IDREG(isar, ID_AA64SMFR0, SMEVER) < 1) {
++        value = REG_FIELD_DP64(value, ID_AA64SMFR0, SMEVER, 1);
++        SET_IDREG(isar, ID_AA64SMFR0, value);
++    }
++}
++
++static void apple_cpu_require_pan3(ARMISARegisters *isar)
++{
++    uint64_t value = GET_IDREG(isar, ID_AA64MMFR1);
++
++    if (FIELD_EX64_IDREG(isar, ID_AA64MMFR1, PAN) < 3) {
++        value = REG_FIELD_DP64(value, ID_AA64MMFR1, PAN, 3);
++        SET_IDREG(isar, ID_AA64MMFR1, value);
++    }
++}
++
++static void apple_cpu_require_translation_granules(ARMCPU *cpu)
++{
++    ARMISARegisters *isar = &cpu->isar;
++    uint64_t value = GET_IDREG(isar, ID_AA64MMFR0);
++
++    if (!cpu_isar_feature(aa64_tgran4, cpu)) {
++        value = REG_FIELD_DP64(value, ID_AA64MMFR0, TGRAN4, 0);
++    }
++    if (!cpu_isar_feature(aa64_tgran16, cpu)) {
++        value = REG_FIELD_DP64(value, ID_AA64MMFR0, TGRAN16, 1);
++    }
++    SET_IDREG(isar, ID_AA64MMFR0, value);
++}
++
++static void apple_cpu_require_tlbirange(ARMCPU *cpu)
++{
++    ARMISARegisters *isar = &cpu->isar;
++    uint64_t value;
++
++    if (cpu_isar_feature(aa64_tlbirange, cpu)) {
++        return;
++    }
++
++    value = GET_IDREG(isar, ID_AA64ISAR0);
++    value = REG_FIELD_DP64(value, ID_AA64ISAR0, TLB, 2);
++    SET_IDREG(isar, ID_AA64ISAR0, value);
++}
++
++static void apple_cpu_validate_vmapple_features(ARMCPU *cpu)
++{
++    const ARMISARegisters *isar = &cpu->isar;
++
++    g_assert(arm_feature(&cpu->env, ARM_FEATURE_AARCH64));
++    g_assert(cpu_isar_feature(aa64_pauth, cpu));
++    g_assert(FIELD_EX64_IDREG(isar, ID_AA64PFR1, SSBS) >= 2);
++    g_assert(cpu_isar_feature(aa64_sme, cpu));
++    g_assert(cpu_isar_feature(aa64_sme2, cpu));
++    g_assert(cpu_isar_feature(aa64_pan3, cpu));
++    g_assert(cpu_isar_feature(aa64_tgran4, cpu));
++    g_assert(cpu_isar_feature(aa64_tgran16, cpu));
++    g_assert(cpu_isar_feature(aa64_tlbirange, cpu));
++}
++
++void apple_cpu_feature_profile_init(ARMCPU *cpu)
++{
++    ARMISARegisters *isar;
++
++    g_assert(cpu != NULL);
++    isar = &cpu->isar;
++
++    /*
++     * CPU_HAS_APPLE_PAC is supplied by apple-gxf's existing PAuth setup.
++     * Do not select or emulate paravirtualized PAC semantics here.
++     */
++    apple_cpu_require_ssbs2(isar);
++    apple_cpu_require_sme2(isar);
++    apple_cpu_require_pan3(isar);
++    apple_cpu_require_translation_granules(cpu);
++    apple_cpu_require_tlbirange(cpu);
++    apple_cpu_validate_vmapple_features(cpu);
++}
+diff --git a/target/arm/cpu64.c b/target/arm/cpu64.c
+--- a/target/arm/cpu64.c
++++ b/target/arm/cpu64.c
+@@ -20,6 +20,7 @@
+ #include "qemu/osdep.h"
+ #include "qapi/error.h"
+ #include "cpu.h"
++#include "apple-cpu-features.h"
+ #include "apple-sysregs.h"
+ #include "cpregs.h"
+ #include "qemu/module.h"
+@@ -735,6 +736,7 @@ static void aarch64_apple_gxf_initfn(Object *obj)
+ 
+     if (tcg_enabled()) {
+         object_property_set_bool(obj, "pauth-noop", true, NULL);
++        apple_cpu_feature_profile_init(cpu);
+         apple_sysreg_framework_init(cpu);
+     }
+ 
+ diff --git a/target/arm/meson.build b/target/arm/meson.build
+--- a/target/arm/meson.build
++++ b/target/arm/meson.build
+@@ -5,6 +5,7 @@ arm_ss.add(files(
+ ))
+ 
+ arm_ss.add(when: 'TARGET_AARCH64', if_true: files(
++  'apple-cpu-features.c',
+   'apple-sysregs.c',
+   'cpu64.c',
+   'gdbstub64.c'))
+-- 
+2.50.1
