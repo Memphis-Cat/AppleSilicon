@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`0.2.0.0.0.0`**
+Current project version: **`0.6.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments, and implementation objectives for AppleSilicon.
 
@@ -10,7 +10,12 @@ This directory records the research, design decisions, compatibility contracts, 
 - [RESEARCH.md](RESEARCH.md) — existing projects, what they already solve, and what remains unsolved for our goal.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — intended system layers and where compatibility code belongs.
 - [PART-01-BASELINE.md](PART-01-BASELINE.md) — the first engineering part and its objective tree.
-- [P1.01.md](P1.01.md) — first sub-objective: mandatory logged execution infrastructure.
+- [P1.01.md](P1.01.md) — mandatory logged execution infrastructure.
+- [P1.02.md](P1.02.md) — reproducible Inferno build baseline.
+- [P1.03.md](P1.03.md) — VMApple capability and build-gate probe.
+- [P1.04.md](P1.04.md) — decouple VMApple compilation from HVF.
+- [P1.05.md](P1.05.md) — make Apple PVG optional during VMApple machine construction.
+- [P1.06.md](P1.06.md) — explicit non-host VMApple CPU selection for TCG experiments.
 
 ## Part and objective naming
 
@@ -43,7 +48,7 @@ Every meaningful executable AppleSilicon run must leave a `.log` artifact.
 The default path is:
 
 ```text
-logs/AppleSilicon-YYYYMMDD-HHMMSS-PID.log
+.logs/AppleSilicon-YYYYMMDD-HHMMSS-PID.log
 ```
 
 Runtime logging must capture stdout and stderr together unless a later component explicitly documents another design. Logs should contain version, time, host information, configuration information where safe, and the final exit state.
