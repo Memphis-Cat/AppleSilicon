@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "project_version": "0.9.0.0.0.0",
+  "role": "reference",
+  "run": {
+    "id": "example-reference-001",
+    "started_utc": "2026-08-11T00:00:00Z",
+    "ended_utc": "2026-08-11T00:00:30Z",
+    "result": "example-only"
+  },
+  "source": {
+    "repository": "ChefKissInc/Inferno",
+    "revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
+  },
+  "host": {
+    "os": "macOS",
+    "architecture": "arm64",
+    "cpu_family": "Apple Silicon",
+    "virtualization": "HVF"
+  },
+  "machine": {
+    "type": "vmapple",
+    "accelerator": "hvf",
+    "cpu_model": "host",
+    "ram_mib": 4096,
+    "smp": 4
+  },
+  "command": {
+    "redacted_shape": "qemu-system-aarch64 -accel hvf -cpu host -M vmapple,uuid=<redacted> -m 4096 -smp 4"
+  },
+  "trace": {
+    "events": [
+      "memory_region_ops_read",
+      "memory_region_ops_write"
+    ],
+    "debug_items": [
+      "guest_errors",
+      "unimp",
+      "int",
+      "cpu_reset"
+    ]
+  },
+  "guest_inputs": {
+    "firmware": {
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "bytes": 100
+    },
+    "auxiliary_storage": {
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "bytes": 200
+    },
+    "disk": {
+      "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "bytes": 300
+    },
+    "machine_identity": {
+      "sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "bytes": 40
+    },
+    "hardware_model": {
+      "sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "bytes": 50
+    }
+  },
+  "artifacts": [],
+  "sanitization": {
+    "raw_machine_identity_stored": false,
+    "raw_uuid_stored": false,
+    "local_paths_stored": false,
+    "credentials_stored": false
+  },
+  "reference_escalation": {
+    "m1n1_used": false,
+    "m1n1_revision": null,
+    "target_macos": null,
+    "tracer_module_sha256": null
+  }
+}
