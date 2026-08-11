@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "context_records": 4,
+  "resync_window": 32,
+  "extract_events": [
+    "memory_region_ops_read",
+    "memory_region_ops_write"
+  ],
+  "preserve_guest_fields": [
+    "event",
+    "cpu",
+    "addr",
+    "value",
+    "size",
+    "name"
+  ],
+  "normalize_host_fields": [
+    "trace_prefix",
+    "mr_pointer"
+  ]
+}
