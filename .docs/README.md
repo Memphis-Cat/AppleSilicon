@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`3.3.0.0.0.0`**
+Current project version: **`3.4.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments and implementation objectives for AppleSilicon.
 
@@ -18,6 +18,7 @@ This directory records the research, design decisions, compatibility contracts, 
 - [P3.02.md](P3.02.md) — configuration and platform identity contract.
 - [P3.03.md](P3.03.md) — interrupt, timer, power and console contract.
 - [P3.04.md](P3.04.md) — boot backdoor and storage contract.
+- [P3.05.md](P3.05.md) — PCIe, peripheral, crypto and graphics contract.
 
 ## Part boundaries
 
@@ -34,11 +35,11 @@ P3.01  complete
 P3.02  complete
 P3.03  complete
 P3.04  complete
-P3.05  NEXT
-P3.06  planned / final Part 03 objective
+P3.05  complete
+P3.06  NEXT / final Part 03 objective
 ```
 
-P3.04 freezes VMApple's two-phase boot/storage model: read-only observed BDIF pre-boot access over AUX/root plus Apple-flavored virtio-blk runtime storage. BDIF writes and real Apple barrier flush semantics remain evidence-gated.
+P3.05 preserves generic GPEX/virtio/XHCI peripherals, freezes the macOS XHCI conditional-interrupter workaround already present in pinned Inferno, evidence-gates incomplete Apple AES commands, and preserves P1.05's host-dependent Apple PVG optionalization without introducing a fake GPU.
 
 ## Maintainer testing policy
 
@@ -50,7 +51,7 @@ Development-side source inspection, compilation, static checks, automated tests,
 
 Every meaningful executable AppleSilicon operation must leave a `.log` artifact under `.logs/` unless a later component explicitly documents another local output contract.
 
-P3.04 adds `.src/.tools/prepare-p3.04.sh`, which writes a logged deterministic boot/storage contract validation without launching a macOS guest or opening local Apple storage artifacts.
+P3.05 adds `.src/.tools/prepare-p3.05.sh`, which writes a logged deterministic PCIe/peripheral/AES/graphics contract validation without launching a macOS guest or opening Apple firmware/storage/identity artifacts.
 
 ## Evidence policy
 
