@@ -1,8 +1,8 @@
 # Part 03 — VMApple Platform Contract
 
-Project version: **`3.2.0.0.0.0`**
+Project version: **`3.3.0.0.0.0`**
 
-Status: **Active — P3.01 through P3.03 implemented**
+Status: **Active — P3.01 through P3.04 implemented**
 
 ## Purpose
 
@@ -132,13 +132,33 @@ Project files:
 
 ## P3.04 — Boot Backdoor and Storage Contract
 
-Status: **Next**
+Status: **Implementation complete — runtime storage validation deferred**
 
-P3.04 owns the VMApple BDIF pre-boot backdoor and VMApple-specific virtio block extensions for AUX/root storage.
+P3.04 freezes VMApple's two-phase storage model:
+
+```text
+pre-boot: BDIF MMIO/DMA reads over AUX/root backends
+runtime:  vmapple-virtio-blk-pci variant=aux/root
+```
+
+It locks the BDIF window at `0x30000000/0x00200000`, the source-known BDIF register/selector values, 512-byte sector and 128 MiB request limits, read-only observed pre-boot behavior, backend attachment order/fallback, Apple PCI identity `106b:1a00`, AUX/root variant contract, Apple type-field placement and the successful no-op Apple barrier.
+
+The official QEMU VMApple launch topology duplicates AUX/root artifacts between pflash and `if=none` backends so the pre-boot BDIF path and later virtio path can access the same reference storage. P3.04 preserves that topology.
+
+No P3.04 Inferno patch is added. BDIF write requirements and real barrier/flush semantics remain runtime-evidence gated.
+
+Project files:
+
+```text
+.docs/P3.04.md
+.src/.configs/p3.04-storage-contract.json
+.src/.tools/platform-storage-contract.py
+.src/.tools/prepare-p3.04.sh
+```
 
 ## P3.05 — PCIe, Peripheral, Crypto and Graphics Contract
 
-Status: **Planned**
+Status: **Next**
 
 P3.05 owns generic PCIe/peripheral validation plus Apple-specific AES and the host-framework-dependent Apple PVG graphics path.
 
