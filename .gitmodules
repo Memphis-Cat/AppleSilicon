@@ -1,0 +1,3 @@
+[submodule "src/upstream/inferno"]
+	path = src/upstream/inferno
+	url = https://github.com/ChefKissInc/Inferno.git
