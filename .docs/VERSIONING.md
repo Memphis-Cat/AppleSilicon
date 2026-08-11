@@ -18,33 +18,38 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-2.5.0.0.0.0
+3.0.0.0.0.0
 ```
 
-This normal update implements P2.06, **Part 02 Integration Gate**, and closes Part 02.
+This major update starts Part 03, **VMApple Platform Contract**, and implements P3.01, **Platform Contract Inventory and Ownership Map**.
 
-P2.06 binds the validated Part 02 CPU compatibility component to the Part 01 VMApple/TCG probe and evidence pipeline. It requires a passing P2.05 deterministic regression, prepares the exact pinned Inferno source with patches `0001` through `0005`, validates `vmapple + TCG + apple-gxf` integration invariants, and emits:
+P3.01 source-locks the non-CPU VMApple machine/device baseline, creates a machine-readable inventory of the platform contract, and assigns each component to one later Part 03 objective using four ownership classes:
 
 ```text
-.build/p2.06/integration-manifest.json
+generic_qemu
+vmapple_specific
+host_framework_dependent
+unknown_requires_evidence
 ```
 
-The integration manifest has a deterministic SHA-256 integration fingerprint and records that Part 02 is implementation-complete and closed.
+The inventory deliberately has no automatic `implement` action. Apple-specific presence does not by itself prove a missing or boot-critical behavior.
 
-The runtime wrapper reuses the P1.07 probe after capability-gating `vmapple`, TCG and `apple-gxf`; observational runtime results remain subject to the Part 01 evidence and promotion gates.
-
-No real macOS/HVF/TCG guest execution is claimed for P2.06 implementation completion.
-
-Part 02 remains fixed at six objectives and is now closed. There is no P2.07.
-
-The next progression point is:
+Part 03 is fixed at exactly six objectives:
 
 ```text
-Part 03 — VMApple Platform Contract
 P3.01 — Platform Contract Inventory and Ownership Map
+P3.02 — Configuration and Platform Identity Contract
+P3.03 — Interrupt, Timer, Power and Console Contract
+P3.04 — Boot Backdoor and Storage Contract
+P3.05 — PCIe, Peripheral, Crypto and Graphics Contract
+P3.06 — Part 03 Integration Gate
 ```
 
-The repository root `README.md` remains intentionally unchanged.
+There is no P3.07.
+
+P3.02 is next.
+
+No real macOS/HVF/TCG guest execution is claimed for P3.01. The repository root `README.md` remains intentionally unchanged.
 
 ## Reset behavior
 
@@ -59,4 +64,5 @@ Examples:
 1.9.0.0.0.0 -> 2.0.0.0.0.0
 2.3.0.0.0.0 -> 2.4.0.0.0.0
 2.4.0.0.0.0 -> 2.5.0.0.0.0
+2.5.0.0.0.0 -> 3.0.0.0.0.0
 ```
