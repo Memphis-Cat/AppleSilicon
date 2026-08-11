@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`4.0.0.0.0.0`**
+Current project version: **`4.1.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments and implementation objectives for AppleSilicon.
 
@@ -17,6 +17,7 @@ This directory records the research, design decisions, compatibility contracts, 
 - [P3.01.md](P3.01.md) through [P3.06.md](P3.06.md) — completed Part 03 sequence.
 - [PART-04-RUNTIME-EVIDENCE.md](PART-04-RUNTIME-EVIDENCE.md) — active fixed Part 04 runtime-evidence tree.
 - [P4.01.md](P4.01.md) — runtime session provenance and input lock.
+- [P4.02.md](P4.02.md) — integrated TCG probe capture.
 
 ## Part boundaries
 
@@ -29,14 +30,16 @@ Part 04 is fixed at `P4.01` through `P4.06`; there is no P4.07.
 
 ```text
 P4.01  complete
-P4.02  NEXT
-P4.03
+P4.02  complete
+P4.03  NEXT
 P4.04
 P4.05
 P4.06  final Part 04 objective
 ```
 
-P4.01 establishes a deterministic pre-execution session plan. It hashes the exact QEMU binary, local firmware/AUX/root/identity inputs and canonicalized machine UUID, binds them to P3.06 and checks role-specific QEMU capabilities without launching a guest.
+P4.01 establishes deterministic pre-execution provenance for both runtime roles.
+
+P4.02 consumes the probe plan, fixes the TCG runtime parameters, delegates through the existing P3.06 → P2.06 → P1.07 chain, creates a validated P1.09 probe manifest, then requires post-run provenance to be byte-identical to pre-run provenance before producing a sanitized capture descriptor.
 
 ## Maintainer testing policy
 
@@ -48,11 +51,11 @@ Development-side source inspection, compilation, static checks, automated tests,
 
 Every meaningful executable AppleSilicon operation must leave a `.log` artifact under `.logs/` unless a later component explicitly documents another local output contract.
 
-P4.01 provides both a logged static preparation harness and a logged local session planner. Neither launches the VM.
+P4.01 provides logged planning. P4.02 provides a logged static preparation harness and logged runtime-capture wrapper. Real P4.02 guest execution remains deferred.
 
 ## Evidence policy
 
-A P4.01 session plan is provenance metadata only. Part 01 remains authoritative for actual runtime manifests, comparability, trace normalization and divergence promotion.
+P4.02 capture metadata cannot promote a divergence. Part 01 remains authoritative for actual runtime manifests, comparability, trace normalization and divergence promotion.
 
 ## Root README rule
 
