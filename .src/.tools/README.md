@@ -1,8 +1,8 @@
-# Research and Trace Tools
+# Research, Trace and CPU Contract Tools
 
 Tools in this directory support reproducible compatibility research rather than guest patching.
 
-Current tools include:
+Current Part 01 tools include:
 
 ```text
 run-logged.sh
@@ -23,26 +23,50 @@ collect-p1.10-probe.sh
 prepare-p1.10.sh
 ```
 
-The preparation tools keep the pinned Inferno submodule pristine and build disposable research trees under `.build/`.
+Part 01 closes at P1.10. There is no P1.11.
 
-`prepare-p1.06.sh` validates QEMU's explicit CPU-selection path and emits deterministic TCG VMApple CPU-profile metadata using either `max` or Inferno's `apple-gxf` model.
+## Part 02 tools
 
-`prepare-p1.07.sh` extends that prepared source into the first complete pre-boot probe manifest without launching a guest.
+P2.01 adds:
 
-`run-p1.07-probe.sh` is the runtime harness reserved for final integration testing. It validates VMApple/TCG/CPU/trace capabilities and local boot inputs, then runs a finite probe while preserving separate launcher, serial, and QEMU debug logs.
+```text
+cpu-contract.py
+prepare-p2.01.sh
+```
 
-`compare-boot-traces.py` is P1.08's standard-library trace normalizer and earliest-divergence comparator. It removes only configured host-runtime noise, preserves guest-semantic MMIO fields, produces normalized streams plus Markdown/JSON candidate reports, and supports bounded resynchronization.
+`cpu-contract.py` is a standard-library validator/query tool for `.src/.configs/p2.01-cpu-contract.json`.
 
-`reference-manifest.py` is P1.09's privacy-safe manifest collector/validator/pair checker. It proves that reference/probe inputs and experiment settings are comparable without publishing raw VM identity or Apple guest material.
+It supports:
+
+```text
+validate
+summary
+lookup
+self-check
+```
+
+The validator enforces exact source locks, valid AArch64 system-register encoding ranges, unique names/encoding tuples, evidence-source resolution, and the P2.01 rule that runtime priority/relevance/implementation semantics remain unknown/inventory-only.
+
+The self-check mutates the contract in memory and proves that invalid source locks, duplicate encodings, invalid fields, fabricated priority and premature implementation states are rejected.
+
+`prepare-p2.01.sh` is the logged development-side P2.01 harness. It validates JSON and Python syntax, runs contract validation/self-checks, prints a summary, performs representative register lookups, and writes a persistent `.log`.
+
+It does not launch QEMU, macOS, HVF, a TCG guest or m1n1.
+
+## Existing evidence tools
+
+`compare-boot-traces.py` is P1.08's trace normalizer and earliest-divergence comparator.
+
+`reference-manifest.py` is P1.09's privacy-safe manifest collector/validator/pair checker.
 
 `run-p1.09-reference.sh` is the fail-closed Apple-Silicon/HVF reference runner reserved for final integration evidence collection.
 
-`collect-p1.10-probe.sh` converts an already completed P1.07 runtime into a P1.09 probe manifest. It does not relaunch QEMU.
+`collect-p1.10-probe.sh` converts an already completed P1.07 runtime into a P1.09 probe manifest without relaunching QEMU.
 
-`evidence-bundle.py` is the final Part 01 A/B evidence gate. It verifies P1.09 pairing, verifies supplied trace hashes against their manifests, invokes P1.08 comparison, generates non-promoted candidates, fingerprints the comparison contract and earliest divergence, and requires at least two unique matching runtime reproductions before creating a local `P01-DIVERGENCE-0001` record.
+`evidence-bundle.py` is the final Part 01 A/B evidence gate and requires reproduced runtime evidence before a local `P01-DIVERGENCE-0001` record may exist.
 
-`prepare-p1.10.sh` runs the final non-runtime Part 01 regression/self-check chain and writes a mandatory `.log`. It does not launch QEMU, macOS, HVF, TCG guests, or m1n1.
+## Rules
 
-Part 01 closes at P1.10. There is no P1.11.
+Preparation tools keep the pinned Inferno submodule pristine and use project-owned `.build/`/`.logs/` state where applicable.
 
 Tools must avoid collecting or committing machine-specific secrets unless explicitly required for a local authorized experiment, and secret/local artifacts must remain outside version control.
