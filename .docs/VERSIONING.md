@@ -71,16 +71,16 @@ Example:
 ## Current version
 
 ```text
-0.9.0.0.0.0
+1.0.0.0.0.0
 ```
 
-This update implements P1.09, **Reference Trace Manifest and Real-Hardware Trace Preparation**.
+This major update implements P1.10, **Controlled A/B Evidence Bundle and Divergence Promotion Gate**, and closes the Part 01 implementation sequence.
 
-P1.09 adds a privacy-safe evidence manifest policy, reference/probe example manifests, a standard-library collector/validator/pairing tool, automatic SHA-256/size recording for local guest inputs and evidence artifacts, a fail-closed Apple-Silicon/HVF reference runner, and a logged development-side validation harness.
+P1.10 connects the P1.09 manifest contract, P1.08 trace comparator, P1.07 probe evidence, and P1.09 HVF reference evidence into a fail-closed candidate/promotion pipeline. It verifies trace-artifact hashes, blocks synthetic/example evidence, fingerprints the full comparison contract, derives a stable earliest-divergence signature, and requires at least two unique matching runtime A/B reproductions before a local `P01-DIVERGENCE-0001` record can be created.
 
-The pairing contract makes the pinned Inferno revision, VMApple shape, RAM/SMP, trace/debug sets, and local guest-input hashes equal across the reference and probe while allowing the intended host/accelerator/CPU differences.
+P1.10 also adds a post-run probe collector so an already completed P1.07 runtime can be converted into the P1.09 probe-manifest contract without rerunning QEMU.
 
-m1n1 is documented only as a secondary real-hardware escalation path for behavior that public source and the primary VMApple/HVF reference cannot explain. No real QEMU, macOS, HVF, or m1n1 execution is performed by the P1.09 preparation path.
+Real VM execution and real divergence promotion remain intentionally deferred under the project owner's final-testing-only rule.
 
 The root `README.md` remains intentionally unchanged.
 
