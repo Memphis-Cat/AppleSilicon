@@ -1,6 +1,6 @@
 # Experiment Configurations
 
-This directory contains reproducible, non-secret example configurations and policies for AppleSilicon experiments.
+This directory contains reproducible, non-secret example configurations, policies and machine-readable compatibility contracts for AppleSilicon.
 
 Current configurations include:
 
@@ -15,19 +15,44 @@ p1.09-manifest-policy.json
 p1.09-reference.example.json
 p1.09-probe.example.json
 p1.10-promotion-policy.json
+p2.01-cpu-contract.json
 ```
 
-`vmapple-cpu.env.example` belongs to P1.06 and defines the explicit non-host VMApple CPU-selection profile. The default control profile is TCG + `max`; Inferno's existing `apple-gxf` model is also accepted as an Apple-oriented experimental comparison profile.
+## Part 01
 
-`vmapple-preboot.env.example` belongs to P1.07 and defines local paths and probe controls for the first complete TCG VMApple pre-boot experiment. Its paths are examples only; no Apple boot material is stored in the repository.
+`vmapple-cpu.env.example` defines the explicit non-host VMApple CPU-selection profile.
 
-`p1.07-trace-events` is the version-controlled initial MMIO trace set. The runtime harness verifies every configured event against `qemu-system-aarch64 -trace help` before launch.
+`vmapple-preboot.env.example` defines local paths and probe controls for the finite TCG VMApple pre-boot experiment. Its paths are examples only; no Apple boot material is stored in the repository.
 
-`p1.08-compare.json` defines deterministic trace-analysis behavior, including the selected event names, context size, bounded resynchronization window, guest fields that must be preserved, and host-only fields that may be normalized away.
+`p1.07-trace-events`, `p1.08-compare.json`, the P1.09 manifests/policy and `p1.10-promotion-policy.json` form the Part 01 trace/evidence contract.
 
-The P1.09 files define the privacy-safe reference/probe evidence-manifest contract and sanitized examples.
+## Part 02
 
-`p1.10-promotion-policy.json` closes Part 01. It requires at least two unique matching runtime A/B reproductions, the same P1.09 contract fingerprint, the same earliest-divergence signature, and explicitly blocks synthetic/example/self-check evidence from promotion. It also forbids automatic GitHub commits from the promotion tool.
+`p2.01-cpu-contract.json` is the static source-locked Apple CPU contract inventory.
+
+It records:
+
+```text
+exact XNU source identity
+exact QEMU cpregs source identity
+exact m1n1 register-source identity
+pinned Inferno revision
+Apple implementation-defined register encodings
+feature-contract observations
+explicit deferred register families
+```
+
+Every P2.01 register remains:
+
+```text
+xnu_relevance = unknown
+runtime_priority = unknown
+implementation_state = inventory_only
+```
+
+The contract must not contain guessed reset values, fake register semantics or claims that a physical Apple register is required by VMApple merely because the register is known.
+
+## Secret/proprietary material rule
 
 Configuration files may describe paths using placeholders, but must not contain:
 
