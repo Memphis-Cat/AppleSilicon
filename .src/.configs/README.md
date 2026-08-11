@@ -29,32 +29,27 @@ p3.06-integration-policy.json
 
 Part 03 is closed at P3.06.
 
-### P3.01
+## Part 04 runtime-evidence contracts
 
-`p3.01-platform-contract.json` assigns each non-CPU VMApple component to an ownership class and a fixed Part 03 objective.
+```text
+p4.01-runtime-session-policy.json
+```
 
-### P3.02
+### P4.01
 
-`p3.02-identity-contract.json` records VMApple configuration/identity field ownership and the unresolved CPU-ID-array layout discrepancy.
+`p4.01-runtime-session-policy.json` defines the pre-execution provenance lock for both runtime roles:
 
-`p3.02-identity.example.json` is synthetic only and demonstrates the privacy-safe local identity profile format.
+```text
+probe      vmapple / TCG / apple-gxf
+reference  vmapple / HVF / host / Darwin arm64
+```
 
-### P3.03
+A session plan must bind a passing P3.06 integration fingerprint, the exact QEMU executable digest/version/capabilities, hashes and sizes of firmware/AUX/root/machine-identity inputs, optional hardware-model digest, and a SHA-256 digest of the canonicalized machine UUID.
 
-`p3.03-io-contract.json` freezes the source-backed/reference wiring for GICv3, per-vCPU virtual timer PPI 27, PL011, PL031, PL061/power and pvpanic. Exact power-button event semantics remain runtime-evidence gated.
+The raw UUID and all local source paths/content remain excluded from the plan.
 
-### P3.04
-
-`p3.04-storage-contract.json` freezes the two-phase VMApple storage contract: BDIF MMIO/DMA pre-boot access, AUX/root backend topology, Apple `vmapple-virtio-blk-pci` identity/variants/config field and the current successful no-op Apple barrier. BDIF writes and real barrier flush semantics remain runtime-evidence gated.
-
-### P3.05
-
-`p3.05-peripheral-contract.json` freezes generic GPEX/virtio/XHCI ownership, the VMApple macOS XHCI conditional-interrupter compatibility policy, Apple AES MMIO/reset/known command behavior, unresolved AES commands, and the host-framework-dependent Apple PVG boundary. P1.05's optional-PVG policy is preserved and no fake GPU or new Inferno patch is introduced.
-
-### P3.06
-
-`p3.06-integration-policy.json` binds the exact P3.01–P3.05 contract/validator blobs to the passing P2.06 CPU integration result and Part 01 evidence/promotion policy. It requires the compatibility patch series to remain exactly `0001` through `0005`, preserves all evidence-gated unknown semantics, freezes the root README blob, and closes Part 03 only after deterministic integration validation.
+Part 04 is fixed at P4.01 through P4.06; there is no P4.07.
 
 ## Secret/proprietary material rule
 
-Configuration files may describe local paths using placeholders, but must not contain Apple proprietary firmware, macOS disk images, real serial numbers, machine secrets, signing tickets, private keys, authentic hardware keys or device-specific credentials.
+Configuration files may describe local inputs using placeholders or policy names, but must not contain Apple proprietary firmware, macOS disk images, real serial numbers, machine secrets, signing tickets, private keys, authentic hardware keys or device-specific credentials.
