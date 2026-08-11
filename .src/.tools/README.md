@@ -23,36 +23,33 @@ plan-p4.01-session.sh
 probe-capture.py
 prepare-p4.02.sh
 run-p4.02-probe.sh
+reference-capture.py
+prepare-p4.03.sh
+run-p4.03-reference.sh
 ```
 
 ### P4.01
 
-`runtime-session.py` validates the P4.01 policy and creates privacy-safe deterministic pre-execution runtime session plans.
-
-`prepare-p4.01.sh` performs logged static preparation without a guest.
-
-`plan-p4.01-session.sh` hashes the selected QEMU executable and local VM inputs twice and requires deterministic session plans. It does not launch QEMU.
+`runtime-session.py` and the P4.01 shell tools create deterministic privacy-safe pre-execution session plans for the probe and reference roles. They do not launch guests.
 
 ### P4.02
 
-`probe-capture.py` validates the P4.02 policy, performs live pre/post provenance checks and finalizes a sanitized capture descriptor around a validated P1.09 probe manifest.
+`probe-capture.py` validates live probe provenance before/after execution and finalizes the sanitized probe capture. `run-p4.02-probe.sh` reuses the P3.06 → P2.06 → P1.07 path and the existing P1.09-compatible collector.
 
-`prepare-p4.02.sh` performs logged static P4.02 validation without launching a guest.
+The TCG probe contract is `vmapple / tcg / apple-gxf / 4G / 4 vCPUs / 30 seconds`.
 
-`run-p4.02-probe.sh` is the integrated runtime wrapper. It fixes the probe to `vmapple` / TCG / `apple-gxf` / 4G / 4 vCPUs / 30 seconds, delegates through P3.06 → P2.06 → P1.07, packages the completed observation through `collect-p1.10-probe.sh`, validates the resulting P1.09 manifest, repeats provenance checks, and emits a P4.02 capture descriptor.
+### P4.03
 
-P4.02 does not compare A/B traces and cannot promote a divergence.
+`reference-capture.py` validates the real Apple Silicon reference provenance and finalizes the sanitized reference capture. `run-p4.03-reference.sh` requires Darwin/arm64 and delegates the actual reference run to the existing P1.09 HVF runner.
 
-Default local outputs include:
+The reference contract is `vmapple / hvf / host / Darwin arm64 / 4G / 4 vCPUs / 30 seconds`.
 
-```text
-.build/p4.01/probe-runtime-session-plan.json
-.build/p4.02/<run>/probe-manifest.json
-.build/p4.02/<run>/probe-capture.json
-```
+The P1.09 reference manifest remains authoritative. P4.03 hashes the launcher log separately instead of modifying the closed P1.09 format.
 
-Logs remain under `.logs/`.
+Default generated state remains local under `.build/p4.01/`, `.build/p4.02/`, `.build/p4.03/` and `.logs/`.
 
 ## Rules
 
-Preparation tools keep the pinned Inferno submodule pristine and use project-owned `.build/` and `.logs/` state. Secret or proprietary Apple artifacts must not be committed. Part 04 remains fixed at P4.01–P4.06; P4.03 is next.
+Preparation tools keep the pinned Inferno submodule pristine and use project-owned `.build/` and `.logs/` state. Secret or proprietary Apple artifacts must not be committed.
+
+P4.02/P4.03 capture metadata cannot promote divergences. P1.10 remains the promotion authority.
