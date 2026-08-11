@@ -1,8 +1,8 @@
 # Part 03 — VMApple Platform Contract
 
-Project version: **`3.1.0.0.0.0`**
+Project version: **`3.2.0.0.0.0`**
 
-Status: **Active — P3.01 and P3.02 implemented**
+Status: **Active — P3.01 through P3.03 implemented**
 
 ## Purpose
 
@@ -74,26 +74,7 @@ Default action: investigate or defer.
 
 Status: **Implementation complete — static ownership map**
 
-P3.01 source-locks the pinned Inferno VMApple machine/device files and XNU's public VMApple platform configuration, then creates a machine-readable map covering:
-
-```text
-machine memory map
-pre-boot firmware window
-configuration and identity
-GICv3
-virtual timer
-PL011 console
-PL031 RTC
-PL061 GPIO/power
-pvpanic
-VMApple BDIF boot backdoor
-VMApple virtio block
-PCIe
-XHCI/USB
-virtio networking
-VMApple AES
-Apple PVG graphics
-```
+P3.01 source-locks the pinned Inferno VMApple machine/device files and XNU's public VMApple platform configuration, then creates a machine-readable ownership map for the remaining non-CPU platform.
 
 Project files:
 
@@ -108,24 +89,7 @@ Project files:
 
 Status: **Implementation complete — runtime identity validation deferred**
 
-P3.02 source-locks the 64 KiB VMApple configuration region and classifies its fields as machine-derived, machine-random, device properties, reference constants, derived sequences, or opaque/reserved state.
-
-It establishes explicit local profile handling for:
-
-```text
-machine UUID / ECID input
-serial
-model
-SoC name
-four VMApple config MAC identities
-installer flags
-```
-
-while preserving CPU count, RAM size, random value and CPU-ID generation as machine-derived behavior.
-
-Reference defaults such as `1234`, `VM0001` and `Apple M1 (Virtual)` are recorded but are not promoted into macOS requirements.
-
-P3.02 also records an unresolved source-layout discrepancy: the declared `uint32_t cpu_ids[0x80]` occupies `0x200` bytes, while adjacent source comments place `scratch` and later identity fields as if the CPU-ID array occupied only `0x80` bytes. Because VMApple caps CPUs at 32, the discrepancy is significant, but no source fix is made without runtime/reference evidence.
+P3.02 freezes the config-region field ownership model, preserves machine-derived CPU/RAM/random/CPU-ID behavior, adds a privacy-safe local identity-profile compiler, and records the unresolved `cpu_ids[0x80]` versus documented-offset layout discrepancy without guessing a fix.
 
 Project files:
 
@@ -139,13 +103,36 @@ Project files:
 
 ## P3.03 — Interrupt, Timer, Power and Console Contract
 
-Status: **Next**
+Status: **Implementation complete — runtime interrupt validation deferred**
 
-P3.03 owns GICv3 layout/wiring, generic virtual timer routing, PL011 console, PL031 RTC, PL061 GPIO/power and diagnostic pvpanic behavior.
+P3.03 freezes the stable generic-device wiring used by pinned Inferno and upstream QEMU 11.1.0:
+
+```text
+GICv3 distributor       0x10000000
+GICv3 redistributors    0x10010000
+virtual timer           PPI 27
+PL011 UART               0x20010000 / SPI 1
+PL031 RTC                0x20050000 / SPI 2
+PL061 GPIO/power         0x20060000 / SPI 5 / pin 3
+pvpanic MMIO             0x20070000 / no IRQ
+```
+
+XNU independently confirms VMApple uses GICv3 and PL011 and defines a `0x20000` GIC redistributor-per-PE size. The `0x400000` VMApple redistributor window therefore covers exactly the machine's 32-vCPU cap.
+
+No P3.03 Inferno patch is added. Generic devices remain preserved until runtime evidence proves a concrete incompatibility. Exact power-button event semantics remain evidence-gated.
+
+Project files:
+
+```text
+.docs/P3.03.md
+.src/.configs/p3.03-io-contract.json
+.src/.tools/platform-io-contract.py
+.src/.tools/prepare-p3.03.sh
+```
 
 ## P3.04 — Boot Backdoor and Storage Contract
 
-Status: **Planned**
+Status: **Next**
 
 P3.04 owns the VMApple BDIF pre-boot backdoor and VMApple-specific virtio block extensions for AUX/root storage.
 
@@ -177,6 +164,6 @@ Presence in source does not by itself prove boot criticality.
 
 ## Testing rule
 
-No manual maintainer test is required for P3.01 or P3.02.
+No manual maintainer test is required for individual Part 03 objectives.
 
-Development-side validation may inspect source locks, contracts, synthetic profiles and deterministic summaries. Real VMApple/macOS execution remains deferred to final integrated testing.
+Development-side validation may inspect source locks, contracts and deterministic summaries. Real VMApple/macOS execution remains deferred to final integrated testing.
