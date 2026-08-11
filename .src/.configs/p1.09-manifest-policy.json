@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "project_version": "0.9.0.0.0.0",
+  "source": {
+    "repository": "ChefKissInc/Inferno",
+    "revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
+  },
+  "roles": {
+    "reference": {
+      "accelerator": [
+        "hvf"
+      ],
+      "cpu_model": [
+        "host"
+      ]
+    },
+    "probe": {
+      "accelerator": [
+        "tcg"
+      ],
+      "cpu_model": [
+        "max",
+        "apple-gxf"
+      ]
+    }
+  },
+  "required_trace_events": [
+    "memory_region_ops_read",
+    "memory_region_ops_write"
+  ],
+  "pair_equal_paths": [
+    "source.repository",
+    "source.revision",
+    "machine.type",
+    "machine.ram_mib",
+    "machine.smp",
+    "trace.events",
+    "trace.debug_items",
+    "guest_inputs.firmware.sha256",
+    "guest_inputs.firmware.bytes",
+    "guest_inputs.auxiliary_storage.sha256",
+    "guest_inputs.auxiliary_storage.bytes",
+    "guest_inputs.disk.sha256",
+    "guest_inputs.disk.bytes",
+    "guest_inputs.machine_identity.sha256",
+    "guest_inputs.machine_identity.bytes",
+    "guest_inputs.hardware_model"
+  ],
+  "allowed_artifact_kinds": [
+    "launcher_log",
+    "serial_log",
+    "qemu_debug_log",
+    "trace_capability_log",
+    "normalized_trace",
+    "manifest_log",
+    "hardware_trace_log",
+    "hardware_trace_metadata"
+  ],
+  "forbidden_key_fragments": [
+    "password",
+    "passwd",
+    "token",
+    "private_key",
+    "apple_id",
+    "serial_number",
+    "hardware_uuid",
+    "raw_uuid",
+    "machine_identifier_data",
+    "hardware_model_data",
+    "signing_ticket",
+    "apfs_key"
+  ],
+  "redacted_command_required_markers": [
+    "vmapple",
+    "uuid=<redacted>"
+  ]
+}
