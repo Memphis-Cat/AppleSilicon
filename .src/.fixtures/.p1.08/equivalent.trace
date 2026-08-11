@@ -1,0 +1,3 @@
+123@999.000001:memory_region_ops_read cpu 0 mr 0xabcdef addr 0x3cc value 0x67 size 1 name 'vmapple-cfg'
+123@999.000002:memory_region_ops_write cpu 1 mr 0x111111 addr 0x00001000 value 0x0001 size 4 name 'vmapple-cfg'
+123@999.000003:memory_region_ops_read cpu 0 mr 0x222222 addr 0x00002000 value 0x00000002 size 8 name 'vmapple-test'
