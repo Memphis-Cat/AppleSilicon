@@ -16,9 +16,11 @@ Part 02 tools implement and validate the source-locked CPU compatibility contrac
 platform-contract.py
 platform-identity.py
 platform-io-contract.py
+platform-storage-contract.py
 prepare-p3.01.sh
 prepare-p3.02.sh
 prepare-p3.03.sh
+prepare-p3.04.sh
 ```
 
 ### platform-contract.py / prepare-p3.01.sh
@@ -33,19 +35,23 @@ Validate and deterministically compile privacy-safe VMApple configuration/identi
 
 Validate the stable VMApple GICv3, architectural timer, PL011, PL031, PL061/power and pvpanic wiring against the pinned Inferno source.
 
-P3.03 emits deterministic summaries beneath:
+### platform-storage-contract.py / prepare-p3.04.sh
+
+Validate VMApple's two-phase storage contract: BDIF MMIO/DMA pre-boot reads, AUX/root backend topology and Apple `vmapple-virtio-blk-pci` identity/extensions.
+
+P3.04 emits deterministic summaries beneath:
 
 ```text
-.build/p3.03/
+.build/p3.04/
 ```
 
 and logs meaningful preparation runs as:
 
 ```text
-.logs/AppleSilicon-p3.03-YYYYMMDD-HHMMSS-PID.log
+.logs/AppleSilicon-p3.04-YYYYMMDD-HHMMSS-PID.log
 ```
 
-No macOS guest is launched and no generic device is replaced.
+The preparation harness does not launch a macOS guest and does not open firmware, AUX or root-disk inputs.
 
 ## Rules
 
