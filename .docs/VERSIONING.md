@@ -71,12 +71,12 @@ Example:
 ## Current version
 
 ```text
-0.4.0.0.0.0
+0.5.0.0.0.0
 ```
 
-This update implements P1.04, **Decouple VMApple Build From HVF**. It adds a pinned-source patch that removes VMApple's compile-time HVF dependency, makes the AArch64 scope explicit, removes the unused `system/hvf.h` include, and adds a logged preparation harness that applies and validates the patch in a disposable `.build` source tree without modifying the pinned Inferno submodule.
+This update implements P1.05, **Decouple VMApple Machine Realization From Apple PVG**. It adds the second ordered VMApple patch, replacing unconditional `apple-gfx-mmio` construction with QEMU's module-aware `qdev_try_new()` path so builds without Apple's Darwin-only ParavirtualizedGraphics device can continue constructing the VMApple machine skeleton without inventing fake graphics behavior.
 
-P1.04 also documents the next independent host dependency discovered during research: Apple ParavirtualizedGraphics/Metal realization is Darwin-specific and remains a later objective rather than being hidden inside the HVF build-gate change.
+P1.05 preserves the existing PVG MMIO and IRQ path whenever `apple-gfx-mmio` is available, keeps the VMApple `host` CPU default unchanged, and adds a logged preparation harness that applies P1.04 and P1.05 in order to a disposable `.build/p1.05` source tree.
 
 The root `README.md` is intentionally not version-updated in this release under the project owner's instruction.
 
