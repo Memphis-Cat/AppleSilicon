@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "project_version": "2.1.0.0.0.0",
+  "part": "Part 02",
+  "objective": "P2.02",
+  "title": "Apple System Register Emulation Framework",
+  "cpu_scope": {
+    "enabled_cpu": "apple-gxf",
+    "accelerator": "tcg",
+    "control_cpu": "max",
+    "control_cpu_must_remain_untouched": true
+  },
+  "unresolved_policy": {
+    "qemu_access_result": "CP_ACCESS_UNDEFINED",
+    "gdb_exposed": false,
+    "migration_state": false,
+    "invent_read_values": false,
+    "invent_write_side_effects": false,
+    "invent_reset_values": false
+  },
+  "representative_registers": [
+    {
+      "name": "HID0",
+      "group": "hid_ehid",
+      "architectural_name": "S3_0_C15_C0_0"
+    },
+    {
+      "name": "CNTVCT_ALIAS_EL0",
+      "group": "timer",
+      "architectural_name": "S3_4_C15_C10_6"
+    },
+    {
+      "name": "AMX_CTL_EL1",
+      "group": "amx",
+      "architectural_name": "S3_4_C15_C1_4"
+    },
+    {
+      "name": "GXF_CONFIG_EL1",
+      "group": "gxf_sprr",
+      "architectural_name": "S3_6_C15_C1_2"
+    },
+    {
+      "name": "APCTL_EL1",
+      "group": "pauth_control",
+      "architectural_name": "S3_4_C15_C0_4"
+    },
+    {
+      "name": "SPR_LOCKDOWN_EL1",
+      "group": "control_hypervisor",
+      "architectural_name": "S3_4_C15_C0_6"
+    }
+  ],
+  "rules": {
+    "representatives_must_exist_in_p2_01_contract": true,
+    "representatives_must_keep_p2_01_encoding": true,
+    "all_representatives_remain_semantically_unresolved": true,
+    "p2_03_owns_read_write_reset_policy": true
+  },
+  "next_objective": "P2.03"
+}
