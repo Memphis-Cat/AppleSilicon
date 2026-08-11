@@ -83,15 +83,36 @@ detect_jobs() {
 run_stage() {
     local name="$1"
     shift
+    local status
     FINAL_STAGE="${name}"
     echo "------------------------------------------------------------"
     echo "Stage: ${name}"
     printf 'Command: '
     quote_command "$@"
+    set +e
     "$@"
-    local status=$?
+    status=$?
+    set -e
     echo "Stage exit code: ${status}"
     return "${status}"
+}
+
+safe_reset_build_directory() {
+    case "${BUILD_DIR}" in
+        ""|"/"|"${ROOT_DIR}"|"${HOME}")
+            echo "Refusing unsafe build directory reset: ${BUILD_DIR}" >&2
+            return 1
+            ;;
+    esac
+
+    if [[ "${BUILD_DIR}" != "${ROOT_DIR}/.build/"* ]]; then
+        echo "Refusing to delete build directory outside ${ROOT_DIR}/.build: ${BUILD_DIR}" >&2
+        echo "Use the default project build directory for the reproducible baseline." >&2
+        return 1
+    fi
+
+    rm -rf "${BUILD_DIR}"
+    mkdir -p "${BUILD_DIR}"
 }
 
 echo "============================================================"
@@ -197,8 +218,7 @@ JOBS="$(detect_jobs)"
 echo "Parallel jobs: ${JOBS}"
 
 FINAL_STAGE="build-directory-reset"
-rm -rf "${BUILD_DIR}"
-mkdir -p "${BUILD_DIR}"
+safe_reset_build_directory
 
 COMMON_CONFIGURE=(
     "${SOURCE_DIR}/configure"
