@@ -1,42 +1,44 @@
 # Experiment Configurations
 
-This directory contains reproducible, non-secret example configurations, policies and machine-readable compatibility contracts.
+This directory contains reproducible, non-secret example configurations, policies and machine-readable compatibility contracts for AppleSilicon.
 
-Current Part 02 contracts:
+Current Part 02 contracts include:
 
 ```text
 p2.01-cpu-contract.json
 p2.02-framework-policy.json
 p2.03-sysreg-policy.json
+p2.04-feature-contract.json
 ```
 
 ## P2.01
 
-`p2.01-cpu-contract.json` is the source-locked Apple CPU inventory. Imported Apple implementation-defined registers remain `xnu_relevance = unknown`, `runtime_priority = unknown`, and `implementation_state = inventory_only` until stronger evidence promotes them.
+`p2.01-cpu-contract.json` is the static source-locked inventory of Apple implementation-defined CPU register encodings and feature observations. Unknown runtime behavior remains explicitly unknown.
 
 ## P2.02
 
-`p2.02-framework-policy.json` records the fail-closed framework boundary: TCG `apple-gxf`, `max` control CPU, `CP_ACCESS_UNDEFINED` for unknown access, and no invented values/effects/resets.
-
-Its representative registers are validation references, not live semantic policies.
+`p2.02-framework-policy.json` defines the fail-closed system-register framework boundary on TCG `apple-gxf`.
 
 ## P2.03
 
-`p2.03-sysreg-policy.json` defines:
+`p2.03-sysreg-policy.json` defines the legal read/write/reset/access policy classes and evidence/scope requirements. Its live semantic policy count remains zero until evidence promotes a register contract.
+
+## P2.04
+
+`p2.04-feature-contract.json` defines the source-backed minimum architectural VMApple CPU profile for TCG `apple-gxf`:
 
 ```text
-read   = undefined | stored | zero | constant | callback
-write  = undefined | store | ignore | callback
-reset  = none | value | callback
-access = allow | undefined | trap_el1 | trap_el2 | trap_el3 | callback
+PAuth presence
+SSBS2
+SME / SME2
+PAN3
+4 KiB stage-1 granules
+16 KiB stage-1 granules
+range TLBI
 ```
 
-Semantic policies require evidence and scope metadata. Stored state requires an explicit CPU field. Constants require write-ignore. Callback kinds require the matching callback. Duplicate encodings are forbidden.
-
-Current live semantic policy count: `0`.
-
-No register value or behavior is invented merely because its encoding is known.
+The contract uses a minimum/preserve-stronger rule and explicitly defers non-ID platform contracts such as paravirtualized PAC/CTRR, GICv3 and topology.
 
 ## Secret/proprietary material rule
 
-Configuration files may use placeholder paths, but must not contain Apple proprietary firmware, macOS disk images, serial numbers, signing tickets, private keys or device-specific credentials.
+Configuration files may describe local paths using placeholders, but must not contain Apple proprietary firmware, macOS disk images, serial numbers, machine secrets, signing tickets, private keys or device-specific credentials.

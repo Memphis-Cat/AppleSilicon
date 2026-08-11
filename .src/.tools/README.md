@@ -1,8 +1,10 @@
 # Research, Trace and CPU Contract Tools
 
-## Part 01 tools
+Tools in this directory support reproducible compatibility research rather than guest patching.
 
-Part 01 closes at P1.10. Its build, probe, trace, manifest, comparison and evidence tools remain available for final integration testing.
+## Part 01
+
+Part 01 tools provide build/probe, trace normalization, reference-manifest and A/B evidence workflows. Part 01 is closed at P1.10.
 
 ## Part 02 tools
 
@@ -11,34 +13,35 @@ cpu-contract.py
 prepare-p2.01.sh
 prepare-p2.02.sh
 prepare-p2.03.sh
+prepare-p2.04.sh
 ```
 
-### `cpu-contract.py`
+### cpu-contract.py / prepare-p2.01.sh
 
-Validates and queries `.src/.configs/p2.01-cpu-contract.json`.
+Validate and query the source-locked P2.01 Apple CPU register/feature inventory.
 
-### `prepare-p2.01.sh`
+### prepare-p2.02.sh
 
-Logged P2.01 contract validator.
+Validates the fail-closed Apple system-register framework and ordered patches through 0003.
 
-### `prepare-p2.02.sh`
+### prepare-p2.03.sh
 
-Logged P2.02 framework validator. It applies patches `0001` through `0003` to a disposable pinned Inferno tree and verifies the TCG-only fail-closed framework with zero live policies.
+Validates the sysreg policy engine and ordered patches through 0004, including evidence/scope requirements and the zero live-semantic-policy invariant.
 
-### `prepare-p2.03.sh`
+### prepare-p2.04.sh
 
-Logged P2.03 policy-model validator.
+P2.04's logged architectural feature-profile validator.
 
-It validates the P2.01 inventory and P2.03 JSON contract, verifies QEMU cpreg policy APIs, applies patches `0001` through `0004`, checks evidence/scope and fail-closed invariants, verifies zero live semantic policies, preserves the P2.02 undefined helper and runs `git diff --check`.
+It checks the exact XNU VMApple and Inferno source locks, validates the P2.04 JSON contract, verifies pinned Inferno's feature-test/max-CPU capabilities, applies patches 0001–0005 to `.build/p2.04/inferno-src`, verifies TCG-only `apple-gxf` wiring and `max` isolation, validates the required PAuth/SSBS2/SME2/PAN3/TGran4/TGran16/TLBIRANGE postconditions, confirms P2.03's live sysreg policy count remains zero, and runs `git diff --check`.
 
 Every run writes:
 
 ```text
-.logs/AppleSilicon-p2.03-YYYYMMDD-HHMMSS-PID.log
+.logs/AppleSilicon-p2.04-YYYYMMDD-HHMMSS-PID.log
 ```
 
-It does not launch macOS, HVF, a TCG guest or m1n1.
+It does not launch a macOS guest.
 
 ## Rules
 
-Preparation tools keep the pinned Inferno submodule pristine and use project-owned `.build/`/`.logs/` state. Tools must avoid collecting or committing machine-specific secrets.
+Preparation tools keep the pinned Inferno submodule pristine and use project-owned `.build/` and `.logs/` state. Secret or proprietary Apple artifacts must not be committed.
