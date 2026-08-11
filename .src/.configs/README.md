@@ -1,13 +1,16 @@
 # Experiment Configurations
 
-This directory will contain reproducible, non-secret example configurations for AppleSilicon experiments.
+This directory contains reproducible, non-secret example configurations for AppleSilicon experiments.
 
-Planned first configurations:
+Current configurations include:
 
 ```text
-reference-hvf.example
-tcg-probe.example
+inferno-build.env.example
+vmapple-probe.env.example
+vmapple-cpu.env.example
 ```
+
+`vmapple-cpu.env.example` belongs to P1.06 and defines the explicit non-host VMApple CPU-selection profile. The default control profile is TCG + `max`; Inferno's existing `apple-gxf` model is also accepted as an Apple-oriented experimental comparison profile.
 
 Configuration files may describe paths using placeholders, but must not contain:
 
