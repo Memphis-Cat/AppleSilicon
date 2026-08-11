@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "project_version": "1.0.0.0.0.0",
+  "part": "01",
+  "promotion_id": "P01-DIVERGENCE-0001",
+  "minimum_reproductions": 2,
+  "manifest_contract_version": "0.9.0.0.0.0",
+  "allowed_trace_artifact_kinds": [
+    "serial_log",
+    "normalized_trace"
+  ],
+  "reference_result_prefixes": [
+    "P1_09_REFERENCE_"
+  ],
+  "probe_result_prefixes": [
+    "P1_07_PROBE_",
+    "P1_10_PROBE_"
+  ],
+  "blocked_result_fragments": [
+    "synthetic",
+    "fixture",
+    "example",
+    "self-check",
+    "unverified",
+    "not-run",
+    "not_started"
+  ],
+  "require_unique_run_pairs": true,
+  "require_same_contract_fingerprint": true,
+  "require_same_divergence_signature": true,
+  "auto_commit_promotion": false
+}
