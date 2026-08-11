@@ -100,55 +100,6 @@ Research performed for the project found several important existing projects:
 
 The project uses a pinned Inferno source reference while keeping AppleSilicon-specific research, patches, tools, logs, and documentation in this repository.
 
-## Project rules
-
-### Rule 1 — No intermediate user testing
-
-The project is developed part by part and objective by objective, but the maintainer will **not be asked to manually test every part, update, fix, hotfix, or intermediate build**.
-
-Manual end-user testing happens only when the project reaches its finished integration stage.
-
-This does not prohibit development-side validation. Builds, static checks, unit tests, emulator self-tests, trace comparisons, and reproducibility checks should still be created and used whenever possible so that errors are not deliberately accumulated until the end. The rule is specifically that intermediate progress must not depend on repeatedly asking the maintainer to boot or test unfinished builds.
-
-### Rule 2 — Every executable run produces a `.log`
-
-Every AppleSilicon launcher, probe, emulator run, compatibility test, or final boot path must produce a persistent `.log` file.
-
-The default format is:
-
-```text
-logs/AppleSilicon-YYYYMMDD-HHMMSS.log
-```
-
-A useful log must include, when available:
-
-```text
-AppleSilicon version
-UTC timestamp
-host OS and architecture
-selected accelerator
-selected CPU model
-machine model
-command/configuration summary with secrets redacted
-boot stage
-warnings
-unimplemented features
-exceptions/panics
-exit code or shutdown reason
-```
-
-Console-only errors are not sufficient. If something fails, the project must leave enough information in a `.log` file to determine what happened later.
-
-Generated runtime logs are local diagnostic artifacts and should not contain private machine identifiers, Apple account information, cryptographic material, tickets, firmware secrets, or other sensitive data.
-
-The first generic logging wrapper lives at `src/tools/run-logged.sh`; future launchers must either use it or implement equivalent logging themselves.
-
-### Rule 3 — Do not hide incompatibilities
-
-Do not blindly patch macOS until a failure disappears.
-
-Whenever possible, compatibility belongs below the guest:
-
 ```text
 macOS / XNU
     ↓
@@ -158,23 +109,6 @@ AppleSilicon compatibility implementation
     ↓
 QEMU TCG / KVM / host ARM64
 ```
-
-Guest patches may be used temporarily for research and instrumentation, but a successful compatibility milestone should be reproducible with original Apple kernel/userspace components unless the milestone explicitly says otherwise.
-
-## Clone
-
-Clone the project and its pinned upstream source together:
-
-```bash
-git clone --recurse-submodules https://github.com/Memphis-Cat/AppleSilicon.git
-```
-
-If the repository was already cloned without submodules:
-
-```bash
-git submodule update --init --recursive
-```
-
 The Inferno reference is pinned rather than following `master` automatically, so experiments remain reproducible until we deliberately update the baseline.
 
 ## Repository layout
@@ -205,20 +139,6 @@ AppleSilicon/
 ```
 
 The source tree expands only when a part becomes concrete. We deliberately avoid a giant placeholder tree for components that do not exist yet.
-
-## First engineering target
-
-The first target is **not** the graphical macOS desktop.
-
-It is to take the existing VMApple model, preserve a known reference baseline, and determine precisely what prevents the same Apple virtual-Mac contract from progressing when its CPU path is no longer backed by a real Apple Silicon host CPU.
-
-The first compatibility milestone is reached when a non-Apple/generic CPU path produces a deterministic and well-logged incompatibility that can be reduced to one known missing CPU or platform contract.
-
-Then that contract becomes the next objective.
-
-## Documentation
-
-Start with [docs/README.md](docs/README.md), then read [docs/RESEARCH.md](docs/RESEARCH.md), [docs/PART-01-BASELINE.md](docs/PART-01-BASELINE.md), and [docs/P1.01.md](docs/P1.01.md).
 
 ## Legal and licensing note
 
