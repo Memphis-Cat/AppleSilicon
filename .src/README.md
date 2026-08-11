@@ -1,66 +1,60 @@
 # Source
 
-Project version: **`0.2.0.0.0.0`**
+Project version: **`0.9.0.0.0.0`**
 
-The source directory remains intentionally small while Part 01 is establishing the VMApple baseline.
-
-The project is not going to invent a fake Apple CPU implementation before we have measured what the guest actually requires.
+The source tree contains the reproducible infrastructure used to discover Apple Silicon compatibility requirements from evidence rather than guessing them in advance.
 
 ## Current layout
 
 ```text
-src/
-├── upstream/
-│   └── inferno/        # pinned upstream reference/submodule
-├── patches/
-│   └── README.md       # AppleSilicon patch series
-├── tools/
-│   ├── README.md       # trace/diff/inspection tooling
-│   └── run-logged.sh   # mandatory persistent run logging wrapper
-└── configs/
-    └── README.md       # non-secret example configurations
+.src/
+├── .upstream/
+│   └── .inferno/        # pinned upstream submodule
+├── .patches/            # reviewable AppleSilicon changes over the pinned source
+├── .tools/              # build, probe, trace, evidence, and validation tooling
+├── .configs/            # non-secret experiment contracts/examples
+└── .fixtures/           # deliberately sanitized deterministic test evidence
+```
+
+Local generated state remains outside version control under:
+
+```text
+.build/
+.logs/
 ```
 
 ## Upstream strategy
 
-The preferred initial reference is ChefKiss Inferno because it is an active QEMU derivative containing both Apple ARM emulation work and VMApple code.
+The active reference is the pinned ChefKiss Inferno revision recorded in Part 01. Upstream QEMU remains the canonical clean reference for VMApple behavior.
 
-Upstream QEMU remains the canonical reference for the clean `vmapple` implementation.
+AppleSilicon-specific changes stay reviewable as ordered patches and project-owned tools around a pristine submodule rather than becoming an unexplained source fork.
 
-AppleSilicon-specific changes should be kept easy to review against upstream rather than mixed into an unexplained source dump.
-
-## P1.01
-
-The first detailed sub-objective is `docs/P1.01.md`.
-
-P1.01 establishes the run-logging contract. Every meaningful runtime invocation must leave a `.log` artifact, including failed commands.
-
-The generic wrapper is:
+## Current Part 01 pipeline
 
 ```text
-src/tools/run-logged.sh
+P1.01  persistent logging
+P1.02  reproducible pinned build
+P1.03  VMApple capability/build-gate probe
+P1.04  remove HVF compile gate
+P1.05  make Apple PVG optional
+P1.06  explicit non-host CPU profiles
+P1.07  finite TCG VMApple probe runner
+P1.08  normalize/compare traces
+P1.09  validate reference/probe evidence pairing
 ```
 
-Future launchers may replace the wrapper, but they must preserve equivalent persistent logging behavior.
+The project still does not invent a broad fake Apple CPU model before a concrete guest-visible incompatibility has been measured.
 
-## First VMApple implementation patch
+## Evidence rule
 
-The first planned VMApple compatibility patch remains:
+A trace difference is not automatically a compatibility difference.
 
-```text
-0001-vmapple-allow-explicit-tcg-cpu.patch
-```
+P1.09 requires a reference and probe to prove that their pinned source, VMApple machine shape, RAM/SMP, trace/debug contract, and local guest inputs match before P1.08 output can be considered a real divergence candidate.
 
-Its job is not to make macOS boot magically.
-
-Its job is to remove the `host` CPU assumption from the experiment path cleanly enough that we can run VMApple with an explicit TCG CPU model, capture the first deterministic failure, and turn that failure into the next compatibility objective.
-
-See `docs/PART-01-BASELINE.md`.
+Raw local guest firmware, disks, auxiliary storage, VM identifiers, hardware-model serialization, credentials, or Apple account material must not be committed. Versionable manifests use hashes and sizes instead.
 
 ## Maintainer testing policy
 
-Intermediate source changes must not depend on the maintainer manually testing every part or release. Development-side builds, automated checks, emulator probes, and logs should provide evidence during development. Manual maintainer testing is reserved for the finished integration stage.
+Intermediate source changes must not depend on the maintainer manually testing every part or release. Development-side source review, automated checks, synthetic fixtures, emulator probes, and logs should provide evidence during development. Manual maintainer testing is reserved for the finished integration stage.
 
-## No proprietary Apple artifacts
-
-Do not add Apple firmware, macOS images, installers, device-specific secrets, tickets, keys, or other restricted Apple binaries to `src/`.
+See `.docs/PART-01-BASELINE.md` and `.docs/P1.09.md`.
