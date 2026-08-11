@@ -1,8 +1,8 @@
 # Part 04 — Integrated Runtime Evidence and Divergence Localization
 
-Project version: **`4.0.0.0.0.0`**
+Project version: **`4.1.0.0.0.0`**
 
-Status: **Active — P4.01 implemented**
+Status: **Active — P4.02 implemented**
 
 ## Purpose
 
@@ -84,13 +84,56 @@ Project files:
 
 ## P4.02 — Integrated TCG Probe Capture
 
-Status: **Next**
+Status: **Implementation complete — real TCG execution deferred**
 
-P4.02 will consume an approved probe session plan, run only through the existing P3.06 → P2.06 → P1.07 probe chain, and bind the resulting logs/traces to the pre-execution plan fingerprint.
+P4.02 consumes a P4.01 `probe` session plan and adds a runtime execution lock:
+
+```text
+RAM              4G / 4096 MiB
+SMP              4
+capture window   30 seconds
+grace window     3 seconds
+```
+
+The RAM/SMP lock is important because those fields participate in P1.09 reference/probe comparability.
+
+Before execution, P4.02 repeats the P4.01 provenance checks against the live QEMU binary, P3.06 manifest, machine UUID digest and all guest-input digests.
+
+It then delegates only through:
+
+```text
+P3.06
+  ↓
+P2.06
+  ↓
+P1.07
+```
+
+so there is still one authoritative TCG QEMU launch implementation.
+
+After a completed P1.07 observation, P4.02 immediately uses `collect-p1.10-probe.sh` to produce a P1.09-compatible sanitized probe manifest. The manifest must validate under the existing P1.09 policy.
+
+P4.02 then repeats the provenance preflight and requires the pre-run and post-run canonical results to be byte-identical.
+
+The final local capture descriptor binds the P4.01 session fingerprint, P3.06 platform fingerprint, validated P1.09 probe manifest and runtime artifact digests without storing raw guest paths or contents.
+
+A completed P4.02 capture is runtime evidence provenance, but **not** a divergence promotion. P1.10 remains the only promotion authority.
+
+Project files:
+
+```text
+.docs/P4.02.md
+.src/.configs/p4.02-probe-capture-policy.json
+.src/.tools/probe-capture.py
+.src/.tools/prepare-p4.02.sh
+.src/.tools/run-p4.02-probe.sh
+```
 
 ## P4.03 — Apple Silicon HVF Reference Capture
 
-P4.03 will do the same for the Apple-Silicon/HVF/`host` reference role. It will reuse the Part 01 reference/evidence collector rather than creating an independent evidence format.
+Status: **Next**
+
+P4.03 will apply the same provenance discipline to the Apple-Silicon/HVF/`host` reference role. It will reuse the Part 01 reference runner and P1.09 evidence format rather than creating an independent reference format.
 
 ## P4.04 — Comparable A/B Session Assembly
 
@@ -119,8 +162,8 @@ Part 04 adds provenance and orchestration around those mechanisms; it does not w
 
 ## Privacy and proprietary-material rule
 
-Real firmware, AUX/root images, machine identity, hardware-model data, UUIDs, serial numbers, account data, keys and tickets remain local. Only hashes, sizes and sanitized metadata may enter generated session plans.
+Real firmware, AUX/root images, machine identity, hardware-model data, UUIDs, serial numbers, account data, keys and tickets remain local. Only hashes, sizes and sanitized metadata may enter generated session/capture manifests.
 
 ## Testing rule
 
-No manual maintainer test is required for individual Part 04 implementation objectives. Guest execution is performed only when the corresponding integrated runtime objective is intentionally reached and the required local/reference environment exists.
+No manual maintainer test is required for individual Part 04 implementation objectives. Real P4.02/P4.03 guest execution remains deferred to the final integrated testing phase with the required local environments.
