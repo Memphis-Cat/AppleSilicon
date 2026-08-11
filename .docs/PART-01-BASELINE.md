@@ -1,8 +1,8 @@
 # Part 01 — VMApple Baseline and Host-Dependency Map
 
-Project version: **`0.9.0.0.0.0`**
+Project version: **`1.0.0.0.0.0`**
 
-Status: **Active — reference/probe evidence contract implemented; real A/B collection and divergence promotion remain deferred**
+Status: **Implementation sequence closed at P1.10 — real A/B execution and empirical divergence promotion deferred**
 
 ## Purpose
 
@@ -104,7 +104,7 @@ Added:
 .src/.patches/0002-vmapple-optional-apple-pvg.patch
 ```
 
-VMApple now attempts to create `apple-gfx-mmio` through QEMU's safe optional-device path. When the Darwin-only PVG implementation is unavailable, the prepared research machine can continue without inventing fake GPU behavior.
+VMApple attempts to create `apple-gfx-mmio` through QEMU's optional-device path. When the Darwin-only PVG implementation is unavailable, the prepared research machine can continue without inventing fake GPU behavior.
 
 ### P1.06 — Explicit Non-Host VMApple CPU Selection
 
@@ -123,18 +123,7 @@ TCG + apple-gxf
 
 Status: **Implementation complete — runtime launch deferred**
 
-Created the first complete controlled launch specification:
-
-```text
-VMApple
- + P1.04
- + P1.05
- + TCG
- + max/apple-gxf
- + local authorized boot inputs
- + finite execution window
- + persistent diagnostics
-```
+Created the controlled TCG launch specification with local authorized boot inputs, finite execution, trace capability checking, and persistent logs.
 
 Initial trace events:
 
@@ -156,44 +145,17 @@ cpu_reset
 
 Status: **Implementation complete — real trace comparison deferred**
 
-The comparator normalizes host-only QEMU trace noise while preserving guest-semantic MMIO data, reports the earliest mismatch, classifies it, preserves raw/source-line evidence, and performs only bounded resynchronization.
+The comparator removes only host-runtime noise, preserves guest-semantic MMIO information, reports the earliest mismatch, classifies it, and performs bounded resynchronization.
 
-Synthetic fixtures validate host-noise equivalence, MMIO value divergence, and sequence insertion/resynchronization.
-
-No synthetic result is allowed to become `P01-DIVERGENCE-0001`.
+Synthetic fixtures prove host-noise equivalence, MMIO-value divergence detection, and insertion/resynchronization handling.
 
 ### P1.09 — Reference Trace Manifest and Real-Hardware Trace Preparation
 
 Status: **Implementation complete — real reference/probe collection deferred**
 
-Added:
+P1.09 makes A/B comparability machine-checkable.
 
-```text
-.docs/P1.09.md
-.src/.configs/p1.09-manifest-policy.json
-.src/.configs/p1.09-reference.example.json
-.src/.configs/p1.09-probe.example.json
-.src/.tools/reference-manifest.py
-.src/.tools/prepare-p1.09.sh
-.src/.tools/run-p1.09-reference.sh
-```
-
-P1.09 makes reference/probe comparability machine-checkable before a trace difference can be interpreted.
-
-The equality contract covers:
-
-```text
-pinned Inferno repository/revision
-VMApple machine type
-RAM/SMP
-trace event set
-debug category set
-firmware hash + size
-auxiliary-storage hash + size
-disk hash + size
-machine-identity hash + size
-hardware-model digest metadata when available
-```
+The equality contract includes the pinned source, VMApple machine type, RAM/SMP, trace/debug sets, and hashes/sizes for firmware, auxiliary storage, disk, machine identity, and optional hardware-model metadata.
 
 Expected differences remain explicit:
 
@@ -202,28 +164,61 @@ reference: HVF + host CPU + Apple Silicon macOS host
 probe:     TCG + max/apple-gxf + development host
 ```
 
-The manifest validator rejects raw UUID/account/private-key/local-user-path material. The collector stores hashes/sizes and artifact basenames rather than copying local guest material.
-
-A finite HVF reference runner is now defined and fail-closed to Darwin/arm64. It is reserved for final integration evidence collection.
-
-m1n1 is documented only as a secondary authorized real-hardware tracing escalation path, not as a substitute for the primary VMApple/HVF A-side trace.
+P1.09 also defines the fail-closed HVF reference runner and keeps m1n1 as a separate secondary authorized-hardware escalation path.
 
 ### P1.10 — Controlled A/B Evidence Bundle and Divergence Promotion Gate
 
-Status: **Next objective**
+Status: **Implementation complete — real runtime promotion deferred**
 
-P1.10 will connect the existing pieces into one evidence pipeline:
+P1.10 is the final Part 01 implementation objective.
+
+Added:
 
 ```text
-P1.09 HVF reference run
-P1.07 TCG probe run
-P1.09 manifest collection/pair validation
-P1.08 trace normalization/comparison
-candidate report
-promotion gate
+.docs/P1.10.md
+.src/.configs/p1.10-promotion-policy.json
+.src/.tools/evidence-bundle.py
+.src/.tools/collect-p1.10-probe.sh
+.src/.tools/prepare-p1.10.sh
 ```
 
-The gate must refuse to create `P01-DIVERGENCE-0001` unless the A/B manifests satisfy P1.09 and P1.08 identifies a real, reproducible candidate from actual runtime evidence.
+P1.10 connects:
+
+```text
+P1.09 reference evidence
+P1.07 probe evidence
+P1.10 probe-manifest collection
+P1.09 manifest pairing
+artifact-integrity verification
+P1.08 trace comparison
+candidate generation
+reproduction gate
+```
+
+A single real A/B mismatch may create only:
+
+```text
+P01-DIVERGENCE-CANDIDATE
+```
+
+Promotion to:
+
+```text
+P01-DIVERGENCE-0001
+```
+
+requires at least two unique runtime A/B run pairs with:
+
+```text
+same P1.09 contract fingerprint
+same earliest-divergence signature
+verified trace artifact hashes
+promotion-eligible runtime results
+```
+
+Synthetic, fixture, example, self-check, unverified, and not-run results are barred from promotion.
+
+P1.10 never auto-commits a promoted record.
 
 ---
 
@@ -231,19 +226,15 @@ The gate must refuse to create `P01-DIVERGENCE-0001` unless the A/B manifests sa
 
 ## O1 — Freeze upstream reference
 
-Implemented by P1.01–P1.03.
-
-The exact Inferno revision is pinned and all later source assumptions are checked against it.
+Implemented structurally by P1.01–P1.03.
 
 ## O2 — Reproducible reference/probe build environment
 
 Implemented structurally by P1.02–P1.05.
 
-Actual final integration builds/runs remain deferred under project policy.
-
 ## O3 — Inventory VMApple host dependencies
 
-Implemented progressively by P1.03–P1.05.
+Implemented structurally by P1.03–P1.05.
 
 Confirmed early dependencies included:
 
@@ -257,53 +248,74 @@ host CPU default
 
 Implemented structurally by P1.06.
 
-The known reference default remains `host`; the controlled non-host path selects `max` or `apple-gxf` under TCG.
-
 ## O5 — Controlled TCG divergence run
 
 Runtime harness implemented by P1.07.
 
-Actual guest execution is intentionally deferred.
-
 ## O6 — Differential tracing
 
-Analysis implementation completed by P1.08.
-
-Real A/B trace collection is intentionally deferred.
+Normalization/comparison implementation completed by P1.08.
 
 ## O7 — Reference/real-hardware evidence preparation
 
 Implemented structurally by P1.09.
 
-The primary reference is VMApple/HVF. m1n1 remains a separate escalation environment for authorized hardware tracing when a future behavior cannot be explained from public sources or the primary reference.
+## O8 — Evidence integration and promotion safety
+
+Implemented structurally by P1.10.
 
 ---
 
-# Part 01 success condition
+# Part 01 implementation closure
 
-Part 01 is complete only when all of these are satisfied:
-
-1. The pinned emulator tree and AppleSilicon patch chain are reproducible.
-2. The reference VMApple experiment is fully described with non-secret metadata.
-3. The controlled TCG VMApple experiment is fully described with the same comparison contract.
-4. Reference and probe runs produce deterministic persistent evidence.
-5. The reference/probe manifests satisfy the P1.09 pairing contract.
-6. The trace normalization/comparison tooling consumes that evidence.
-7. The **first real divergence** is reproducible and precisely located.
-8. The divergence is promoted from candidate to:
+The Part 01 implementation sequence is closed.
 
 ```text
-P01-DIVERGENCE-0001
+P1.01
+P1.02
+P1.03
+P1.04
+P1.05
+P1.06
+P1.07
+P1.08
+P1.09
+P1.10
 ```
 
-9. The divergence is documented as a specific CPU/platform contract with a reproducer or regression check.
-10. The evidence shows what the next compatibility part should actually implement.
+There is no P1.11.
+
+This does **not** mean a real guest divergence has already been observed. The project-wide testing rule intentionally defers the empirical A/B execution.
+
+Current state:
+
+```text
+Part 01 code/documentation pipeline: implemented
+real HVF reference runs: deferred
+real TCG probe runs: deferred
+real reproduced A/B comparison: deferred
+P01-DIVERGENCE-0001: not assigned yet
+```
+
+## Empirical Part 01 success condition
+
+When final integration testing is eventually performed, Part 01 is empirically successful only when:
+
+1. the pinned emulator tree and AppleSilicon patch chain build as documented,
+2. the reference VMApple experiment produces persistent evidence,
+3. the controlled TCG VMApple experiment produces persistent evidence,
+4. the reference/probe manifests satisfy the P1.09 pairing contract,
+5. P1.10 verifies the selected trace artifacts against their manifest hashes,
+6. P1.08 identifies the earliest real mismatch,
+7. at least two independent run pairs reproduce the same divergence signature under the same contract fingerprint,
+8. P1.10 promotes that evidence to `P01-DIVERGENCE-0001`,
+9. the promoted record determines the concrete hardware/CPU/platform contract to implement next.
 
 A GUI is not required.
 
 A complete generic-ARM XNU boot is not required.
 
-The core Part 01 deliverable is the **first understood incompatibility**.
+The core Part 01 empirical deliverable remains the **first understood incompatibility**.
 
 ---
 
@@ -323,13 +335,13 @@ Reproducer:
 Log file:
 ```
 
-Unknown values must remain marked unknown rather than guessed.
+Unknown values must remain unknown rather than guessed.
 
 ---
 
 # Part 01 non-goals
 
-Part 01 does not attempt to complete:
+Part 01 does not complete:
 
 - AGX GPU acceleration,
 - Secure Enclave emulation,
@@ -348,22 +360,14 @@ Those belong to later evidence-driven parts only if the selected guest-machine c
 
 ---
 
-# Later direction
+# Next project unit
 
-Part 02 remains intentionally unnamed.
-
-Its title will be derived from `P01-DIVERGENCE-0001` rather than guessed in advance.
-
-Examples only:
+The next project unit is:
 
 ```text
-Part 02 — Apple CPU System Register Compatibility v1
+Part 02
 ```
 
-or:
+Part 02 begins compatibility implementation rather than baseline isolation.
 
-```text
-Part 02 — VMApple 16K Guest MMU Bring-Up
-```
-
-The first real evidence decides the next part.
+Its exact hardware-contract title should be derived from the first real `P01-DIVERGENCE-0001` once final integration evidence exists. Until then, unknown Apple-specific register/MMU/device behavior must not be filled with guessed implementations merely to keep development moving.
