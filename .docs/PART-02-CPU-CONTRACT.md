@@ -1,20 +1,20 @@
 # Part 02 — Apple CPU Compatibility Contract
 
-Project version: **`2.4.0.0.0.0`**
+Project version: **`2.5.0.0.0.0`**
 
-Status: **Active — P2.01 through P2.05 implemented**
+Status: **Closed — P2.01 through P2.06 implementation-complete**
 
 ## Purpose
 
-Part 01 built the VMApple reference/probe and evidence pipeline. Part 02 builds the deliberate Apple CPU compatibility layer.
+Part 01 built the VMApple reference/probe and evidence pipeline. Part 02 built the deliberate Apple CPU compatibility component.
 
-The goal is:
+The goal was:
 
 > Give the TCG VMApple path a reviewable Apple CPU contract for system registers and architectural CPU-visible features without pretending to emulate an entire M-series SoC.
 
 ## Fixed objective count
 
-Part 02 has exactly six implementation objectives:
+Part 02 contains exactly six objectives:
 
 ```text
 P2.01 — Apple CPU System Register and Feature Inventory
@@ -27,31 +27,35 @@ P2.06 — Part 02 Integration Gate
 
 There is **no P2.07**.
 
-## P2.01 — Apple CPU System Register and Feature Inventory
+## P2.01
 
-Status: **Implementation complete — static inventory only**
+Status: **Complete — static inventory**
 
-P2.01 records source-locked Apple implementation-defined register encodings, feature observations, evidence provenance and explicit unknown runtime state.
+P2.01 source-locks Apple implementation-defined register encodings and preserves unknown runtime relevance/semantics rather than inventing them.
 
-## P2.02 — Apple System Register Emulation Framework
+## P2.02
 
-Status: **Implementation complete — framework only**
+Status: **Complete — fail-closed sysreg framework**
 
-P2.02 adds project-owned QEMU/Inferno registration plumbing through `ARMCPRegInfo` with a fail-closed undefined path on TCG `apple-gxf`.
+P2.02 adds project-owned QEMU/Inferno `ARMCPRegInfo` integration for TCG `apple-gxf` while registering no fabricated live semantics.
 
-## P2.03 — Register Read/Write/Reset Policy Model
+## P2.03
 
-Status: **Implementation complete — policy engine only**
+Status: **Complete — sysreg policy model**
 
-P2.03 adds independent read/write/reset/access policy classes, evidence/scope requirements and native QEMU cpreg mappings. The live Apple implementation-defined sysreg policy table remains empty until evidence promotes a concrete semantic contract.
+P2.03 provides independent read/write/reset/access policies, evidence/scope requirements, duplicate-encoding rejection and native QEMU cpreg mappings.
 
-## P2.04 — CPU Feature and ID-Register Compatibility
+The live implementation-defined sysreg policy table remains:
 
-Status: **Implementation complete — architectural feature profile only**
+```text
+0
+```
 
-P2.04 separates standard AArch64 feature exposure from Apple implementation-defined sysreg behavior.
+## P2.04
 
-The source-backed VMApple minimum for TCG `apple-gxf` covers:
+Status: **Complete — architectural feature profile**
+
+P2.04 adds the source-backed VMApple architectural minimum for TCG `apple-gxf`:
 
 ```text
 PAuth presence
@@ -63,56 +67,59 @@ FEAT_PAN3
 FEAT_TLBIRANGE
 ```
 
-The profile uses a minimum/preserve-stronger rule. It does not modify ordinary `max`, host/HVF or KVM paths, and it does not add Apple implementation-defined sysreg semantics.
+The profile preserves stronger supported features and does not contaminate ordinary `max`, host/HVF or KVM CPU paths.
 
-## P2.05 — Deterministic CPU Contract Regression Harness
+## P2.05
 
-Status: **Implementation complete — deterministic non-guest regression**
+Status: **Complete — deterministic non-guest regression**
 
-P2.05 locks the exact P2.01–P2.04 contracts and Part 02 patches `0003`–`0005`, cross-checks their invariants, applies the full ordered patch series to a disposable copy of the pinned Inferno source, and inspects the resulting `apple-gxf` CPU integration.
+P2.05 content-locks the Part 02 CPU contracts and patches, applies the complete source patch chain to the pinned Inferno revision, checks `max` isolation and `apple-gxf` wiring, runs negative self-checks, and emits a deterministic CPU-contract suite fingerprint.
 
-It verifies:
-
-```text
-P2.02 representative encodings still match P2.01
-P2.02 unknown behavior remains fail-closed
-P2.03 live semantic sysreg policy count remains 0
-P2.04 architectural requirements remain enforced
-max remains the untouched control CPU
-apple-gxf CPU hooks remain TCG-only
-Inferno source locks remain consistent
-```
-
-The canonical deterministic result is:
+Canonical result:
 
 ```text
 .build/p2.05/cpu-contract-regression.json
 ```
 
-The regression is run twice against the same prepared source and the two JSON outputs must be byte-identical. A SHA-256 suite fingerprint identifies the exact deterministic contract state.
+## P2.06
 
-Project files:
+Status: **Complete — Part 02 integration gate**
+
+P2.06 binds the CPU component to the Part 01 experiment/evidence pipeline using:
 
 ```text
-.src/.configs/p2.05-regression-policy.json
-.src/.tools/cpu-contract-regression.py
-.src/.tools/prepare-p2.05.sh
-.docs/P2.05.md
+machine      = vmapple
+accelerator  = tcg
+CPU          = apple-gxf
+control CPU  = max
 ```
 
-No new CPU behavior patch is introduced by P2.05.
+It requires P2.05 to pass, creates a fresh pinned/patched integrated source tree, locks the Part 01 runtime/evidence artifacts, and emits a deterministic integration manifest:
 
-## P2.06 — Part 02 Integration Gate
+```text
+.build/p2.06/integration-manifest.json
+```
 
-Status: **Next — final Part 02 objective**
+The runtime wrapper `run-p2.06-probe.sh` reuses the existing P1.07 runtime harness after verifying the integration manifest and QEMU capabilities. Runtime evidence still flows through P1.09/P1.08/P1.10 rather than bypassing the existing promotion gate.
 
-P2.06 combines the validated Part 02 CPU compatibility component with the Part 01 prepared VMApple/TCG launch/evidence path.
+No guest execution is required to mark P2.06 implementation-complete.
 
-After P2.06, Part 02 is closed.
+## Part 02 final state
+
+```text
+P2.01 ✓
+P2.02 ✓
+P2.03 ✓
+P2.04 ✓
+P2.05 ✓
+P2.06 ✓
+```
+
+Part 02 is now closed.
 
 ## Evidence hierarchy
 
-1. reproducible Part 01 A/B runtime evidence when final integration testing exists;
+1. reproducible Part 01 A/B runtime evidence when final integrated testing exists;
 2. public XNU source;
 3. QEMU source/documented ARM behavior;
 4. Asahi/m1n1 source and authorized traces;
@@ -129,18 +136,17 @@ proven required by VMApple
 proven semantic behavior
 ```
 
-P2.01 records encodings, P2.02 provides registration plumbing, P2.03 provides a sysreg policy engine, P2.04 provides an architectural minimum feature profile, and P2.05 protects those contracts against regression. None manufactures evidence for unknown implementation-defined behavior.
+Part 02 deliberately preserves this distinction.
 
-## Logging and testing
+## Testing status
 
-The project-wide rules remain active:
+Development-side source/configuration validation is allowed and logged. Real macOS/HVF/TCG guest execution remains deferred to the final integrated testing stage.
 
-- no manual maintainer test is required for individual objectives;
-- development-side static/build/regression validation is allowed;
-- meaningful executable tools write `.log` artifacts;
-- real macOS/HVF/TCG integration testing is deferred to the final integrated stage;
-- no proprietary Apple firmware, images or secrets are committed.
+Part 02 implementation completion does not claim a successful macOS boot or full Apple CPU emulation.
 
-## Part 02 completion condition
+## Next progression point
 
-Part 02 is implementation-complete only after P2.06. Empirical guest success remains a separate final-integration result and must not be claimed before a real run demonstrates it.
+```text
+Part 03 — VMApple Platform Contract
+P3.01 — Platform Contract Inventory and Ownership Map
+```
