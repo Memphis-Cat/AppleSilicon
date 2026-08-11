@@ -1,8 +1,8 @@
 # Part 04 — Integrated Runtime Evidence and Divergence Localization
 
-Project version: **`4.1.0.0.0.0`**
+Project version: **`4.2.0.0.0.0`**
 
-Status: **Active — P4.02 implemented**
+Status: **Active — P4.03 implemented**
 
 ## Purpose
 
@@ -37,8 +37,6 @@ accelerator  tcg
 cpu          apple-gxf
 ```
 
-The probe role is the portable compatibility-layer path and may run on a non-Apple-Silicon host when a suitable `qemu-system-aarch64` binary is available.
-
 ### Reference
 
 ```text
@@ -54,23 +52,9 @@ The primary reference remains an Apple-Silicon macOS host using VMApple/HVF. Thi
 
 Status: **Implementation complete — real local session planning deferred**
 
-P4.01 creates the pre-execution provenance contract. Before either role may run, a sanitized deterministic session plan must bind:
+P4.01 creates a deterministic privacy-safe session plan before either runtime role may execute. It binds the passing P3.06 fingerprint, exact QEMU binary digest/version/capabilities, firmware/AUX/root/identity digests, optional hardware-model digest, canonical machine-UUID digest and Part 01 trace/debug contract.
 
-- the passing P3.06 platform integration fingerprint;
-- the exact QEMU executable SHA-256 and byte size;
-- QEMU version output;
-- role-specific `vmapple`, accelerator and CPU capability checks;
-- firmware SHA-256/bytes;
-- AUX SHA-256/bytes;
-- root disk SHA-256/bytes;
-- machine-identity SHA-256/bytes;
-- optional hardware-model SHA-256/bytes;
-- SHA-256 of the normalized machine UUID without storing the UUID itself;
-- the Part 01 MMIO trace/debug contract.
-
-The session plan stores no raw local paths, hostname, UUID, identity content, hardware-model content, firmware or disk content.
-
-A P4.01 plan is **not runtime evidence**. It is an admissibility/provenance record for a later run.
+A P4.01 plan is provenance metadata, not runtime evidence.
 
 Project files:
 
@@ -86,38 +70,19 @@ Project files:
 
 Status: **Implementation complete — real TCG execution deferred**
 
-P4.02 consumes a P4.01 `probe` session plan and adds a runtime execution lock:
+P4.02 consumes a P4.01 `probe` plan and locks:
 
 ```text
-RAM              4G / 4096 MiB
-SMP              4
-capture window   30 seconds
-grace window     3 seconds
+vmapple / TCG / apple-gxf
+RAM      4G / 4096 MiB
+SMP      4
+window   30 seconds
+grace    3 seconds
 ```
 
-The RAM/SMP lock is important because those fields participate in P1.09 reference/probe comparability.
+It verifies provenance before and after execution, delegates only through `P3.06 → P2.06 → P1.07`, then uses the existing Part 01 collector to create a valid P1.09 probe manifest and a sanitized P4.02 capture descriptor.
 
-Before execution, P4.02 repeats the P4.01 provenance checks against the live QEMU binary, P3.06 manifest, machine UUID digest and all guest-input digests.
-
-It then delegates only through:
-
-```text
-P3.06
-  ↓
-P2.06
-  ↓
-P1.07
-```
-
-so there is still one authoritative TCG QEMU launch implementation.
-
-After a completed P1.07 observation, P4.02 immediately uses `collect-p1.10-probe.sh` to produce a P1.09-compatible sanitized probe manifest. The manifest must validate under the existing P1.09 policy.
-
-P4.02 then repeats the provenance preflight and requires the pre-run and post-run canonical results to be byte-identical.
-
-The final local capture descriptor binds the P4.01 session fingerprint, P3.06 platform fingerprint, validated P1.09 probe manifest and runtime artifact digests without storing raw guest paths or contents.
-
-A completed P4.02 capture is runtime evidence provenance, but **not** a divergence promotion. P1.10 remains the only promotion authority.
+P4.02 cannot promote a divergence.
 
 Project files:
 
@@ -131,13 +96,48 @@ Project files:
 
 ## P4.03 — Apple Silicon HVF Reference Capture
 
-Status: **Next**
+Status: **Implementation complete — real Apple Silicon/HVF execution deferred**
 
-P4.03 will apply the same provenance discipline to the Apple-Silicon/HVF/`host` reference role. It will reuse the Part 01 reference runner and P1.09 evidence format rather than creating an independent reference format.
+P4.03 applies the same provenance discipline to the primary reference role:
+
+```text
+vmapple / HVF / host
+host     Darwin arm64
+RAM      4G / 4096 MiB
+SMP      4
+window   30 seconds
+grace    3 seconds
+```
+
+The host requirement is fail-closed. An Intel Mac/Hackintosh, Linux ARM host, TCG substitute, or synthetic manifest cannot become a primary reference.
+
+P4.03 reuses `.src/.tools/run-p1.09-reference.sh`; it does not create another HVF QEMU launcher or another reference-manifest schema.
+
+Before execution it requires a valid P4.01 `reference` plan, the exact P3.06 fingerprint, exact planned QEMU digest/version plus `vmapple`/`hvf`/`host` capabilities, exact guest-input digests and the canonical UUID digest.
+
+After a completed `P1_09_REFERENCE_*` observation, the generated P1.09 reference manifest must validate under the existing Part 01 policy and must record the locked 4096 MiB / 4-vCPU contract.
+
+The current P1.09 reference manifest does not include its launcher log as a manifest artifact. P4.03 preserves that closed format and hashes the launcher log separately in the P4.03 capture descriptor.
+
+The full provenance preflight runs again after execution and must be byte-identical to the pre-run result.
+
+A `P4_03_REFERENCE_CAPTURE_READY` result is reference provenance, not a boot-success claim or divergence promotion.
+
+Project files:
+
+```text
+.docs/P4.03.md
+.src/.configs/p4.03-reference-capture-policy.json
+.src/.tools/reference-capture.py
+.src/.tools/prepare-p4.03.sh
+.src/.tools/run-p4.03-reference.sh
+```
 
 ## P4.04 — Comparable A/B Session Assembly
 
-P4.04 will require probe/reference session-plan and runtime-evidence equality on every field that is supposed to match and will reject mixed assets or changed binaries.
+Status: **Next**
+
+P4.04 will combine P4.02 and P4.03 captures, invoke the P1.09 equality contract, and reject mixed guest assets, RAM/SMP drift, trace-contract drift or otherwise incomparable sessions before any trace divergence is considered.
 
 ## P4.05 — Reproducible Divergence Promotion
 
