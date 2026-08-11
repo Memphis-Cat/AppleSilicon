@@ -1,6 +1,6 @@
 # AppleSilicon Documentation
 
-Current project version: **`4.2.0.0.0.0`**
+Current project version: **`4.3.0.0.0.0`**
 
 This directory records the research, design decisions, compatibility contracts, experiments and implementation objectives for AppleSilicon.
 
@@ -19,6 +19,7 @@ This directory records the research, design decisions, compatibility contracts, 
 - [P4.01.md](P4.01.md) — runtime session provenance and input lock.
 - [P4.02.md](P4.02.md) — integrated TCG probe capture.
 - [P4.03.md](P4.03.md) — Apple Silicon HVF reference capture.
+- [P4.04.md](P4.04.md) — comparable A/B session assembly.
 
 ## Part boundaries
 
@@ -33,12 +34,12 @@ Part 04 is fixed at `P4.01` through `P4.06`; there is no P4.07.
 P4.01  complete
 P4.02  complete
 P4.03  complete
-P4.04  NEXT
-P4.05
+P4.04  complete
+P4.05  NEXT
 P4.06  final Part 04 objective
 ```
 
-P4.02 defines the provenance-bound TCG/`apple-gxf` probe capture. P4.03 mirrors it with a fail-closed Darwin/arm64 + HVF + `host` reference capture while preserving P1.09 as the authoritative reference-manifest format.
+P4.04 binds the P4.01 plans, P4.02/P4.03 capture descriptors and P1.09 manifests into one deterministic A/B admission record. It additionally requires equal machine-UUID digest, equal P3.06 state and equal QEMU version string while preserving the expected host/HVF-vs-TCG/CPU differences.
 
 ## Maintainer testing policy
 
@@ -50,11 +51,11 @@ Development-side source inspection, compilation, static checks, automated tests,
 
 Every meaningful executable AppleSilicon operation must leave a `.log` artifact under `.logs/` unless a later component explicitly documents another local output contract.
 
-P4.03 provides a logged static preparation harness and a logged future Apple Silicon/HVF reference wrapper.
+P4.04 provides a logged static preparation harness and logged deterministic A/B assembler.
 
 ## Evidence policy
 
-P4.02/P4.03 capture descriptors establish runtime provenance only. Part 01 remains authoritative for actual manifest comparability, trace normalization and divergence promotion.
+P4.02/P4.03 capture descriptors establish runtime provenance. P4.04 establishes pair admissibility. Part 01 remains authoritative for actual trace normalization/comparison and divergence promotion.
 
 ## Root README rule
 
