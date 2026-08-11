@@ -71,10 +71,12 @@ Example:
 ## Current version
 
 ```text
-0.3.0.0.0.0
+0.4.0.0.0.0
 ```
 
-This update implements P1.03, the VMApple Capability & Build-Gate Probe. It documents the current `CONFIG_VMAPPLE` dependency on ARM and HVF, records the current `host` CPU default, and adds a logged capability probe for machine, accelerator, CPU-model, and VMApple-property discovery without booting macOS.
+This update implements P1.04, **Decouple VMApple Build From HVF**. It adds a pinned-source patch that removes VMApple's compile-time HVF dependency, makes the AArch64 scope explicit, removes the unused `system/hvf.h` include, and adds a logged preparation harness that applies and validates the patch in a disposable `.build` source tree without modifying the pinned Inferno submodule.
+
+P1.04 also documents the next independent host dependency discovered during research: Apple ParavirtualizedGraphics/Metal realization is Darwin-specific and remains a later objective rather than being hidden inside the HVF build-gate change.
 
 The root `README.md` is intentionally not version-updated in this release under the project owner's instruction.
 
