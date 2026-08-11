@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "project_version": "2.4.0.0.0.0",
+  "part": "Part 02",
+  "objective": "P2.05",
+  "title": "Deterministic CPU Contract Regression Harness",
+  "scope": {
+    "cpu": "apple-gxf",
+    "accelerator": "tcg",
+    "control_cpu": "max",
+    "guest_execution": false
+  },
+  "locked_artifacts": [
+    {
+      "path": ".src/.configs/p2.01-cpu-contract.json",
+      "git_blob_sha": "48e6f99ecd39352f6db3d56feda2e40cf6892501",
+      "role": "inventory"
+    },
+    {
+      "path": ".src/.configs/p2.02-framework-policy.json",
+      "git_blob_sha": "aa5364c49963c5a29612e240076b8d47ae9507e5",
+      "role": "sysreg_framework"
+    },
+    {
+      "path": ".src/.configs/p2.03-sysreg-policy.json",
+      "git_blob_sha": "b5c0907e46f2bf53c40cef97b21e1d6791801e17",
+      "role": "sysreg_policy"
+    },
+    {
+      "path": ".src/.configs/p2.04-feature-contract.json",
+      "git_blob_sha": "284cd6a2cf347ac39b944f57086846275e292639",
+      "role": "architectural_feature_contract"
+    },
+    {
+      "path": ".src/.patches/0003-arm-apple-sysreg-framework.patch",
+      "git_blob_sha": "abbc80002d3599b773cd34135396f1f18eb799d5",
+      "role": "sysreg_framework_patch"
+    },
+    {
+      "path": ".src/.patches/0004-arm-apple-sysreg-policy-model.patch",
+      "git_blob_sha": "5910e4e4fc6d90128779cdd058198dbe8cc5b562",
+      "role": "sysreg_policy_patch"
+    },
+    {
+      "path": ".src/.patches/0005-arm-vmapple-feature-contract.patch",
+      "git_blob_sha": "66e985f95aa8449df4d008fd8ffb67b731caba98",
+      "role": "feature_profile_patch"
+    }
+  ],
+  "invariants": {
+    "p2_02_representatives_match_p2_01": true,
+    "p2_03_live_policy_count_zero": true,
+    "p2_03_unknown_behavior_fail_closed": true,
+    "p2_04_requirements_all_enforced": true,
+    "p2_04_preserves_stronger_features": true,
+    "max_control_cpu_untouched": true,
+    "apple_gxf_profile_tcg_only": true,
+    "inferno_source_lock_consistent": true,
+    "deterministic_result_required": true
+  },
+  "result_schema": 1,
+  "promotion_behavior": "none",
+  "output": ".build/p2.05/cpu-contract-regression.json",
+  "next_objective": "P2.06"
+}
