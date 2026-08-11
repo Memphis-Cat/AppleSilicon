@@ -1,0 +1,390 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: AppleSilicon Project <noreply@example.invalid>
+Date: Tue, 11 Aug 2026 18:50:00 +0100
+Subject: [PATCH] target/arm: add Apple sysreg policy model
+
+P2.03 adds explicit read, write, reset and access policies on top of the
+P2.02 Apple system-register framework. Policy objects carry evidence and
+scope metadata, reject invalid callback/state combinations, preserve
+fail-closed undefined behavior, and map supported behavior onto QEMU's
+existing cpreg helpers.
+
+No Apple inventory register is assigned live behavior by this patch. The
+default policy table remains empty until evidence promotes a concrete
+register contract.
+---
+
+diff --git a/target/arm/apple-sysregs.h b/target/arm/apple-sysregs.h
+--- a/target/arm/apple-sysregs.h
++++ b/target/arm/apple-sysregs.h
+@@ -11,7 +11,6 @@
+ 
+ /*
+  * Encoding-only description matching the P2.01 machine-readable inventory.
+- * Behavior is intentionally not represented here; P2.03 owns policy.
+  */
+ typedef struct AppleSysRegSpec {
+     const char *name;
+@@ -22,17 +21,85 @@
+     uint8_t op2;
+ } AppleSysRegSpec;
+ 
++typedef enum AppleSysRegReadPolicy {
++    APPLE_SYSREG_READ_UNDEFINED = 0,
++    APPLE_SYSREG_READ_STORED,
++    APPLE_SYSREG_READ_ZERO,
++    APPLE_SYSREG_READ_CONSTANT,
++    APPLE_SYSREG_READ_CALLBACK,
++} AppleSysRegReadPolicy;
++
++typedef enum AppleSysRegWritePolicy {
++    APPLE_SYSREG_WRITE_UNDEFINED = 0,
++    APPLE_SYSREG_WRITE_STORE,
++    APPLE_SYSREG_WRITE_IGNORE,
++    APPLE_SYSREG_WRITE_CALLBACK,
++} AppleSysRegWritePolicy;
++
++typedef enum AppleSysRegResetPolicy {
++    APPLE_SYSREG_RESET_NONE = 0,
++    APPLE_SYSREG_RESET_VALUE,
++    APPLE_SYSREG_RESET_CALLBACK,
++} AppleSysRegResetPolicy;
++
++typedef enum AppleSysRegAccessPolicy {
++    APPLE_SYSREG_ACCESS_ALLOW = 0,
++    APPLE_SYSREG_ACCESS_UNDEFINED,
++    APPLE_SYSREG_ACCESS_TRAP_EL1,
++    APPLE_SYSREG_ACCESS_TRAP_EL2,
++    APPLE_SYSREG_ACCESS_TRAP_EL3,
++    APPLE_SYSREG_ACCESS_CALLBACK,
++} AppleSysRegAccessPolicy;
++
++/*
++ * P2.03 policy object.
++ *
++ * A non-unknown policy must carry human-reviewable evidence and scope text.
++ * Stored behavior uses an existing CPUARMState field supplied by fieldoffset;
++ * P2.03 deliberately does not allocate fabricated state for any inventory
++ * register that has not been promoted by evidence.
++ */
++typedef struct AppleSysRegPolicy {
++    AppleSysRegSpec spec;
++    AppleSysRegReadPolicy read_policy;
++    AppleSysRegWritePolicy write_policy;
++    AppleSysRegResetPolicy reset_policy;
++    AppleSysRegAccessPolicy access_policy;
++    CPAccessRights access_rights;
++
++    bool has_field;
++    ptrdiff_t fieldoffset;
++    uint64_t constant_value;
++    uint64_t reset_value;
++
++    const char *evidence;
++    const char *scope;
++
++    CPReadFn *readfn;
++    CPWriteFn *writefn;
++    CPResetFn *resetfn;
++    CPAccessFn *accessfn;
++} AppleSysRegPolicy;
++
+ /*
+  * Register one explicitly known encoding with fail-closed undefined access.
+- * This is infrastructure for policy construction, not a claim that the guest
+- * requires the register.
++ * This remains available as a diagnostic primitive and is not a semantic
++ * policy assignment.
+  */
+ void apple_sysreg_register_undefined(ARMCPU *cpu,
+                                      const AppleSysRegSpec *spec);
+ 
+ /*
+- * Attach the Apple sysreg framework to an Apple-oriented TCG CPU.
+- * P2.02 deliberately registers zero guest-visible policies here.
++ * Validate and register one or more evidence-backed policies.
+  */
++void apple_sysreg_register_policy(ARMCPU *cpu,
++                                  const AppleSysRegPolicy *policy);
++void apple_sysreg_register_policies(ARMCPU *cpu,
++                                    const AppleSysRegPolicy *policies,
++                                    size_t count);
++
++/*
++ * Attach the Apple sysreg framework to an Apple-oriented TCG CPU.
++ */
+ void apple_sysreg_framework_init(ARMCPU *cpu);
+ 
+ #endif /* TARGET_ARM_APPLE_SYSREGS_H */
+diff --git a/target/arm/apple-sysregs.c b/target/arm/apple-sysregs.c
+--- a/target/arm/apple-sysregs.c
++++ b/target/arm/apple-sysregs.c
+@@ -43,6 +43,11 @@ static void apple_sysreg_unreachable_write(CPUARMState *env,
+     g_assert_not_reached();
+ }
+ 
++static bool apple_sysreg_has_text(const char *text)
++{
++    return text != NULL && text[0] != '\0';
++}
++
+ static void apple_sysreg_validate_spec(const AppleSysRegSpec *spec)
+ {
+     g_assert(spec != NULL);
+@@ -55,6 +60,174 @@ static void apple_sysreg_validate_spec(const AppleSysRegSpec *spec)
+     g_assert(spec->op2 <= 7);
+ }
+ 
++static bool apple_sysreg_same_encoding(const AppleSysRegSpec *a,
++                                       const AppleSysRegSpec *b)
++{
++    return a->op0 == b->op0 &&
++           a->op1 == b->op1 &&
++           a->crn == b->crn &&
++           a->crm == b->crm &&
++           a->op2 == b->op2;
++}
++
++static bool apple_sysreg_policy_needs_field(const AppleSysRegPolicy *policy)
++{
++    return policy->read_policy == APPLE_SYSREG_READ_STORED ||
++           policy->write_policy == APPLE_SYSREG_WRITE_STORE ||
++           policy->reset_policy == APPLE_SYSREG_RESET_VALUE;
++}
++
++static void apple_sysreg_validate_policy(const AppleSysRegPolicy *policy)
++{
++    g_assert(policy != NULL);
++    apple_sysreg_validate_spec(&policy->spec);
++
++    g_assert(apple_sysreg_has_text(policy->evidence));
++    g_assert(apple_sysreg_has_text(policy->scope));
++    g_assert(policy->access_rights != 0);
++
++    g_assert(policy->read_policy >= APPLE_SYSREG_READ_UNDEFINED);
++    g_assert(policy->read_policy <= APPLE_SYSREG_READ_CALLBACK);
++    g_assert(policy->write_policy >= APPLE_SYSREG_WRITE_UNDEFINED);
++    g_assert(policy->write_policy <= APPLE_SYSREG_WRITE_CALLBACK);
++    g_assert(policy->reset_policy >= APPLE_SYSREG_RESET_NONE);
++    g_assert(policy->reset_policy <= APPLE_SYSREG_RESET_CALLBACK);
++    g_assert(policy->access_policy >= APPLE_SYSREG_ACCESS_ALLOW);
++    g_assert(policy->access_policy <= APPLE_SYSREG_ACCESS_CALLBACK);
++
++    if (apple_sysreg_policy_needs_field(policy)) {
++        g_assert(policy->has_field);
++        g_assert(policy->fieldoffset >= 0);
++    } else {
++        g_assert(!policy->has_field);
++    }
++
++    if (policy->read_policy == APPLE_SYSREG_READ_CONSTANT) {
++        g_assert(policy->write_policy == APPLE_SYSREG_WRITE_IGNORE);
++        g_assert(policy->reset_policy == APPLE_SYSREG_RESET_NONE);
++        g_assert(!policy->has_field);
++    }
++
++    if (policy->read_policy == APPLE_SYSREG_READ_CALLBACK) {
++        g_assert(policy->readfn != NULL);
++    } else {
++        g_assert(policy->readfn == NULL);
++    }
++
++    if (policy->write_policy == APPLE_SYSREG_WRITE_CALLBACK) {
++        g_assert(policy->writefn != NULL);
++    } else {
++        g_assert(policy->writefn == NULL);
++    }
++
++    if (policy->reset_policy == APPLE_SYSREG_RESET_CALLBACK) {
++        g_assert(policy->resetfn != NULL);
++    } else {
++        g_assert(policy->resetfn == NULL);
++    }
++
++    if (policy->access_policy == APPLE_SYSREG_ACCESS_CALLBACK) {
++        g_assert(policy->accessfn != NULL);
++    } else {
++        g_assert(policy->accessfn == NULL);
++    }
++}
++
++static const AppleSysRegPolicy *
++apple_sysreg_policy_from_ri(const ARMCPRegInfo *ri)
++{
++    const AppleSysRegPolicy *policy;
++
++    g_assert(ri != NULL);
++    policy = ri->opaque;
++    g_assert(policy != NULL);
++    return policy;
++}
++
++static CPAccessResult apple_sysreg_policy_access(CPUARMState *env,
++                                                  const ARMCPRegInfo *ri,
++                                                  bool isread)
++{
++    const AppleSysRegPolicy *policy = apple_sysreg_policy_from_ri(ri);
++
++    if (isread && policy->read_policy == APPLE_SYSREG_READ_UNDEFINED) {
++        return apple_sysreg_undefined_access(env, ri, true);
++    }
++    if (!isread && policy->write_policy == APPLE_SYSREG_WRITE_UNDEFINED) {
++        return apple_sysreg_undefined_access(env, ri, false);
++    }
++
++    switch (policy->access_policy) {
++    case APPLE_SYSREG_ACCESS_ALLOW:
++        return CP_ACCESS_OK;
++    case APPLE_SYSREG_ACCESS_UNDEFINED:
++        return apple_sysreg_undefined_access(env, ri, isread);
++    case APPLE_SYSREG_ACCESS_TRAP_EL1:
++        return CP_ACCESS_TRAP_EL1;
++    case APPLE_SYSREG_ACCESS_TRAP_EL2:
++        return CP_ACCESS_TRAP_EL2;
++    case APPLE_SYSREG_ACCESS_TRAP_EL3:
++        return CP_ACCESS_TRAP_EL3;
++    case APPLE_SYSREG_ACCESS_CALLBACK:
++        return policy->accessfn(env, ri, isread);
++    default:
++        g_assert_not_reached();
++    }
++}
++
++static CPReadFn *apple_sysreg_policy_readfn(const AppleSysRegPolicy *policy)
++{
++    switch (policy->read_policy) {
++    case APPLE_SYSREG_READ_UNDEFINED:
++        return apple_sysreg_unreachable_read;
++    case APPLE_SYSREG_READ_STORED:
++        return NULL;
++    case APPLE_SYSREG_READ_ZERO:
++        return arm_cp_read_zero;
++    case APPLE_SYSREG_READ_CONSTANT:
++        return NULL;
++    case APPLE_SYSREG_READ_CALLBACK:
++        return policy->readfn;
++    default:
++        g_assert_not_reached();
++    }
++}
++
++static CPWriteFn *apple_sysreg_policy_writefn(const AppleSysRegPolicy *policy)
++{
++    switch (policy->write_policy) {
++    case APPLE_SYSREG_WRITE_UNDEFINED:
++        return apple_sysreg_unreachable_write;
++    case APPLE_SYSREG_WRITE_STORE:
++        return NULL;
++    case APPLE_SYSREG_WRITE_IGNORE:
++        return arm_cp_write_ignore;
++    case APPLE_SYSREG_WRITE_CALLBACK:
++        return policy->writefn;
++    default:
++        g_assert_not_reached();
++    }
++}
++
++static CPResetFn *apple_sysreg_policy_resetfn(const AppleSysRegPolicy *policy)
++{
++    switch (policy->reset_policy) {
++    case APPLE_SYSREG_RESET_NONE:
++        return policy->has_field ? arm_cp_reset_ignore : NULL;
++    case APPLE_SYSREG_RESET_VALUE:
++        return NULL;
++    case APPLE_SYSREG_RESET_CALLBACK:
++        return policy->resetfn;
++    default:
++        g_assert_not_reached();
++    }
++}
++
+ void apple_sysreg_register_undefined(ARMCPU *cpu,
+                                      const AppleSysRegSpec *spec)
+ {
+@@ -81,10 +254,83 @@ void apple_sysreg_register_undefined(ARMCPU *cpu,
+     define_one_arm_cp_reg(cpu, &ri);
+ }
+ 
++void apple_sysreg_register_policy(ARMCPU *cpu,
++                                  const AppleSysRegPolicy *policy)
++{
++    ARMCPRegInfo ri;
++    int type = ARM_CP_NO_GDB;
++
++    g_assert(cpu != NULL);
++    apple_sysreg_validate_policy(policy);
++
++    if (!policy->has_field) {
++        type |= ARM_CP_NO_RAW;
++    }
++
++    if (policy->read_policy == APPLE_SYSREG_READ_CONSTANT) {
++        type |= ARM_CP_CONST;
++    }
++
++    ri = (ARMCPRegInfo) {
++        .name = policy->spec.name,
++        .state = ARM_CP_STATE_AA64,
++        .type = type,
++        .access = policy->access_rights,
++        .opc0 = policy->spec.op0,
++        .opc1 = policy->spec.op1,
++        .crn = policy->spec.crn,
++        .crm = policy->spec.crm,
++        .opc2 = policy->spec.op2,
++        .resetvalue = policy->read_policy == APPLE_SYSREG_READ_CONSTANT
++            ? policy->constant_value
++            : policy->reset_value,
++        .fieldoffset = policy->has_field ? policy->fieldoffset : 0,
++        .accessfn = apple_sysreg_policy_access,
++        .readfn = apple_sysreg_policy_readfn(policy),
++        .writefn = apple_sysreg_policy_writefn(policy),
++        .resetfn = apple_sysreg_policy_resetfn(policy),
++    };
++
++    if (policy->read_policy == APPLE_SYSREG_READ_CONSTANT) {
++        ri.writefn = NULL;
++    }
++
++    define_one_arm_cp_reg_with_opaque(cpu, &ri, (void *)policy);
++}
++
++void apple_sysreg_register_policies(ARMCPU *cpu,
++                                    const AppleSysRegPolicy *policies,
++                                    size_t count)
++{
++    size_t i;
++    size_t j;
++
++    g_assert(cpu != NULL);
++    g_assert(count == 0 || policies != NULL);
++
++    for (i = 0; i < count; i++) {
++        apple_sysreg_validate_policy(&policies[i]);
++        for (j = i + 1; j < count; j++) {
++            g_assert(!apple_sysreg_same_encoding(&policies[i].spec,
++                                                 &policies[j].spec));
++        }
++    }
++
++    for (i = 0; i < count; i++) {
++        apple_sysreg_register_policy(cpu, &policies[i]);
++    }
++}
++
+ void apple_sysreg_framework_init(ARMCPU *cpu)
+ {
++    static const AppleSysRegPolicy *const live_policies = NULL;
++    static const size_t live_policy_count = 0;
++
+     g_assert(cpu != NULL);
+ 
+-    /* P2.03 owns the first evidence-backed guest-visible policy table. */
++    /*
++     * P2.03 supplies the policy engine but does not manufacture any live
++     * register semantics. Evidence promotion owns future table entries.
++     */
++    apple_sysreg_register_policies(cpu, live_policies, live_policy_count);
+ }
+-- 
+2.50.1

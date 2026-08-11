@@ -1,33 +1,26 @@
 # AppleSilicon Documentation
 
-Current project version: **`2.1.0.0.0.0`**
+Current project version: **`2.2.0.0.0.0`**
 
-This directory records the research, design decisions, compatibility contracts, experiments, and implementation objectives for AppleSilicon.
+This directory records research, design decisions, compatibility contracts, experiments and implementation objectives.
 
 ## Documents
 
-- [VERSIONING.md](VERSIONING.md) — six-field project version format.
-- [RESEARCH.md](RESEARCH.md) — existing projects, what they already solve, and what remains unsolved for our goal.
-- [ARCHITECTURE.md](ARCHITECTURE.md) — intended system layers and where compatibility code belongs.
-- [PART-01-BASELINE.md](PART-01-BASELINE.md) — Part 01 objective tree and closure state.
-- [P1.01.md](P1.01.md) through [P1.10.md](P1.10.md) — completed Part 01 implementation sequence.
-- [PART-02-CPU-CONTRACT.md](PART-02-CPU-CONTRACT.md) — fixed Part 02 CPU compatibility objective tree.
-- [P2.01.md](P2.01.md) — Apple CPU system-register and feature inventory.
-- [P2.02.md](P2.02.md) — fail-closed Apple AArch64 system-register registration framework.
+- [VERSIONING.md](VERSIONING.md) — six-field version format.
+- [RESEARCH.md](RESEARCH.md) — existing projects and source research.
+- [ARCHITECTURE.md](ARCHITECTURE.md) — intended compatibility layers.
+- [PART-01-BASELINE.md](PART-01-BASELINE.md) — closed Part 01 tree.
+- [P1.01.md](P1.01.md) through [P1.10.md](P1.10.md) — completed Part 01 sequence.
+- [PART-02-CPU-CONTRACT.md](PART-02-CPU-CONTRACT.md) — fixed Part 02 tree.
+- [P2.01.md](P2.01.md) — CPU register/feature inventory.
+- [P2.02.md](P2.02.md) — fail-closed sysreg framework.
+- [P2.03.md](P2.03.md) — explicit read/write/reset/access policy model.
 
-## Part and objective naming
+## Objective boundaries
 
-Large work is divided into parts. Each part is divided into smaller numbered objectives whose count is fixed when that part begins.
+Part 01 ends at P1.10.
 
-Part 01 closes at:
-
-```text
-P1.10
-```
-
-There is no P1.11.
-
-Part 02 is fixed at exactly:
+Part 02 is fixed at:
 
 ```text
 P2.01
@@ -40,89 +33,42 @@ P2.06
 
 There is no P2.07.
 
-New discoveries after the fixed final objective belong to a later part or an appropriate fix/emergency/hotfix release rather than silently extending the part.
-
 ## Current Part 02 state
 
-P2.01 and P2.02 are implementation-complete at the development/static level.
+P2.01, P2.02 and P2.03 are implementation-complete at the development/static level.
 
-P2.01 records exact source locks and a machine-readable CPU-focused inventory of Apple implementation-defined AArch64 registers while keeping every register's runtime priority unknown until evidence exists.
+P2.03 adds the semantic policy engine on top of the P2.02 `AppleSysRegSpec`/`ARMCPRegInfo` bridge. Read, write, reset and access behavior are independent and evidence-scoped.
 
-P2.02 adds the project-owned bridge from encoding-only Apple register metadata to QEMU/Inferno `ARMCPRegInfo`, wires it only into the TCG `apple-gxf` path, and deliberately installs zero guest-visible register policies by default.
-
-The next objective is:
+The current live semantic policy count is:
 
 ```text
-P2.03 — Register Read/Write/Reset Policy Model
+0
+```
+
+because P2.01 has not promoted any Apple implementation-defined register semantics.
+
+Next:
+
+```text
+P2.04 — CPU Feature and ID-Register Compatibility
 ```
 
 ## Maintainer testing policy
 
-The maintainer will not be asked to manually test every part, objective, update, fix, hotfix, or emergency release.
-
-Manual maintainer testing is reserved for the finished integration stage.
-
-Development-side validation is still expected. Source review, compilation, static checks, automated tests, emulator probes, regression tests, synthetic fixtures, and trace comparisons should be used whenever possible so that intermediate defects are discovered without depending on repeated maintainer testing.
+Intermediate objectives use development-side validation rather than repeated manual maintainer testing. Real macOS/HVF/TCG integration testing remains reserved for the finished integration stage.
 
 ## Mandatory logging policy
 
-Every meaningful executable AppleSilicon run must leave a `.log` artifact.
+Meaningful executable AppleSilicon tools must leave `.log` artifacts and avoid sensitive material.
 
-The default path is:
-
-```text
-.logs/AppleSilicon-YYYYMMDD-HHMMSS-PID.log
-```
-
-Runtime logging must capture stdout and stderr together unless a later component explicitly documents another design. Logs should contain version, time, host information, configuration information where safe, and the final exit state.
-
-Logs must not intentionally contain passwords, Apple account information, authentication tokens, private keys, tickets, raw VM machine identifiers, or other sensitive machine material.
-
-P2.01 continues this rule through `prepare-p2.01.sh`. P2.02 adds `prepare-p2.02.sh`, which validates the ordered patch series and fail-closed framework in a disposable source tree without launching a guest.
+P2.03 adds `.src/.tools/prepare-p2.03.sh`, which writes `.logs/AppleSilicon-p2.03-YYYYMMDD-HHMMSS-PID.log`.
 
 ## Evidence policy
 
-A source-known Apple register is not automatically a VMApple requirement.
+A known Apple register is not automatically a VMApple requirement or a known semantic contract.
 
-Part 02 separates:
-
-```text
-known physical Apple implementation-defined behavior
-from
-proven VMApple/macOS guest requirements
-```
-
-P2.01 therefore keeps imported register relevance, access behavior, runtime priority and implementation behavior unknown unless stronger evidence exists.
-
-P2.02 preserves that distinction by providing registration plumbing without installing a default policy table.
-
-The Part 01 runtime promotion rules remain the strongest evidence path once final integration testing is performed.
-
-## Documentation rules
-
-Every implementation objective should document:
-
-1. The exact guest-visible contract or development capability being implemented.
-2. The upstream/reference behavior used to understand it.
-3. The automated/development-side validation used where practical.
-4. The first failing point before the implementation when relevant.
-5. The new failing point after the implementation when relevant.
-6. Whether the result used an unmodified guest.
-7. Any host-specific assumptions.
-8. Which `.log` output proves the runtime result when runtime execution is involved.
-
-A part is not complete because a panic disappeared. It is complete when the behavior is understood and implemented deliberately.
+P2.03 requires non-empty evidence and scope metadata before a semantic policy can be registered. Unknown reads/writes remain undefined rather than falling back to zero, ignore or fabricated state.
 
 ## Research sources
 
-Prefer primary sources wherever possible:
-
-- upstream source code,
-- Apple open-source XNU,
-- Apple developer/support documentation,
-- QEMU source and documentation,
-- Asahi Linux/m1n1 documentation and source,
-- project source trees and issue trackers,
-- direct traces collected from hardware we are authorized to test.
-
-Do not turn unverified forum claims into implementation requirements.
+Prefer primary sources: upstream source, Apple XNU, Apple documentation, QEMU, Asahi/m1n1, project source/issue trackers and authorized hardware traces.

@@ -1,42 +1,36 @@
 # Source
 
-Project version: **`2.1.0.0.0.0`**
+Project version: **`2.2.0.0.0.0`**
 
-The source tree contains the complete Part 01 research/evidence pipeline and the first two Part 02 Apple CPU compatibility objectives.
+The source tree contains the complete Part 01 evidence pipeline and the first three Part 02 Apple CPU compatibility objectives.
 
 ## Current layout
 
 ```text
 .src/
 ├── .upstream/
-│   └── .inferno/       # pinned upstream reference/submodule
-├── .patches/           # ordered VMApple and Apple CPU compatibility patches
-├── .tools/             # build, probe, trace, evidence, CPU-contract and validation tools
-├── .configs/           # non-secret experiment configs, policies and CPU contracts
-└── .fixtures/          # sanitized deterministic development fixtures
+│   └── .inferno/
+├── .patches/
+├── .tools/
+├── .configs/
+└── .fixtures/
 ```
 
 ## Upstream strategy
 
-The active VMApple implementation base remains ChefKiss Inferno at the exact pinned submodule revision.
+ChefKiss Inferno remains the pinned VMApple implementation base. QEMU is the reference for AArch64 cpreg behavior. Apple XNU provides public guest-side evidence. Asahi m1n1 provides Apple implementation-defined register encodings and authorized-hardware research tooling.
 
-Upstream QEMU is the reference for the ARM system-register registration API and VMApple implementation behavior.
-
-Apple XNU provides public guest-side ARM64/virtual-platform evidence. Asahi m1n1 provides open source Apple implementation-defined system-register encodings and authorized-hardware research tooling.
-
-AppleSilicon-specific changes stay reviewable as project patches/tools around a pristine upstream checkout rather than being mixed into an unexplained source dump.
+Project changes stay as ordered patches/tools/configs around a pristine pinned checkout.
 
 ## Part 01 closure
 
-Part 01 is closed at P1.10. There is no P1.11.
-
-Its evidence tools remain available to provide real runtime evidence during final integration testing.
+Part 01 is closed at P1.10.
 
 ## Part 02 source chain
 
-Part 02 is fixed at six objectives and closes at P2.06. There is no P2.07.
+Part 02 is fixed at P2.01 through P2.06.
 
-P2.01 adds:
+P2.01:
 
 ```text
 .src/.configs/p2.01-cpu-contract.json
@@ -44,51 +38,36 @@ P2.01 adds:
 .src/.tools/prepare-p2.01.sh
 ```
 
-The machine-readable contract inventories CPU-focused Apple implementation-defined register groups:
-
-```text
-hid_ehid
-timer
-amx
-gxf_sprr
-pauth_control
-control_hypervisor
-```
-
-P2.01 is deliberately inventory-only. Every register starts with unknown runtime priority and unknown XNU relevance. No reset value, read value, writable mask, side effect or trap policy is fabricated.
-
-P2.02 adds:
+P2.02:
 
 ```text
 .src/.patches/0003-arm-apple-sysreg-framework.patch
+.src/.configs/p2.02-framework-policy.json
 .src/.tools/prepare-p2.02.sh
 ```
 
-The P2.02 patch adds, inside the disposable patched Inferno tree:
+P2.03:
 
 ```text
-target/arm/apple-sysregs.c
-target/arm/apple-sysregs.h
+.src/.patches/0004-arm-apple-sysreg-policy-model.patch
+.src/.configs/p2.03-sysreg-policy.json
+.src/.tools/prepare-p2.03.sh
 ```
 
-It provides an encoding-only `AppleSysRegSpec` to `ARMCPRegInfo` bridge, an explicit fail-closed undefined-access registration helper, Meson integration for AArch64, and TCG-only attachment to Inferno's existing `apple-gxf` CPU model.
+P2.03 adds independent read/write/reset/access policy dimensions, evidence/scope enforcement, duplicate-encoding validation and QEMU-native policy mappings.
 
-P2.02 deliberately installs **zero guest-visible Apple system-register policies by default**. No read-as-zero, write-ignore, constant, reset-value or stored-state behavior is invented.
+The live semantic Apple sysreg table remains `0` entries because no P2.01 register semantics have been evidence-promoted.
 
-The next source objective is:
+Next:
 
 ```text
-P2.03 — Register Read/Write/Reset Policy Model
+P2.04 — CPU Feature and ID-Register Compatibility
 ```
-
-P2.03 will define the allowed data-driven behavior classes and the evidence required before a P2.01 inventory entry may receive one.
 
 ## Maintainer testing policy
 
-Intermediate source changes do not depend on the maintainer manually testing every objective or release. Development-side source checks, deterministic fixtures, regression tools, and logs provide the intermediate evidence.
-
-Real reference/probe/macOS execution is reserved for the finished integration stage.
+Intermediate changes use logged development-side validation. Real macOS/HVF/TCG integration testing remains reserved for final integration.
 
 ## No proprietary Apple artifacts
 
-Do not add Apple firmware, macOS images, installers, device-specific secrets, tickets, keys, machine-identity blobs, or other restricted/private Apple material to `.src/`.
+Do not add Apple firmware, macOS images, installers, device-specific secrets, tickets, keys or machine-identity blobs to `.src/`.

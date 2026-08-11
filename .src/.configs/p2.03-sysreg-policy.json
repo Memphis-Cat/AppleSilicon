@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "project_version": "2.2.0.0.0.0",
+  "part": "Part 02",
+  "objective": "P2.03",
+  "title": "Register Read/Write/Reset Policy Model",
+  "cpu_scope": {
+    "enabled_cpu": "apple-gxf",
+    "accelerator": "tcg",
+    "control_cpu": "max",
+    "control_cpu_must_remain_untouched": true
+  },
+  "policy_kinds": {
+    "read": [
+      "undefined",
+      "stored",
+      "zero",
+      "constant",
+      "callback"
+    ],
+    "write": [
+      "undefined",
+      "store",
+      "ignore",
+      "callback"
+    ],
+    "reset": [
+      "none",
+      "value",
+      "callback"
+    ],
+    "access": [
+      "allow",
+      "undefined",
+      "trap_el1",
+      "trap_el2",
+      "trap_el3",
+      "callback"
+    ]
+  },
+  "policy_requirements": {
+    "evidence_required": true,
+    "scope_required": true,
+    "unknown_read_must_undef": true,
+    "unknown_write_must_undef": true,
+    "duplicate_encodings_forbidden": true,
+    "stored_state_requires_explicit_field": true,
+    "stored_state_requires_explicit_reset_policy": true,
+    "constant_read_requires_write_ignore": true,
+    "callback_kind_requires_callback": true,
+    "non_callback_kind_forbids_dormant_callback": true
+  },
+  "qemu_mapping": {
+    "undefined": "CP_ACCESS_UNDEFINED",
+    "read_zero": "arm_cp_read_zero",
+    "write_ignore": "arm_cp_write_ignore",
+    "constant": "ARM_CP_CONST",
+    "stored_state": "ARMCPRegInfo.fieldoffset",
+    "reset_value": "ARMCPRegInfo.resetvalue",
+    "reset_none_with_state": "arm_cp_reset_ignore",
+    "policy_opaque": "define_one_arm_cp_reg_with_opaque",
+    "gdb_exposed": false
+  },
+  "live_policy_count": 0,
+  "live_policies": [],
+  "live_policy_reason": "P2.01 has no evidence-promoted Apple implementation-defined register semantics yet. P2.03 implements the policy engine without fabricating live values or side effects.",
+  "next_objective": "P2.04"
+}
