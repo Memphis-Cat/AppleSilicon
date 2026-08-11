@@ -1,0 +1,258 @@
+{
+  "schema": 1,
+  "project_version": "3.0.0.0.0.0",
+  "part": "Part 03",
+  "objective": "P3.01",
+  "title": "Platform Contract Inventory and Ownership Map",
+  "scope": {
+    "machine": "vmapple",
+    "accelerator_focus": "tcg",
+    "cpu_contract_owner": "Part 02",
+    "guest_runtime_deferred": true
+  },
+  "source_locks": {
+    "inferno": {
+      "repository": "ChefKissInc/Inferno",
+      "revision": "cc4302a99167abec69b714cfd00c38caece7e7de",
+      "files": {
+        "hw/vmapple/vmapple.c": "89c04c09f705d987ee96c11c1f5f4fc79713bf2e",
+        "hw/vmapple/Kconfig": "2382b297672274f27c447b9168cab9425f01ed17",
+        "hw/vmapple/cfg.c": "3d58a29f69d7b6090436afbe9609ee9370a6c115",
+        "hw/vmapple/bdif.c": "5ccd374581969c0e8c70714fbd82aa0bdb0e189f",
+        "hw/vmapple/virtio-blk.c": "5d990e63079714b0fc6deea0caf588f2be6a9241",
+        "hw/vmapple/aes.c": "3f6c2721bf3d8d46cc21323ef6d2492e28a7020b",
+        "include/hw/vmapple/vmapple.h": "1154c10d0f4f30cb339a7ee9470578d441acbd10"
+      }
+    },
+    "xnu_vmapple": {
+      "repository": "apple-oss-distributions/xnu",
+      "revision": "f6217f891ac0bb64f3d375211650a4c1ff8ca1ea",
+      "path": "pexpert/pexpert/arm64/VMAPPLE.h",
+      "blob_sha": "08b35780a1dcf187af2ced7839d7045afb433de7"
+    }
+  },
+  "ownership_classes": [
+    "generic_qemu",
+    "vmapple_specific",
+    "host_framework_dependent",
+    "unknown_requires_evidence"
+  ],
+  "runtime_requirement_values": [
+    "source_backed_guest_contract",
+    "reference_machine_contract",
+    "optional_reference_component",
+    "unknown"
+  ],
+  "action_values": [
+    "preserve",
+    "validate",
+    "investigate",
+    "defer"
+  ],
+  "components": [
+    {
+      "id": "machine_memory_map",
+      "category": "machine_core",
+      "ownership": "vmapple_specific",
+      "project_owner": "P3.06",
+      "runtime_requirement": "reference_machine_contract",
+      "baseline_state": "implemented_in_pinned_inferno",
+      "evidence": ["inferno:hw/vmapple/vmapple.c"],
+      "action": "preserve",
+      "notes": "VMApple fixes firmware, config, GIC, UART, RTC, GPIO, backdoor, graphics, AES, PCIe and RAM windows in the machine memory map."
+    },
+    {
+      "id": "firmware_window_and_preboot_input",
+      "category": "boot_environment",
+      "ownership": "unknown_requires_evidence",
+      "project_owner": "P3.06",
+      "runtime_requirement": "reference_machine_contract",
+      "baseline_state": "machine_window_implemented_external_input_required",
+      "evidence": ["inferno:hw/vmapple/vmapple.c", "qemu-doc:vmapple"],
+      "action": "defer",
+      "notes": "QEMU maps the firmware window, while the actual reference pre-boot binary remains a local external input and is not committed."
+    },
+    {
+      "id": "configuration_region",
+      "category": "identity_config",
+      "ownership": "vmapple_specific",
+      "project_owner": "P3.02",
+      "runtime_requirement": "reference_machine_contract",
+      "baseline_state": "implemented_in_pinned_inferno",
+      "evidence": ["inferno:hw/vmapple/cfg.c", "inferno:hw/vmapple/vmapple.c"],
+      "action": "validate",
+      "notes": "Carries CPU count, ECID, RAM size, installer flags, random value, MAC addresses, CPU IDs, serial, model and SoC name."
+    },
+    {
+      "id": "platform_identity_values",
+      "category": "identity_config",
+      "ownership": "vmapple_specific",
+      "project_owner": "P3.02",
+      "runtime_requirement": "unknown",
+      "baseline_state": "defaults_present_semantic_requirement_unproven",
+      "evidence": ["inferno:hw/vmapple/cfg.c"],
+      "action": "investigate",
+      "notes": "Presence of serial/model/SoC-name fields does not prove which values macOS requires; P3.02 owns that distinction."
+    },
+    {
+      "id": "gicv3",
+      "category": "interrupts",
+      "ownership": "generic_qemu",
+      "project_owner": "P3.03",
+      "runtime_requirement": "source_backed_guest_contract",
+      "baseline_state": "implemented_with_generic_qemu_gicv3",
+      "evidence": ["inferno:hw/vmapple/vmapple.c", "xnu:VMAPPLE.h:HAS_GIC_V3"],
+      "action": "validate",
+      "notes": "XNU VMApple explicitly enables GICv3; pinned Inferno creates a standalone generic QEMU GICv3 and wires IRQ/FIQ lines."
+    },
+    {
+      "id": "architectural_virtual_timer",
+      "category": "timers",
+      "ownership": "generic_qemu",
+      "project_owner": "P3.03",
+      "runtime_requirement": "reference_machine_contract",
+      "baseline_state": "wired_to_gic_ppi_27",
+      "evidence": ["inferno:hw/vmapple/vmapple.c"],
+      "action": "validate",
+      "notes": "Pinned VMApple routes each CPU virtual timer to PPI 27."
+    },
+    {
+      "id": "pl011_uart",
+      "category": "console",
+      "ownership": "generic_qemu",
+      "project_owner": "P3.03",
+      "runtime_requirement": "source_backed_guest_contract",
+      "baseline_state": "implemented_with_generic_pl011",
+      "evidence": ["inferno:hw/vmapple/vmapple.c", "xnu:VMAPPLE.h:PL011_UART"],
+      "action": "preserve",
+      "notes": "XNU VMApple explicitly selects PL011 UART."
+    },
+    {
+      "id": "pl031_rtc",
+      "category": "timers",
+      "ownership": "generic_qemu",
+      "project_owner": "P3.03",
+      "runtime_requirement": "reference_machine_contract",
+      "baseline_state": "implemented_with_generic_pl031",
+      "evidence": ["inferno:hw/vmapple/vmapple.c"],
+      "action": "validate",
+      "notes": "Reference VMApple machine exposes PL031 RTC."
+    },
+    {
+      "id": "pl061_gpio_power",
+      "category": "power_input",
+      "ownership": "generic_qemu",
+      "project_owner": "P3.03",
+      "runtime_requirement": "reference_machine_contract",
+      "baseline_state": "implemented_with_pl061_and_gpio_key",
+      "evidence": ["inferno:hw/vmapple/vmapple.c", "inferno:hw/vmapple/Kconfig"],
+      "action": "validate",
+      "notes": "Powerdown requests are translated into a GPIO key event on pin 3."
+    },
+    {
+      "id": "pvpanic_mmio",
+      "category": "diagnostics",
+      "ownership": "generic_qemu",
+      "project_owner": "P3.03",
+      "runtime_requirement": "optional_reference_component",
+      "baseline_state": "implemented_with_generic_pvpanic_mmio",
+      "evidence": ["inferno:hw/vmapple/vmapple.c", "inferno:hw/vmapple/Kconfig"],
+      "action": "preserve",
+      "notes": "Diagnostic panic-notification device; not promoted to a boot requirement by P3.01."
+    },
+    {
+      "id": "bdif_boot_backdoor",
+      "category": "boot_storage",
+      "ownership": "vmapple_specific",
+      "project_owner": "P3.04",
+      "runtime_requirement": "reference_machine_contract",
+      "baseline_state": "implemented_read_path_write_unneeded_in_comment",
+      "evidence": ["inferno:hw/vmapple/bdif.c", "inferno:hw/vmapple/vmapple.c"],
+      "action": "validate",
+      "notes": "VMApple backdoor exposes root/AUX discovery and DMA-backed read commands used by the pre-boot environment."
+    },
+    {
+      "id": "vmapple_virtio_block",
+      "category": "storage",
+      "ownership": "vmapple_specific",
+      "project_owner": "P3.04",
+      "runtime_requirement": "reference_machine_contract",
+      "baseline_state": "implemented_as_virtio_blk_extension",
+      "evidence": ["inferno:hw/vmapple/virtio-blk.c", "qemu-doc:vmapple"],
+      "action": "validate",
+      "notes": "Mostly standard virtio-blk with Apple PCI IDs, AUX/root type field and Apple barrier command."
+    },
+    {
+      "id": "pcie_gpex",
+      "category": "pci",
+      "ownership": "generic_qemu",
+      "project_owner": "P3.05",
+      "runtime_requirement": "reference_machine_contract",
+      "baseline_state": "implemented_with_generic_pcie_gpex",
+      "evidence": ["inferno:hw/vmapple/vmapple.c", "inferno:hw/vmapple/Kconfig"],
+      "action": "validate",
+      "notes": "VMApple uses generic PCI Express infrastructure as the transport for several paravirtual devices."
+    },
+    {
+      "id": "xhci_usb",
+      "category": "peripherals",
+      "ownership": "generic_qemu",
+      "project_owner": "P3.05",
+      "runtime_requirement": "reference_machine_contract",
+      "baseline_state": "implemented_via_generic_qemu_xhci_path",
+      "evidence": ["inferno:hw/vmapple/vmapple.c"],
+      "action": "validate",
+      "notes": "USB controller ownership belongs to generic QEMU unless runtime evidence proves a VMApple-specific quirk."
+    },
+    {
+      "id": "virtio_network",
+      "category": "network",
+      "ownership": "generic_qemu",
+      "project_owner": "P3.05",
+      "runtime_requirement": "optional_reference_component",
+      "baseline_state": "reference_cli_uses_virtio_net_pci",
+      "evidence": ["qemu-doc:vmapple"],
+      "action": "preserve",
+      "notes": "Official reference launch documentation uses ordinary virtio-net-pci; P3.01 does not classify networking as Apple-specific."
+    },
+    {
+      "id": "vmapple_aes",
+      "category": "crypto_device",
+      "ownership": "vmapple_specific",
+      "project_owner": "P3.05",
+      "runtime_requirement": "unknown",
+      "baseline_state": "implemented_in_pinned_inferno",
+      "evidence": ["inferno:hw/vmapple/aes.c", "inferno:hw/vmapple/Kconfig"],
+      "action": "investigate",
+      "notes": "Device presence is source-backed, but P3.01 does not infer that its complete semantics are boot-critical."
+    },
+    {
+      "id": "apple_pvg_graphics",
+      "category": "graphics",
+      "ownership": "host_framework_dependent",
+      "project_owner": "P3.05",
+      "runtime_requirement": "optional_reference_component",
+      "baseline_state": "darwin_framework_path_optionalized_by_p1_05",
+      "evidence": ["inferno:hw/vmapple/vmapple.c", "inferno:hw/vmapple/Kconfig", "project:P1.05"],
+      "action": "defer",
+      "notes": "The original device uses apple-gfx-mmio/Apple PVG. P1.05 made its absence non-fatal; P3.05 owns later capability decisions."
+    }
+  ],
+  "rules": {
+    "apple_specific_does_not_imply_missing": true,
+    "generic_qemu_is_preserved_until_evidence_disproves_compatibility": true,
+    "implementation_work_requires_evidence_or_explicit_contract_gap": true,
+    "cpu_contract_remains_owned_by_part_02": true,
+    "no_proprietary_guest_or_firmware_material_in_repo": true,
+    "guest_runtime_deferred": true
+  },
+  "part_03_objectives": [
+    "P3.01 Platform Contract Inventory and Ownership Map",
+    "P3.02 Configuration and Platform Identity Contract",
+    "P3.03 Interrupt, Timer, Power and Console Contract",
+    "P3.04 Boot Backdoor and Storage Contract",
+    "P3.05 PCIe, Peripheral, Crypto and Graphics Contract",
+    "P3.06 Part 03 Integration Gate"
+  ],
+  "next_objective": "P3.02"
+}
