@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "project_version": "3.5.0.0.0.0",
+  "part": "Part 03",
+  "objective": "P3.06",
+  "title": "Part 03 Integration Gate",
+  "source_lock": {
+    "inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
+  },
+  "integrated_machine": {
+    "machine": "vmapple",
+    "accelerator": "tcg",
+    "cpu": "apple-gxf",
+    "control_cpu": "max"
+  },
+  "locked_artifacts": [
+    {"path":".src/.configs/p2.06-integration-policy.json","git_blob_sha":"da5890e1180d78114e625b8d285ccc59ba950055","role":"cpu_integration_policy"},
+    {"path":".src/.tools/integration-gate.py","git_blob_sha":"c3abc2dbda79c3d910c152e123bb07b7a98d8d2d","role":"cpu_integration_gate"},
+    {"path":".src/.tools/prepare-p2.06.sh","git_blob_sha":"6c360b7f4262fd5eb1ef6c3ac8a50bdcd853ab96","role":"cpu_integration_prepare"},
+    {"path":".src/.tools/run-p2.06-probe.sh","git_blob_sha":"3f748ab5067f455b894706cb3004c2101b697535","role":"runtime_probe_delegate"},
+
+    {"path":".src/.configs/p3.01-platform-contract.json","git_blob_sha":"572db030a93a895245686bdcf09631f0f0557eb8","role":"platform_inventory"},
+    {"path":".src/.tools/platform-contract.py","git_blob_sha":"e8fd6ab2a1cc89ff3f22602c99540426de1b9623","role":"platform_inventory_validator"},
+    {"path":".src/.configs/p3.02-identity-contract.json","git_blob_sha":"b2d1ab89b8cbab22beccf3cb2225bb374bf0d732","role":"identity_contract"},
+    {"path":".src/.tools/platform-identity.py","git_blob_sha":"d406021c302ab67e21e1c033dd0ccddd8e5915b6","role":"identity_validator"},
+    {"path":".src/.configs/p3.03-io-contract.json","git_blob_sha":"9d4ece9a07f94ee55addd3f56f5528fe723948d2","role":"io_contract"},
+    {"path":".src/.tools/platform-io-contract.py","git_blob_sha":"ecc1184ec4b1673ab8bd379a33b81b309940e117","role":"io_validator"},
+    {"path":".src/.configs/p3.04-storage-contract.json","git_blob_sha":"3a2d01c0b01f587cee08bec65f3a6e30572e29d3","role":"storage_contract"},
+    {"path":".src/.tools/platform-storage-contract.py","git_blob_sha":"2e8fac3ff5cfb56bc32014376cf95e98b372f7fb","role":"storage_validator"},
+    {"path":".src/.configs/p3.05-peripheral-contract.json","git_blob_sha":"eaa75ecbfe9ad167d4d09e1b71a5e47312473e76","role":"peripheral_contract"},
+    {"path":".src/.tools/platform-peripheral-contract.py","git_blob_sha":"44fa2c2f3f27f43d2bd249ad5224a46829b87a30","role":"peripheral_validator"},
+
+    {"path":".src/.configs/p1.09-manifest-policy.json","git_blob_sha":"ccaf2c515102aad4f24a370dc6d4078f7924e91f","role":"runtime_evidence_manifest"},
+    {"path":".src/.configs/p1.10-promotion-policy.json","git_blob_sha":"aa8804320da885373e2779a704dde75e9ef3bc98","role":"runtime_divergence_promotion"},
+    {"path":"README.md","git_blob_sha":"5f056dadbac5d814b9ffb287ec786a559774f953","role":"frozen_root_readme"}
+  ],
+  "patch_series": [
+    ".src/.patches/0001-vmapple-decouple-build-from-hvf.patch",
+    ".src/.patches/0002-vmapple-optional-apple-pvg.patch",
+    ".src/.patches/0003-arm-apple-sysreg-framework.patch",
+    ".src/.patches/0004-arm-apple-sysreg-policy-model.patch",
+    ".src/.patches/0005-arm-vmapple-feature-contract.patch"
+  ],
+  "contract_validators": [
+    {"objective":"P3.01","tool":".src/.tools/platform-contract.py","contract":".src/.configs/p3.01-platform-contract.json","command":"validate"},
+    {"objective":"P3.02","tool":".src/.tools/platform-identity.py","contract":".src/.configs/p3.02-identity-contract.json","command":"validate-contract"},
+    {"objective":"P3.03","tool":".src/.tools/platform-io-contract.py","contract":".src/.configs/p3.03-io-contract.json","command":"validate"},
+    {"objective":"P3.04","tool":".src/.tools/platform-storage-contract.py","contract":".src/.configs/p3.04-storage-contract.json","command":"validate"},
+    {"objective":"P3.05","tool":".src/.tools/platform-peripheral-contract.py","contract":".src/.configs/p3.05-peripheral-contract.json","command":"validate"}
+  ],
+  "requirements": {
+    "p2_06_integration_manifest_must_pass": true,
+    "all_p3_contracts_must_validate": true,
+    "all_p3_contracts_must_share_pinned_inferno_revision": true,
+    "part_03_adds_no_patch_after_0005": true,
+    "p2_03_live_sysreg_policy_count_remains_zero": true,
+    "p3_02_layout_discrepancy_remains_unresolved": true,
+    "p3_03_power_semantics_remain_evidence_gated": true,
+    "p3_04_bdif_writes_remain_unimplemented_without_evidence": true,
+    "p3_04_barrier_remains_reference_noop_until_evidence": true,
+    "p3_05_aes_unimplemented_commands_remain_evidence_gated": true,
+    "p1_05_optional_pvg_behavior_is_preserved": true,
+    "fake_gpu_is_forbidden": true,
+    "modern_macos_graphics_compatibility_is_not_claimed": true,
+    "p1_runtime_evidence_and_promotion_gates_remain_authoritative": true,
+    "p2_06_runtime_probe_is_reused_not_forked": true,
+    "root_readme_remains_frozen": true,
+    "guest_runtime_deferred": true
+  },
+  "outputs": {
+    "manifest": ".build/p3.06/platform-integration-manifest.json",
+    "cpu_integration_manifest": ".build/p2.06/integration-manifest.json"
+  },
+  "part_status_after_success": "closed_implementation_complete",
+  "next_part": "Part 04",
+  "next_objective": "P4.01"
+}
