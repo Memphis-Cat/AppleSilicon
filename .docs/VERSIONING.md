@@ -18,16 +18,18 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-4.0.0.0.0.0
+4.1.0.0.0.0
 ```
 
-This major update begins Part 04 and implements P4.01, **Runtime Session Provenance and Input Lock**.
+This update implements P4.02, **Integrated TCG Probe Capture**.
 
-Parts 01–03 are closed. P4.01 binds every future runtime session to a passing P3.06 platform integration fingerprint, exact local QEMU executable digest/version/capabilities, local guest-input digests, a redacted machine-UUID digest and the existing Part 01 trace contract before a guest is allowed to run.
+P4.02 consumes the P4.01 probe session plan, locks the execution to `vmapple` + TCG + `apple-gxf`, 4 GiB RAM, 4 vCPUs and a 30-second observation window, then reuses the existing P3.06 → P2.06 → P1.07 runtime chain.
 
-The generated session plan is deterministic provenance metadata, not runtime evidence. Raw local paths, UUIDs, machine-identity/hardware-model content and guest artifacts remain local.
+After a completed observational run it reuses the Part 01 probe collector to create a validated P1.09 manifest, repeats the provenance preflight, requires byte-identical pre/post results and emits a sanitized P4.02 capture descriptor.
 
-Part 04 is fixed at exactly six objectives:
+No divergence is promoted by P4.02. P1.10 remains authoritative for promotion.
+
+Part 04 remains fixed at exactly six objectives:
 
 ```text
 P4.01 — Runtime Session Provenance and Input Lock
@@ -38,9 +40,9 @@ P4.05 — Reproducible Divergence Promotion
 P4.06 — Part 04 Runtime Evidence Gate
 ```
 
-There is no P4.07. P4.02 is next.
+There is no P4.07. P4.03 is next.
 
-P4.01 adds no Inferno patch and launches no guest. The repository root `README.md` remains intentionally unchanged.
+P4.02 adds no Inferno source patch. Real TCG execution is intentionally deferred to final integrated testing. The repository root `README.md` remains intentionally unchanged.
 
 ## Reset behavior
 
@@ -53,4 +55,5 @@ Examples:
 1.9.0.0.0.0 -> 2.0.0.0.0.0
 2.5.0.0.0.0 -> 3.0.0.0.0.0
 3.5.0.0.0.0 -> 4.0.0.0.0.0
+4.0.0.0.0.0 -> 4.1.0.0.0.0
 ```
