@@ -2,68 +2,55 @@
 
 This directory contains reproducible, non-secret example configurations, policies and machine-readable compatibility contracts for AppleSilicon.
 
-## Part 02 CPU contracts
+## Closed contracts
 
-```text
-p2.01-cpu-contract.json
-p2.02-framework-policy.json
-p2.03-sysreg-policy.json
-p2.04-feature-contract.json
-p2.05-regression-policy.json
-p2.06-integration-policy.json
-```
+Part 02 CPU contracts are closed at P2.06.
 
-Part 02 is closed at P2.06.
-
-## Part 03 platform contracts
-
-```text
-p3.01-platform-contract.json
-p3.02-identity-contract.json
-p3.02-identity.example.json
-p3.03-io-contract.json
-p3.04-storage-contract.json
-p3.05-peripheral-contract.json
-p3.06-integration-policy.json
-```
-
-Part 03 is closed at P3.06.
+Part 03 platform contracts are closed at P3.06.
 
 ## Part 04 runtime-evidence contracts
 
 ```text
 p4.01-runtime-session-policy.json
 p4.02-probe-capture-policy.json
+p4.03-reference-capture-policy.json
 ```
 
 ### P4.01
 
-`p4.01-runtime-session-policy.json` defines the pre-execution provenance lock for both runtime roles:
+Defines deterministic pre-execution provenance for both runtime roles:
 
 ```text
 probe      vmapple / TCG / apple-gxf
 reference  vmapple / HVF / host / Darwin arm64
 ```
 
-The session plan binds P3.06, the exact QEMU executable, guest-input digests and canonicalized machine-UUID digest without storing the raw local data.
-
 ### P4.02
 
-`p4.02-probe-capture-policy.json` defines the first runtime probe capture contract:
+Defines the integrated TCG probe capture and locks:
 
 ```text
-machine          vmapple
-accelerator      tcg
-cpu              apple-gxf
-RAM              4G / 4096 MiB
-SMP              4
-capture_seconds  30
-grace_seconds    3
+RAM      4G / 4096 MiB
+SMP      4
+window   30 seconds
+grace    3 seconds
 ```
 
-It requires pre/post P4.01 provenance equality, reuse of the P3.06 → P2.06 → P1.07 runtime chain, generation of a valid P1.09 probe manifest and no divergence promotion.
+It binds the resulting P1.09-compatible probe manifest to the P4.01 provenance fingerprint without promoting a divergence.
 
-Part 04 is fixed at P4.01 through P4.06; there is no P4.07. P4.03 is next.
+### P4.03
+
+Defines the Apple Silicon reference capture using the same comparison-sensitive RAM/SMP/window contract as P4.02, with mandatory:
+
+```text
+host         Darwin arm64
+accelerator  HVF
+CPU          host
+```
+
+The reference path must fail closed when Apple Silicon/HVF is unavailable. It reuses the P1.09 reference manifest rather than defining a replacement evidence format.
+
+P4.04 is next. Part 04 remains fixed at P4.01 through P4.06; there is no P4.07.
 
 ## Secret/proprietary material rule
 
