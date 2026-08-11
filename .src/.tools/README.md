@@ -2,7 +2,7 @@
 
 Tools in this directory support reproducible compatibility research rather than guest patching.
 
-Current Part 01 tools include:
+## Part 01 tools
 
 ```text
 run-logged.sh
@@ -27,14 +27,17 @@ Part 01 closes at P1.10. There is no P1.11.
 
 ## Part 02 tools
 
-P2.01 adds:
+Current Part 02 tools are:
 
 ```text
 cpu-contract.py
 prepare-p2.01.sh
+prepare-p2.02.sh
 ```
 
-`cpu-contract.py` is a standard-library validator/query tool for `.src/.configs/p2.01-cpu-contract.json`.
+### `cpu-contract.py`
+
+This is P2.01's standard-library validator/query tool for `.src/.configs/p2.01-cpu-contract.json`.
 
 It supports:
 
@@ -47,11 +50,37 @@ self-check
 
 The validator enforces exact source locks, valid AArch64 system-register encoding ranges, unique names/encoding tuples, evidence-source resolution, and the P2.01 rule that runtime priority/relevance/implementation semantics remain unknown/inventory-only.
 
-The self-check mutates the contract in memory and proves that invalid source locks, duplicate encodings, invalid fields, fabricated priority and premature implementation states are rejected.
+### `prepare-p2.01.sh`
 
-`prepare-p2.01.sh` is the logged development-side P2.01 harness. It validates JSON and Python syntax, runs contract validation/self-checks, prints a summary, performs representative register lookups, and writes a persistent `.log`.
+This is the logged development-side P2.01 harness. It validates JSON and Python syntax, runs contract validation/self-checks, prints a summary, performs representative register lookups, and writes a persistent `.log`.
 
 It does not launch QEMU, macOS, HVF, a TCG guest or m1n1.
+
+### `prepare-p2.02.sh`
+
+This is P2.02's logged patch/framework validator.
+
+It verifies the exact pinned Inferno revision, validates the P2.01 inventory contract, creates a disposable `.build/p2.02/inferno-src` checkout, and applies patches `0001`, `0002` and `0003` in order with `git apply --check` before each application.
+
+It then verifies that:
+
+- `target/arm/apple-sysregs.c` and `.h` exist;
+- the framework is compiled by the AArch64 Meson source set;
+- the framework is attached inside the TCG-only `apple-gxf` initializer path;
+- the framework bridges through `define_one_arm_cp_reg()`;
+- undefined Apple register access returns `CP_ACCESS_UNDEFINED`;
+- undefined registrations are excluded from raw/GDB exposure;
+- no read-as-zero, write-ignore, constant, reset-value or stored-state policy leaked into P2.02;
+- the default guest-visible Apple sysreg policy count is zero;
+- the complete patched tree passes `git diff --check`.
+
+Every run writes:
+
+```text
+.logs/AppleSilicon-p2.02-YYYYMMDD-HHMMSS-PID.log
+```
+
+It does not launch a macOS guest, HVF session, TCG guest, or m1n1 runtime.
 
 ## Existing evidence tools
 
