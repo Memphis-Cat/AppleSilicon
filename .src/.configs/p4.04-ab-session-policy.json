@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "project_version": "4.3.0.0.0.0",
+  "part": "Part 04",
+  "objective": "P4.04",
+  "title": "Comparable A/B Session Assembly",
+  "source_lock": {"inferno_revision":"cc4302a99167abec69b714cfd00c38caece7e7de"},
+  "roles": {
+    "reference": {"capture_classification":"P4_03_REFERENCE_CAPTURE_READY","plan_role":"reference","manifest_role":"reference","machine":"vmapple","accelerator":"hvf","cpu":"host"},
+    "probe": {"capture_classification":"P4_02_PROBE_CAPTURE_READY","plan_role":"probe","manifest_role":"probe","machine":"vmapple","accelerator":"tcg","cpu":"apple-gxf"}
+  },
+  "runtime_parameters": {"ram_mib":4096,"smp":4},
+  "plan_pair_equal_paths": [
+    "p3_06.sha256",
+    "p3_06.platform_integration_fingerprint",
+    "machine_uuid.sha256",
+    "guest_inputs",
+    "trace_contract",
+    "locked_project_artifacts",
+    "qemu.version"
+  ],
+  "expected_role_differences": [
+    "role",
+    "host",
+    "integrated_machine.accelerator",
+    "integrated_machine.cpu",
+    "qemu.sha256",
+    "qemu.bytes",
+    "qemu.capabilities.accelerator",
+    "qemu.capabilities.cpu",
+    "session_fingerprint"
+  ],
+  "locked_project_artifacts": [
+    {"path":".src/.configs/p4.01-runtime-session-policy.json","git_blob_sha":"6feb5275b827595c4ac6b2f5ca68d9cc9a836f5b","role":"session_provenance_policy"},
+    {"path":".src/.tools/runtime-session.py","git_blob_sha":"f5fa692a3372aa4eb2e0c16865464f609d0e0998","role":"session_provenance_planner"},
+    {"path":".src/.configs/p4.02-probe-capture-policy.json","git_blob_sha":"685970633efd16a380d706efa3ca8177fa259b2c","role":"probe_capture_policy"},
+    {"path":".src/.tools/probe-capture.py","git_blob_sha":"8c65abb271f7b8c23d54e88fe8776d9b2d0e057b","role":"probe_capture_validator"},
+    {"path":".src/.configs/p4.03-reference-capture-policy.json","git_blob_sha":"5224839861d3adbd8bb652acb3ac3c41ec1cbd84","role":"reference_capture_policy"},
+    {"path":".src/.tools/reference-capture.py","git_blob_sha":"8e2fda1d0938d9c70aa0c006ecbb7ccab5dce7a8","role":"reference_capture_validator"},
+    {"path":".src/.configs/p1.09-manifest-policy.json","git_blob_sha":"ccaf2c515102aad4f24a370dc6d4078f7924e91f","role":"authoritative_pair_policy"},
+    {"path":".src/.tools/reference-manifest.py","git_blob_sha":"e22ee337b0206b0ba7f2d67de6cf6e05ea6e4cd4","role":"authoritative_pair_tool"},
+    {"path":".src/.configs/p1.10-promotion-policy.json","git_blob_sha":"aa8804320da885373e2779a704dde75e9ef3bc98","role":"promotion_authority"},
+    {"path":"README.md","git_blob_sha":"5f056dadbac5d814b9ffb287ec786a559774f953","role":"frozen_root_readme"}
+  ],
+  "requirements": {
+    "both_p4_01_session_plans_must_be_ready": true,
+    "both_runtime_captures_must_be_ready": true,
+    "both_capture_fingerprints_must_reproduce": true,
+    "captures_must_bind_supplied_p1_09_manifests": true,
+    "capture_session_fingerprints_must_match_plans": true,
+    "same_p3_06_manifest_and_platform_fingerprint_required": true,
+    "same_machine_uuid_digest_required": true,
+    "same_guest_inputs_required": true,
+    "same_trace_contract_required": true,
+    "same_qemu_version_string_required": true,
+    "qemu_binary_hash_may_differ_by_host_build": true,
+    "reference_probe_accelerator_and_cpu_must_differ_as_declared": true,
+    "ram_and_smp_must_equal_locked_runtime_parameters": true,
+    "p1_09_pair_must_be_comparable": true,
+    "p1_09_pair_must_have_zero_contract_mismatches": true,
+    "ab_bundle_must_be_deterministic": true,
+    "ab_bundle_must_store_no_raw_local_paths": true,
+    "ab_bundle_is_not_a_divergence_promotion": true,
+    "p1_08_trace_comparison_remains_authoritative": true,
+    "p1_10_promotion_gate_remains_authoritative": true,
+    "no_new_inferno_patch_for_p4_04": true,
+    "root_readme_remains_frozen": true
+  },
+  "outputs": {"ab_bundle":".build/p4.04/ab-session.json"},
+  "next_objective": "P4.05"
+}
