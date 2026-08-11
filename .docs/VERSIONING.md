@@ -18,36 +18,29 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-3.5.0.0.0.0
+4.0.0.0.0.0
 ```
 
-This normal update implements P3.06, **Part 03 Integration Gate**, and closes Part 03.
+This major update begins Part 04 and implements P4.01, **Runtime Session Provenance and Input Lock**.
 
-P3.06 binds the five completed VMApple platform contracts to the closed P2.06 CPU integration manifest and the Part 01 runtime evidence/promotion pipeline. It runs every P3.01–P3.05 validator, enforces machine-wide fail-closed invariants, proves the ordered patch series still ends at `0005`, and emits a deterministic platform integration fingerprint.
+Parts 01–03 are closed. P4.01 binds every future runtime session to a passing P3.06 platform integration fingerprint, exact local QEMU executable digest/version/capabilities, local guest-input digests, a redacted machine-UUID digest and the existing Part 01 trace contract before a guest is allowed to run.
 
-Unknown semantics remain unresolved rather than fabricated: P3.02's config-layout discrepancy, P3.03 power-button behavior, P3.04 BDIF writes/barrier flush semantics, and P3.05 AES DSB/SKG/WRITE_REG behavior remain runtime-evidence gated. P1.05's optional real-PVG policy is preserved and no fake GPU is introduced.
+The generated session plan is deterministic provenance metadata, not runtime evidence. Raw local paths, UUIDs, machine-identity/hardware-model content and guest artifacts remain local.
 
-Part 03 is now closed at exactly six objectives:
+Part 04 is fixed at exactly six objectives:
 
 ```text
-P3.01 — Platform Contract Inventory and Ownership Map
-P3.02 — Configuration and Platform Identity Contract
-P3.03 — Interrupt, Timer, Power and Console Contract
-P3.04 — Boot Backdoor and Storage Contract
-P3.05 — PCIe, Peripheral, Crypto and Graphics Contract
-P3.06 — Part 03 Integration Gate
+P4.01 — Runtime Session Provenance and Input Lock
+P4.02 — Integrated TCG Probe Capture
+P4.03 — Apple Silicon HVF Reference Capture
+P4.04 — Comparable A/B Session Assembly
+P4.05 — Reproducible Divergence Promotion
+P4.06 — Part 04 Runtime Evidence Gate
 ```
 
-There is no P3.07.
+There is no P4.07. P4.02 is next.
 
-The next progression point is:
-
-```text
-Part 04
-P4.01
-```
-
-No real macOS/HVF/TCG guest execution is claimed by the P3.06 development-side gate. The repository root `README.md` remains intentionally unchanged.
+P4.01 adds no Inferno patch and launches no guest. The repository root `README.md` remains intentionally unchanged.
 
 ## Reset behavior
 
@@ -56,16 +49,8 @@ When a higher-order field increments, lower non-reserved fields normally reset t
 Examples:
 
 ```text
-0.1.0.0.0.7 -> 0.1.0.1.0.0
-0.1.0.4.0.3 -> 0.2.0.0.0.0
 0.9.0.0.0.0 -> 1.0.0.0.0.0
 1.9.0.0.0.0 -> 2.0.0.0.0.0
-2.3.0.0.0.0 -> 2.4.0.0.0.0
-2.4.0.0.0.0 -> 2.5.0.0.0.0
 2.5.0.0.0.0 -> 3.0.0.0.0.0
-3.0.0.0.0.0 -> 3.1.0.0.0.0
-3.1.0.0.0.0 -> 3.2.0.0.0.0
-3.2.0.0.0.0 -> 3.3.0.0.0.0
-3.3.0.0.0.0 -> 3.4.0.0.0.0
-3.4.0.0.0.0 -> 3.5.0.0.0.0
+3.5.0.0.0.0 -> 4.0.0.0.0.0
 ```
