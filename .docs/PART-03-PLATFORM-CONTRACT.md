@@ -1,26 +1,20 @@
 # Part 03 — VMApple Platform Contract
 
-Project version: **`3.4.0.0.0.0`**
+Project version: **`3.5.0.0.0.0`**
 
-Status: **Active — P3.01 through P3.05 implemented**
+Status: **Closed — P3.01 through P3.06 implementation complete; real guest/runtime validation remains deferred**
 
 ## Purpose
 
 Part 01 established the VMApple/TCG evidence pipeline. Part 02 established the deliberate CPU compatibility contract. Part 03 owns the remaining non-CPU VMApple machine contract.
 
-The goal is to answer, for every guest-visible platform component:
-
-1. Is this ordinary QEMU/Arm infrastructure?
-2. Is it VMApple-specific?
-3. Is it tied to a host-only Apple framework?
-4. Is its runtime requirement still unknown?
-5. Which Part 03 objective owns validation or implementation?
+For every guest-visible platform component, Part 03 distinguishes ordinary QEMU/Arm infrastructure, VMApple-specific behavior, host-only Apple framework dependencies and behavior that still requires runtime evidence.
 
 Apple-specific source code is not automatically classified as missing or boot-critical.
 
 ## Fixed objective count
 
-Part 03 has exactly six objectives:
+Part 03 contains exactly six objectives:
 
 ```text
 P3.01 — Platform Contract Inventory and Ownership Map
@@ -33,9 +27,11 @@ P3.06 — Part 03 Integration Gate
 
 There is **no P3.07**.
 
+All six objectives are complete.
+
 ## Ownership model
 
-P3.01 uses four ownership classes:
+Part 03 uses four ownership classes:
 
 ```text
 generic_qemu
@@ -48,19 +44,19 @@ These describe where behavior comes from, not whether it is correct.
 
 ### `generic_qemu`
 
-Existing generic QEMU/Arm hardware used by VMApple, such as GICv3, PL011, GPEX PCIe, XHCI and virtio devices.
+Existing generic QEMU/Arm hardware used by VMApple, including GICv3, PL011, PL031, PL061, GPEX PCIe, XHCI and ordinary virtio infrastructure.
 
 Default action: preserve or validate.
 
 ### `vmapple_specific`
 
-Project/device behavior that intentionally models the VMApple virtual-Mac contract, such as the configuration region, boot backdoor, Apple-flavored virtio block and Apple AES device.
+Behavior that intentionally models the VMApple virtual-Mac contract, including the configuration region, BDIF boot backdoor, Apple-flavored virtio block and Apple AES device.
 
 Default action: validate against evidence before changing semantics.
 
 ### `host_framework_dependent`
 
-A path whose original implementation relies on host-only Apple frameworks, represented by Apple PVG graphics.
+Behavior whose reference implementation relies on host-only Apple frameworks, represented by Apple PVG graphics.
 
 Default action: defer or investigate.
 
@@ -70,11 +66,11 @@ A contract boundary whose presence is known but whose exact runtime requirement 
 
 Default action: investigate or defer.
 
-## P3.01 — Platform Contract Inventory and Ownership Map
+## Completed objectives
 
-Status: **Implementation complete — static ownership map**
+### P3.01 — Platform Contract Inventory and Ownership Map
 
-P3.01 source-locks the pinned Inferno VMApple machine/device files and XNU's public VMApple platform configuration, then creates a machine-readable ownership map for the remaining non-CPU platform.
+P3.01 source-locks the VMApple machine/device files and XNU VMApple platform configuration, then assigns the remaining non-CPU platform to explicit owners.
 
 Project files:
 
@@ -85,11 +81,9 @@ Project files:
 .src/.tools/prepare-p3.01.sh
 ```
 
-## P3.02 — Configuration and Platform Identity Contract
+### P3.02 — Configuration and Platform Identity Contract
 
-Status: **Implementation complete — runtime identity validation deferred**
-
-P3.02 freezes the config-region field ownership model, preserves machine-derived CPU/RAM/random/CPU-ID behavior, adds a privacy-safe local identity-profile compiler, and records the unresolved `cpu_ids[0x80]` versus documented-offset layout discrepancy without guessing a fix.
+P3.02 freezes the config-region field ownership model, provides privacy-safe local identity-profile tooling and records the unresolved `cpu_ids[0x80]` versus adjacent source-comment layout discrepancy without guessing a fix.
 
 Project files:
 
@@ -101,11 +95,9 @@ Project files:
 .src/.tools/prepare-p3.02.sh
 ```
 
-## P3.03 — Interrupt, Timer, Power and Console Contract
+### P3.03 — Interrupt, Timer, Power and Console Contract
 
-Status: **Implementation complete — runtime interrupt validation deferred**
-
-P3.03 freezes the stable generic-device wiring used by pinned Inferno and upstream QEMU 11.1.0:
+P3.03 freezes the generic-device wiring:
 
 ```text
 GICv3 distributor       0x10000000
@@ -117,9 +109,7 @@ PL061 GPIO/power         0x20060000 / SPI 5 / pin 3
 pvpanic MMIO             0x20070000 / no IRQ
 ```
 
-XNU independently confirms VMApple uses GICv3 and PL011 and defines a `0x20000` GIC redistributor-per-PE size. The `0x400000` VMApple redistributor window therefore covers exactly the machine's 32-vCPU cap.
-
-No P3.03 Inferno patch is added. Generic devices remain preserved until runtime evidence proves a concrete incompatibility. Exact power-button event semantics remain evidence-gated.
+Exact power-button event semantics remain evidence-gated.
 
 Project files:
 
@@ -130,20 +120,16 @@ Project files:
 .src/.tools/prepare-p3.03.sh
 ```
 
-## P3.04 — Boot Backdoor and Storage Contract
+### P3.04 — Boot Backdoor and Storage Contract
 
-Status: **Implementation complete — runtime storage validation deferred**
-
-P3.04 freezes VMApple's two-phase storage model:
+P3.04 freezes VMApple's two-stage storage model:
 
 ```text
 pre-boot: BDIF MMIO/DMA reads over AUX/root backends
 runtime:  vmapple-virtio-blk-pci variant=aux/root
 ```
 
-It locks the BDIF window at `0x30000000/0x00200000`, the source-known BDIF register/selector values, 512-byte sector and 128 MiB request limits, read-only observed pre-boot behavior, backend attachment order/fallback, Apple PCI identity `106b:1a00`, AUX/root variant contract, Apple type-field placement and the successful no-op Apple barrier.
-
-No P3.04 Inferno patch is added. BDIF write requirements and real barrier/flush semantics remain runtime-evidence gated.
+BDIF writes remain unsupported pending evidence and the current Apple barrier remains a successful no-op with real flush semantics unresolved.
 
 Project files:
 
@@ -154,11 +140,9 @@ Project files:
 .src/.tools/prepare-p3.04.sh
 ```
 
-## P3.05 — PCIe, Peripheral, Crypto and Graphics Contract
+### P3.05 — PCIe, Peripheral, Crypto and Graphics Contract
 
-Status: **Implementation complete — runtime peripheral/AES/graphics validation deferred**
-
-P3.05 freezes the remaining non-CPU peripheral ownership boundary:
+P3.05 freezes the remaining peripheral boundary:
 
 ```text
 generic QEMU
@@ -176,15 +160,7 @@ host-framework-dependent
 └── apple-gfx-mmio / Apple PVG
 ```
 
-The PCIe reference geometry remains ECAM `0x40000000/0x10000000`, MMIO `0x50000000/0x1fff0000`, and 16 GPEX interrupt lines at SPI 32 through 47.
-
-Pinned Inferno already includes VMApple's macOS XHCI compatibility defaults: virtio legacy transport is disabled and `conditional-intr-mapping=on` is applied to XHCI. Therefore no P3.05 USB backport is required.
-
-The Apple AES public model remains partial but explicit. KEY, IV, DATA, STORE_IV and FLAG are implemented; DSB, SKG and WRITE_REG are declared but not implemented and remain runtime-evidence gated. Public builtin-key constants are classified as emulator placeholders, not authentic Apple secrets.
-
-Apple PVG directly depends on Apple's ParavirtualizedGraphics and Metal host frameworks. P1.05's `qdev_try_new` optionalization remains the portability policy: use real PVG when present, otherwise warn and continue without graphics. No fake GPU is introduced and no modern macOS graphics compatibility is claimed.
-
-P3.05 adds no new Inferno patch.
+Pinned Inferno already contains VMApple's macOS XHCI conditional-interrupter workaround. Apple AES DSB/SKG/WRITE_REG remain unimplemented/evidence-gated. P1.05 keeps real PVG optional and no fake GPU is introduced.
 
 Project files:
 
@@ -195,13 +171,53 @@ Project files:
 .src/.tools/prepare-p3.05.sh
 ```
 
-## P3.06 — Part 03 Integration Gate
+### P3.06 — Part 03 Integration Gate
 
-Status: **Next — final Part 03 objective**
+P3.06 closes Part 03 by binding all five preceding platform contracts to the passing P2.06 CPU integration state and the Part 01 runtime evidence/promotion path.
 
-P3.06 combines the P3.01–P3.05 platform contracts with the closed Part 02 CPU compatibility layer and Part 01 evidence pipeline, verifies ownership/integration invariants, and closes Part 03 without extending the objective count.
+It requires:
 
-After P3.06, Part 03 is closed.
+```text
+machine       vmapple
+accelerator   tcg
+CPU           apple-gxf
+control CPU   max
+live Apple sysreg policies  0
+```
+
+The gate runs all P3.01–P3.05 validators, checks cross-contract fail-closed invariants, verifies the exact patch series still stops at `0005`, and produces a deterministic platform integration manifest/fingerprint.
+
+Project files:
+
+```text
+.docs/P3.06.md
+.src/.configs/p3.06-integration-policy.json
+.src/.tools/platform-integration-gate.py
+.src/.tools/prepare-p3.06.sh
+.src/.tools/run-p3.06-probe.sh
+```
+
+The runtime wrapper deliberately delegates through:
+
+```text
+P3.06 -> P2.06 -> P1.07
+```
+
+rather than creating another launch implementation. P1.09/P1.10 remain authoritative for real evidence and divergence promotion.
+
+## Final patch state
+
+Part 03 adds no new source patch. The complete ordered compatibility series remains:
+
+```text
+0001-vmapple-decouple-build-from-hvf.patch
+0002-vmapple-optional-apple-pvg.patch
+0003-arm-apple-sysreg-framework.patch
+0004-arm-apple-sysreg-policy-model.patch
+0005-arm-vmapple-feature-contract.patch
+```
+
+There is no Part 03 `0006` patch.
 
 ## Evidence rules
 
@@ -219,4 +235,16 @@ Presence in source does not by itself prove boot criticality.
 
 No manual maintainer test is required for individual Part 03 objectives.
 
-Development-side validation may inspect source locks, contracts and deterministic summaries. Real VMApple/macOS execution remains deferred to final integrated testing.
+P3.06 provides the final deterministic preparation and delegated runtime gate, but Part 03 itself does not claim a successful macOS guest boot.
+
+## Next progression point
+
+Part 03 is closed.
+
+```text
+NEXT:
+Part 04
+P4.01
+```
+
+Part 04 begins from the integrated CPU + platform contract and moves into runtime evidence rather than extending Part 03's static machine-contract inventory.
