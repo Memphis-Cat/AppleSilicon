@@ -71,10 +71,10 @@ Example:
 ## Current version
 
 ```text
-0.1.0.0.0.0
+0.2.0.0.0.0
 ```
 
-This is the first documentation/research/bootstrap update.
+This update rewrites the public project introduction around Apple Silicon and the end of the traditional Intel Hackintosh path, defines the no-intermediate-maintainer-testing policy, makes `.log` output a project-wide runtime requirement, and begins P1.01.
 
 ## Reset behavior
 
