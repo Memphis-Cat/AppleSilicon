@@ -71,10 +71,12 @@ Example:
 ## Current version
 
 ```text
-0.2.0.0.0.0
+0.3.0.0.0.0
 ```
 
-This update rewrites the public project introduction around Apple Silicon and the end of the traditional Intel Hackintosh path, defines the no-intermediate-maintainer-testing policy, makes `.log` output a project-wide runtime requirement, and begins P1.01.
+This update implements P1.03, the VMApple Capability & Build-Gate Probe. It documents the current `CONFIG_VMAPPLE` dependency on ARM and HVF, records the current `host` CPU default, and adds a logged capability probe for machine, accelerator, CPU-model, and VMApple-property discovery without booting macOS.
+
+The root `README.md` is intentionally not version-updated in this release under the project owner's instruction.
 
 ## Reset behavior
 
