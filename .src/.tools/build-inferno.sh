@@ -41,9 +41,7 @@ trap on_exit EXIT
 
 quote_command() {
     local arg
-    for arg in "$@"; do
-        printf '%q ' "${arg}"
-    done
+    for arg in "$@"; do printf '%q ' "${arg}"; done
     printf '\n'
 }
 
@@ -63,21 +61,21 @@ version_of() {
 }
 
 detect_jobs() {
+    local jobs
     if [[ -n ${APPLESILICON_JOBS:-} ]]; then
-        printf '%s\n' "${APPLESILICON_JOBS}"
-        return
+        jobs="${APPLESILICON_JOBS}"
+    elif command -v nproc >/dev/null 2>&1; then
+        jobs="$(nproc)"
+    elif command -v sysctl >/dev/null 2>&1; then
+        jobs="$(sysctl -n hw.logicalcpu 2>/dev/null || true)"
+    else
+        jobs="$(getconf _NPROCESSORS_ONLN 2>/dev/null || true)"
     fi
-
-    if command -v nproc >/dev/null 2>&1; then
-        nproc
-        return
-    fi
-
-    if command -v sysctl >/dev/null 2>&1; then
-        sysctl -n hw.logicalcpu 2>/dev/null && return
-    fi
-
-    getconf _NPROCESSORS_ONLN 2>/dev/null || printf '1\n'
+    [[ "${jobs}" =~ ^[0-9]+$ ]] && (( jobs >= 1 )) || {
+        echo "Parallel job count must be a positive integer; observed: ${jobs:-<empty>}" >&2
+        return 1
+    }
+    printf '%s\n' "${jobs}"
 }
 
 run_stage() {
@@ -104,13 +102,11 @@ safe_reset_build_directory() {
             return 1
             ;;
     esac
-
     if [[ "${BUILD_DIR}" != "${ROOT_DIR}/.build/"* ]]; then
         echo "Refusing to delete build directory outside ${ROOT_DIR}/.build: ${BUILD_DIR}" >&2
         echo "Use the default project build directory for the reproducible baseline." >&2
         return 1
     fi
-
     rm -rf "${BUILD_DIR}"
     mkdir -p "${BUILD_DIR}"
 }
@@ -175,7 +171,6 @@ if [[ ! -d "${SOURCE_DIR}" ]]; then
     echo "Inferno source directory does not exist: ${SOURCE_DIR}" >&2
     exit 1
 fi
-
 if ! git -C "${SOURCE_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo "Inferno source path is not a Git work tree: ${SOURCE_DIR}" >&2
     exit 1
@@ -184,14 +179,12 @@ fi
 FINAL_STAGE="revision-validation"
 OBSERVED_REVISION="$(git -C "${SOURCE_DIR}" rev-parse HEAD)"
 echo "Observed Inferno revision: ${OBSERVED_REVISION}"
-
 if [[ "${OBSERVED_REVISION}" != "${EXPECTED_INFERNO_REVISION}" ]]; then
     echo "Inferno revision mismatch." >&2
     echo "Expected: ${EXPECTED_INFERNO_REVISION}" >&2
     echo "Observed: ${OBSERVED_REVISION}" >&2
     exit 1
 fi
-
 DIRTY_STATUS="$(git -C "${SOURCE_DIR}" status --porcelain --untracked-files=no)"
 if [[ -n "${DIRTY_STATUS}" ]]; then
     echo "Inferno tracked source contains local modifications; refusing a baseline build." >&2
@@ -214,7 +207,7 @@ if [[ "${MODE}" == "preflight" ]]; then
     exit 0
 fi
 
-JOBS="$(detect_jobs)"
+JOBS="$(detect_jobs)" || exit 1
 echo "Parallel jobs: ${JOBS}"
 
 FINAL_STAGE="build-directory-reset"
@@ -230,9 +223,7 @@ COMMON_CONFIGURE=(
     "--enable-gnutls"
     "--disable-werror"
 )
-
 HOST_OS="$(uname -s)"
-
 if [[ "${HOST_OS}" == "Darwin" ]]; then
     require_command brew
     BREW_PREFIX="$(brew --prefix)"
@@ -264,14 +255,11 @@ popd >/dev/null
 
 QEMU_AARCH64="${BUILD_DIR}/qemu-system-aarch64"
 FINAL_STAGE="artifact-verification"
-
 if [[ ! -x "${QEMU_AARCH64}" ]]; then
     echo "Build completed without an executable qemu-system-aarch64 at ${QEMU_AARCH64}" >&2
     exit 1
 fi
-
 echo "qemu-system-aarch64: ${QEMU_AARCH64}"
 "${QEMU_AARCH64}" --version
-
 FINAL_STAGE="p1.02-complete"
 echo "P1.02 reproducible Inferno build baseline completed successfully."
