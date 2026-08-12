@@ -4,59 +4,35 @@
   "part": "Part 04",
   "objective": "P4.02",
   "title": "Integrated TCG Probe Capture",
-  "source_lock": {
-    "inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
-  },
-  "probe_contract": {
-    "machine": "vmapple",
-    "accelerator": "tcg",
-    "cpu": "apple-gxf",
-    "session_plan_classification": "P4_01_SESSION_PLAN_READY",
-    "runtime_result_prefix": "P1_07_PROBE_",
-    "runtime_manifest_role": "probe"
-  },
-  "runtime_parameters": {
-    "ram": "4G",
-    "ram_mib": 4096,
-    "smp": 4,
-    "capture_seconds": 30,
-    "grace_seconds": 3
-  },
+  "source_lock": {"inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"},
+  "probe_contract": {"machine":"vmapple","accelerator":"tcg","cpu":"apple-gxf","session_plan_classification":"P4_01_SESSION_PLAN_READY","runtime_result_prefix":"P1_07_PROBE_","runtime_manifest_role":"probe"},
+  "runtime_parameters": {"ram":"4G","ram_mib":4096,"smp":4,"capture_seconds":30,"grace_seconds":3},
   "locked_project_artifacts": [
-    {"path":".src/.configs/p4.01-runtime-session-policy.json","git_blob_sha":"6feb5275b827595c4ac6b2f5ca68d9cc9a836f5b","role":"session_provenance_policy"},
-    {"path":".src/.tools/runtime-session.py","git_blob_sha":"f5fa692a3372aa4eb2e0c16865464f609d0e0998","role":"session_provenance_planner"},
-    {"path":".src/.tools/run-p3.06-probe.sh","git_blob_sha":"54801884b1c157eff6ea8d0559859585769a63a7","role":"integrated_runtime_delegate"},
-    {"path":".src/.tools/run-p2.06-probe.sh","git_blob_sha":"3f748ab5067f455b894706cb3004c2101b697535","role":"cpu_runtime_delegate"},
-    {"path":".src/.tools/run-p1.07-probe.sh","git_blob_sha":"82a46ad27e54f5ee483aecac606cc0943e94e94d","role":"authoritative_probe_runner"},
-    {"path":".src/.tools/collect-p1.10-probe.sh","git_blob_sha":"d89ce62e17ad74ae06946fa8f10d641f1b1220fa","role":"probe_manifest_collector"},
+    {"path":".src/.configs/p4.01-runtime-session-policy.json","git_blob_sha":"3acc7229335f2c60f94e44092112ff85e2a180d5","role":"session_provenance_policy"},
+    {"path":".src/.tools/runtime-session.py","git_blob_sha":"2a0e182c0b7a549c47b2cf4ea0ee341d4d76b990","role":"session_provenance_planner"},
+    {"path":".src/.tools/runtime_integrity.py","git_blob_sha":"fea42f1d78b3e920d6f7da50ebeb8d84d7886c9c","role":"runtime_integrity"},
+    {"path":".src/.tools/run-p3.06-probe.sh","git_blob_sha":"942fa7ecbf313410db6d7532a7bf35799d1a215c","role":"integrated_runtime_delegate"},
+    {"path":".src/.tools/run-p2.06-probe.sh","git_blob_sha":"24823bc12a79510a40178de6a57796dcbe9ceee2","role":"cpu_runtime_delegate"},
+    {"path":".src/.tools/run-p1.07-probe.sh","git_blob_sha":"f8306de5c45265ea1e035494978ebe9e2a05946f","role":"authoritative_probe_runner"},
+    {"path":".src/.tools/collect-p1.10-probe.sh","git_blob_sha":"32df74eba6abf633ba5f65b97f7a21ad0a2502a4","role":"probe_manifest_collector"},
     {"path":".src/.tools/reference-manifest.py","git_blob_sha":"e22ee337b0206b0ba7f2d67de6cf6e05ea6e4cd4","role":"runtime_manifest_validator"},
     {"path":".src/.configs/p1.09-manifest-policy.json","git_blob_sha":"ccaf2c515102aad4f24a370dc6d4078f7924e91f","role":"runtime_manifest_policy"},
-    {"path":".src/.configs/p1.10-promotion-policy.json","git_blob_sha":"aa8804320da885373e2779a704dde75e9ef3bc98","role":"divergence_promotion_policy"},
+    {"path":".src/.configs/p1.10-promotion-policy.json","git_blob_sha":"1fe4cad7ea0a439db76d62871a15f2b3a0d2779a","role":"divergence_promotion_policy"},
     {"path":"README.md","git_blob_sha":"5f056dadbac5d814b9ffb287ec786a559774f953","role":"frozen_root_readme"}
   ],
-  "required_trace_events": [
-    "memory_region_ops_read",
-    "memory_region_ops_write"
-  ],
-  "required_debug_items": [
-    "guest_errors",
-    "unimp",
-    "int",
-    "cpu_reset"
-  ],
-  "required_runtime_artifact_kinds": [
-    "launcher_log",
-    "serial_log",
-    "qemu_debug_log",
-    "trace_capability_log"
-  ],
+  "required_trace_events": ["memory_region_ops_read","memory_region_ops_write"],
+  "required_debug_items": ["guest_errors","unimp","int","cpu_reset"],
+  "required_runtime_artifact_kinds": ["launcher_log","serial_log","qemu_debug_log","trace_capability_log"],
   "requirements": {
     "p4_01_probe_session_plan_must_be_ready": true,
     "session_fingerprint_required": true,
+    "session_fingerprint_must_reproduce": true,
     "runtime_parameters_must_be_locked_before_run": true,
     "qemu_and_inputs_must_match_session_plan_before_run": true,
     "qemu_and_inputs_must_match_session_plan_after_run": true,
+    "compiled_identity_must_match_machine_id": true,
     "preflight_results_must_be_byte_identical": true,
+    "preflight_fingerprint_must_reproduce": true,
     "p3_06_runtime_delegate_must_be_reused": true,
     "p1_07_runtime_probe_must_be_reused": true,
     "probe_accelerator_must_be_tcg": true,
@@ -72,11 +48,6 @@
     "no_new_inferno_patch_for_p4_02": true,
     "root_readme_remains_frozen": true
   },
-  "outputs": {
-    "probe_manifest": ".build/p4.02/<run>/probe-manifest.json",
-    "capture_manifest": ".build/p4.02/<run>/probe-capture.json",
-    "preflight_before": ".build/p4.02/<run>/preflight-before.json",
-    "preflight_after": ".build/p4.02/<run>/preflight-after.json"
-  },
+  "outputs": {"probe_manifest":".build/p4.02/<run>/probe-manifest.json","capture_manifest":".build/p4.02/<run>/probe-capture.json","preflight_before":".build/p4.02/<run>/preflight-before.json","preflight_after":".build/p4.02/<run>/preflight-after.json"},
   "next_objective": "P4.03"
 }
