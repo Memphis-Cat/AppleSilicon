@@ -74,6 +74,8 @@ def validate(data: dict[str, Any]) -> None:
         require(isinstance(cid, str) and cid, "component id missing")
         require(cid not in ids, f"duplicate component id: {cid}")
         ids.add(cid)
+        category = item.get("category")
+        require(isinstance(category, str) and category, f"category missing for {cid}")
         own = item.get("ownership")
         require(own in ownership, f"invalid ownership for {cid}: {own}")
         owner_counts[own] = owner_counts.get(own, 0) + 1
@@ -157,6 +159,8 @@ def self_check(data: dict[str, Any]) -> None:
     validate(data)
     expect_failure(data, lambda d: d["components"].append(copy.deepcopy(d["components"][0])),
                    "duplicate component")
+    expect_failure(data, lambda d: d["components"][0].pop("category", None),
+                   "missing component category")
     expect_failure(data, lambda d: d["components"][0].__setitem__("ownership", "apple_magic"),
                    "unknown ownership class")
     expect_failure(data, lambda d: d["action_values"].append("implement"),
