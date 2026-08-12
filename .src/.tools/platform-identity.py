@@ -38,10 +38,14 @@ def parse_u64(value: Any) -> int:
     if isinstance(value, int):
         parsed = value
     elif isinstance(value, str):
-        try:
-            parsed = int(value, 0)
-        except ValueError as exc:
-            raise IdentityError("machine_uuid must be an integer or 0x-prefixed integer") from exc
+        raw = value.strip()
+        require(raw != "", "machine_uuid cannot be empty")
+        if re.fullmatch(r"0[xX][0-9a-fA-F]+", raw):
+            parsed = int(raw, 16)
+        elif re.fullmatch(r"[0-9]+", raw):
+            parsed = int(raw, 10)
+        else:
+            raise IdentityError("machine_uuid must be decimal or a 0x-prefixed integer")
     else:
         raise IdentityError("machine_uuid must be an integer or string")
     require(0 <= parsed <= 0xFFFFFFFFFFFFFFFF, "machine_uuid must fit uint64")
@@ -279,6 +283,10 @@ def self_check(contract: dict[str, Any], profile: dict[str, Any]) -> None:
     first = compile_profile(profile, contract)
     second = compile_profile(copy.deepcopy(profile), contract)
     require(canonical(first) == canonical(second), "profile compilation is not deterministic")
+    require(parse_u64("0008") == 8 and parse_u64("0x8") == 8,
+            "decimal/hex machine_uuid normalization drift")
+    expect_failure(contract, profile, lambda p: p.__setitem__("machine_uuid", "0b1000"),
+                   "binary machine_uuid format")
     expect_failure(contract, profile, lambda p: p.__setitem__("machine_uuid", "0x10000000000000000"),
                    "uint64 overflow")
     expect_failure(contract, profile, lambda p: p["identity"].__setitem__("serial", "x" * 32),
