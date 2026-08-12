@@ -25,82 +25,42 @@ mkdir -p "${LOG_DIR}" "${WORK_ROOT}"
 TIMESTAMP="$(date -u +"%Y%m%d-%H%M%S")"
 LOG_FILE="${LOG_DIR}/AppleSilicon-p4.01-plan-${ROLE}-${TIMESTAMP}-$$.log"
 exec > >(tee "${LOG_FILE}") 2>&1
-
-on_exit() {
-    local status=$?
-    trap - EXIT
-    rm -f "${OUTPUT_SECOND}"
-    echo "Classification: ${CLASSIFICATION}"
-    echo "Final stage: ${FINAL_STAGE}"
-    echo "Exit code: ${status}"
-    echo "Finished UTC: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-    echo "Log: ${LOG_FILE}"
-    exit "${status}"
-}
+on_exit(){ local status=$?; trap - EXIT; rm -f "${OUTPUT_SECOND}"; echo "Classification: ${CLASSIFICATION}"; echo "Final stage: ${FINAL_STAGE}"; echo "Exit code: ${status}"; echo "Finished UTC: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"; echo "Log: ${LOG_FILE}"; exit "${status}"; }
 trap on_exit EXIT
-
-fail() {
-    CLASSIFICATION="$1"
-    shift
-    printf '%s\n' "$@" >&2
-    exit 1
-}
+fail(){ CLASSIFICATION="$1"; shift; printf '%s\n' "$@" >&2; exit 1; }
 
 [[ "${ROLE}" == "probe" || "${ROLE}" == "reference" ]] || fail "P4_01_ROLE_INVALID" "Role must be probe or reference"
-for name in QEMU_BIN MACHINE_UUID FIRMWARE AUX DISK MACHINE_IDENTITY; do
-    [[ -n "${!name}" ]] || fail "P4_01_INPUT_MISSING" "Required environment variable input is empty: ${name}"
-done
-[[ -f "${P3_MANIFEST}" ]] || fail "P4_01_P3_MANIFEST_MISSING" "P3.06 integration manifest missing: ${P3_MANIFEST}"
+for name in QEMU_BIN MACHINE_UUID FIRMWARE AUX DISK MACHINE_IDENTITY; do [[ -n "${!name}" ]] || fail "P4_01_INPUT_MISSING" "Required environment input is empty: ${name}"; done
+[[ -f "${P3_MANIFEST}" ]] || fail "P4_01_P3_MANIFEST_MISSING" "P3.06 integration manifest missing"
+[[ -x "${TOOL}" ]] || fail "P4_01_TOOL_MISSING" "P4.01 planner is not executable"
 
 echo "AppleSilicon version: ${VERSION}"
 echo "Objective: P4.01 local runtime session planning"
 echo "Role: ${ROLE}"
 echo "Started UTC: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-echo "Sensitive input paths and machine UUID are intentionally not printed."
+echo "Sensitive input paths and raw VMApple machine id are intentionally not printed."
 
-ARGS=(
-    --policy "${POLICY}" plan
-    --role "${ROLE}"
-    --p3-06-manifest "${P3_MANIFEST}"
-    --qemu-bin "${QEMU_BIN}"
-    --machine-uuid "${MACHINE_UUID}"
-    --firmware "${FIRMWARE}"
-    --auxiliary-storage "${AUX}"
-    --disk "${DISK}"
-    --machine-identity "${MACHINE_IDENTITY}"
-)
-if [[ -n "${HARDWARE_MODEL}" ]]; then
-    ARGS+=(--hardware-model "${HARDWARE_MODEL}")
-fi
-
+ARGS=(--policy "${POLICY}" plan --role "${ROLE}" --p3-06-manifest "${P3_MANIFEST}" --qemu-bin "${QEMU_BIN}" --machine-uuid "${MACHINE_UUID}" --firmware "${FIRMWARE}" --auxiliary-storage "${AUX}" --disk "${DISK}" --machine-identity "${MACHINE_IDENTITY}")
+if [[ -n "${HARDWARE_MODEL}" ]]; then ARGS+=(--hardware-model "${HARDWARE_MODEL}"); fi
 FINAL_STAGE="first-plan"
-python3 "${TOOL}" "${ARGS[@]}" --output "${OUTPUT}" >/dev/null
+python3 "${TOOL}" "${ARGS[@]}" --output "${OUTPUT}" >/dev/null || fail "P4_01_PLAN_FAILED" "First session plan generation failed"
 FINAL_STAGE="second-plan"
-python3 "${TOOL}" "${ARGS[@]}" --output "${OUTPUT_SECOND}" >/dev/null
+python3 "${TOOL}" "${ARGS[@]}" --output "${OUTPUT_SECOND}" >/dev/null || fail "P4_01_PLAN_FAILED" "Second session plan generation failed"
 FINAL_STAGE="determinism-check"
 cmp -s "${OUTPUT}" "${OUTPUT_SECOND}" || fail "P4_01_PLAN_NONDETERMINISTIC" "Repeated P4.01 session plans differ"
-
 FINAL_STAGE="plan-validation"
-python3 - "${OUTPUT}" "${ROLE}" <<'PY'
-import json
+python3 "${TOOL}" --policy "${POLICY}" validate-plan --plan "${OUTPUT}" --role "${ROLE}" || fail "P4_01_PLAN_INVALID" "Generated plan fingerprint/contract did not reproduce"
+python3 - "${OUTPUT}" <<'PY'
 from pathlib import Path
-import re, sys
-data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-if data.get("classification") != "P4_01_SESSION_PLAN_READY":
-    raise SystemExit("P4.01 plan classification mismatch")
-if data.get("role") != sys.argv[2]:
-    raise SystemExit("P4.01 plan role mismatch")
-if data.get("guest_execution") is not False or data.get("runtime_evidence") is not False:
-    raise SystemExit("P4.01 plan must remain pre-execution only")
-fp = data.get("session_fingerprint")
-if not isinstance(fp, str) or re.fullmatch(r"[0-9a-f]{64}", fp) is None:
-    raise SystemExit("P4.01 session fingerprint invalid")
-for forbidden in ("/Users/", "/home/", "C:\\Users\\"):
-    if forbidden in Path(sys.argv[1]).read_text(encoding="utf-8"):
-        raise SystemExit("local user path leaked into P4.01 plan")
+import json,re,sys
+p=Path(sys.argv[1]); text=p.read_text(encoding="utf-8"); d=json.loads(text); fp=d.get("session_fingerprint")
+if re.fullmatch(r"[0-9a-f]{64}",str(fp)) is None: raise SystemExit("session fingerprint invalid")
+mid=d.get("machine_uuid",{})
+if mid.get("encoding")!="uint64_decimal" or mid.get("semantic")!="vmapple_sdom_ecid": raise SystemExit("machine-id encoding drift")
+for forbidden in ("/Users/","/home/","C:\\Users\\"):
+    if forbidden in text: raise SystemExit("local user path leaked into plan")
 print(f"Session fingerprint: {fp}")
 PY
-
 CLASSIFICATION="P4_01_SESSION_PLAN_READY"
 FINAL_STAGE="complete"
 echo "P4.01 runtime session plan: READY"
