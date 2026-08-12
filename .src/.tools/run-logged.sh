@@ -22,17 +22,30 @@ if [[ $# -eq 0 ]]; then
 fi
 
 print_command() {
-    local arg
+    local arg lower
     local first=1
+    local redact_next=0
 
     for arg in "$@"; do
         if [[ ${first} -eq 0 ]]; then
             printf ' '
         fi
 
-        case "${arg,,}" in
+        if [[ ${redact_next} -eq 1 ]]; then
+            printf '<redacted>'
+            redact_next=0
+            first=0
+            continue
+        fi
+
+        lower="${arg,,}"
+        case "${lower}" in
             *password=*|*passwd=*|*token=*|*secret=*|*private-key=*|*private_key=*|*ticket=*)
                 printf '<redacted>'
+                ;;
+            --password|--passwd|--token|--secret|--private-key|--private_key|--ticket)
+                printf '%q' "${arg}"
+                redact_next=1
                 ;;
             *)
                 printf '%q' "${arg}"
