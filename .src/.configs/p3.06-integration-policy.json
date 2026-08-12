@@ -4,21 +4,14 @@
   "part": "Part 03",
   "objective": "P3.06",
   "title": "Part 03 Integration Gate",
-  "source_lock": {
-    "inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
-  },
-  "integrated_machine": {
-    "machine": "vmapple",
-    "accelerator": "tcg",
-    "cpu": "apple-gxf",
-    "control_cpu": "max"
-  },
+  "source_lock": {"inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"},
+  "integrated_machine": {"machine": "vmapple", "accelerator": "tcg", "cpu": "apple-gxf", "control_cpu": "max"},
   "locked_artifacts": [
-    {"path":".src/.configs/p2.06-integration-policy.json","git_blob_sha":"da5890e1180d78114e625b8d285ccc59ba950055","role":"cpu_integration_policy"},
+    {"path":".src/.configs/p2.06-integration-policy.json","git_blob_sha":"deb2903c06d934c8bdffc274d66c3ef06c653a43","role":"cpu_integration_policy"},
     {"path":".src/.tools/integration-gate.py","git_blob_sha":"c3abc2dbda79c3d910c152e123bb07b7a98d8d2d","role":"cpu_integration_gate"},
     {"path":".src/.tools/prepare-p2.06.sh","git_blob_sha":"6c360b7f4262fd5eb1ef6c3ac8a50bdcd853ab96","role":"cpu_integration_prepare"},
-    {"path":".src/.tools/run-p2.06-probe.sh","git_blob_sha":"3f748ab5067f455b894706cb3004c2101b697535","role":"runtime_probe_delegate"},
-
+    {"path":".src/.tools/run-p2.06-probe.sh","git_blob_sha":"24823bc12a79510a40178de6a57796dcbe9ceee2","role":"runtime_probe_delegate"},
+    {"path":".src/.tools/runtime_integrity.py","git_blob_sha":"fea42f1d78b3e920d6f7da50ebeb8d84d7886c9c","role":"runtime_integrity"},
     {"path":".src/.configs/p3.01-platform-contract.json","git_blob_sha":"572db030a93a895245686bdcf09631f0f0557eb8","role":"platform_inventory"},
     {"path":".src/.tools/platform-contract.py","git_blob_sha":"e8fd6ab2a1cc89ff3f22602c99540426de1b9623","role":"platform_inventory_validator"},
     {"path":".src/.configs/p3.02-identity-contract.json","git_blob_sha":"b2d1ab89b8cbab22beccf3cb2225bb374bf0d732","role":"identity_contract"},
@@ -29,9 +22,8 @@
     {"path":".src/.tools/platform-storage-contract.py","git_blob_sha":"2e8fac3ff5cfb56bc32014376cf95e98b372f7fb","role":"storage_validator"},
     {"path":".src/.configs/p3.05-peripheral-contract.json","git_blob_sha":"eaa75ecbfe9ad167d4d09e1b71a5e47312473e76","role":"peripheral_contract"},
     {"path":".src/.tools/platform-peripheral-contract.py","git_blob_sha":"44fa2c2f3f27f43d2bd249ad5224a46829b87a30","role":"peripheral_validator"},
-
     {"path":".src/.configs/p1.09-manifest-policy.json","git_blob_sha":"ccaf2c515102aad4f24a370dc6d4078f7924e91f","role":"runtime_evidence_manifest"},
-    {"path":".src/.configs/p1.10-promotion-policy.json","git_blob_sha":"aa8804320da885373e2779a704dde75e9ef3bc98","role":"runtime_divergence_promotion"},
+    {"path":".src/.configs/p1.10-promotion-policy.json","git_blob_sha":"1fe4cad7ea0a439db76d62871a15f2b3a0d2779a","role":"runtime_divergence_promotion"},
     {"path":"README.md","git_blob_sha":"5f056dadbac5d814b9ffb287ec786a559774f953","role":"frozen_root_readme"}
   ],
   "patch_series": [
@@ -64,13 +56,11 @@
     "modern_macos_graphics_compatibility_is_not_claimed": true,
     "p1_runtime_evidence_and_promotion_gates_remain_authoritative": true,
     "p2_06_runtime_probe_is_reused_not_forked": true,
+    "runtime_integrity_fingerprint_recheck_required": true,
     "root_readme_remains_frozen": true,
     "guest_runtime_deferred": true
   },
-  "outputs": {
-    "manifest": ".build/p3.06/platform-integration-manifest.json",
-    "cpu_integration_manifest": ".build/p2.06/integration-manifest.json"
-  },
+  "outputs": {"manifest": ".build/p3.06/platform-integration-manifest.json", "cpu_integration_manifest": ".build/p2.06/integration-manifest.json"},
   "part_status_after_success": "closed_implementation_complete",
   "next_part": "Part 04",
   "next_objective": "P4.01"
