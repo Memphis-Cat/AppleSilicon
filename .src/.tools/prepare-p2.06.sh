@@ -53,14 +53,33 @@ fail() {
 }
 
 safe_reset_work_root() {
-    case "${WORK_ROOT}" in
-        ""|"/"|"${ROOT_DIR}"|"${HOME}"|"${ROOT_DIR}/.build")
+    local normalized_root normalized_build_root
+    normalized_root="$(python3 - "${WORK_ROOT}" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || fail "P2_06_UNSAFE_WORK_ROOT" "Could not canonicalize P2.06 work root: ${WORK_ROOT}"
+    normalized_build_root="$(python3 - "${ROOT_DIR}/.build" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || fail "P2_06_UNSAFE_WORK_ROOT" "Could not canonicalize project build root"
+    case "${normalized_root}" in
+        ""|"/"|"${ROOT_DIR}"|"${HOME}"|"${normalized_build_root}")
             fail "P2_06_UNSAFE_WORK_ROOT" "Refusing unsafe work-root reset: ${WORK_ROOT}"
             ;;
     esac
-    [[ "${WORK_ROOT}" == "${ROOT_DIR}/.build/"* ]] ||
-        fail "P2_06_UNSAFE_WORK_ROOT" "Work root must remain below ${ROOT_DIR}/.build"
-    rm -rf "${WORK_ROOT}"
+    [[ "${normalized_root}" == "${normalized_build_root}/"* ]] ||
+        fail "P2_06_UNSAFE_WORK_ROOT" "Work root must remain below ${normalized_build_root}"
+    WORK_ROOT="${normalized_root}"
+    PREPARED_SOURCE="${WORK_ROOT}/inferno-src"
+    P2_05_WORK="${WORK_ROOT}/p2.05"
+    P2_05_RESULT="${P2_05_WORK}/cpu-contract-regression.json"
+    MANIFEST="${WORK_ROOT}/integration-manifest.json"
+    MANIFEST_2="${WORK_ROOT}/integration-manifest.second.json"
+    rm -rf -- "${WORK_ROOT}"
     mkdir -p "${WORK_ROOT}"
 }
 
