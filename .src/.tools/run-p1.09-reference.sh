@@ -5,6 +5,7 @@ set -Eeuo pipefail
 VERSION="0.9.0.0.0.0"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 LOG_DIR="${APPLESILICON_LOG_DIR:-${ROOT_DIR}/.logs}"
+INTEGRITY_TOOL="${ROOT_DIR}/.src/.tools/runtime_integrity.py"
 QEMU_BIN="${APPLESILICON_QEMU_BIN:-}"
 ACCEL="hvf"
 CPU_PROFILE="host"
@@ -26,9 +27,11 @@ CLASSIFICATION="UNCLASSIFIED"
 FINAL_STAGE="startup"
 QEMU_STATUS="not-started"
 TIMED_OUT=0
+QEMU_PID=""
 
 mkdir -p "${LOG_DIR}"
 TIMESTAMP="$(date -u +"%Y%m%d-%H%M%S")"
+RUN_ID="p1.09-reference-${TIMESTAMP}-$$"
 PREFIX="${LOG_DIR}/AppleSilicon-p1.09-reference-${TIMESTAMP}-$$"
 LAUNCHER_LOG="${PREFIX}.log"
 SERIAL_LOG="${PREFIX}-serial.log"
@@ -40,9 +43,28 @@ STARTED_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 exec > >(tee "${LAUNCHER_LOG}") 2>&1
 
+cleanup_qemu() {
+    if [[ -n "${QEMU_PID}" ]] && kill -0 "${QEMU_PID}" 2>/dev/null; then
+        kill -TERM "${QEMU_PID}" 2>/dev/null || true
+        local deadline=$((SECONDS + GRACE_SECONDS))
+        while kill -0 "${QEMU_PID}" 2>/dev/null && (( SECONDS < deadline )); do sleep 1; done
+        if kill -0 "${QEMU_PID}" 2>/dev/null; then kill -KILL "${QEMU_PID}" 2>/dev/null || true; fi
+        wait "${QEMU_PID}" 2>/dev/null || true
+    fi
+    QEMU_PID=""
+}
+
+on_signal() {
+    CLASSIFICATION="P1_09_REFERENCE_INTERRUPTED"
+    FINAL_STAGE="signal-cleanup"
+    cleanup_qemu
+    exit 130
+}
+
 on_exit() {
     local status=$?
-    trap - EXIT
+    trap - EXIT INT TERM HUP
+    cleanup_qemu
     echo "Classification: ${CLASSIFICATION}"
     echo "Final stage: ${FINAL_STAGE}"
     echo "QEMU status: ${QEMU_STATUS}"
@@ -57,39 +79,22 @@ on_exit() {
     exit "${status}"
 }
 trap on_exit EXIT
+trap on_signal INT TERM HUP
 
-fail() {
-    CLASSIFICATION="$1"
-    shift
-    printf '%s\n' "$@" >&2
-    exit 1
-}
+fail() { CLASSIFICATION="$1"; shift; printf '%s\n' "$@" >&2; exit 1; }
 
 hash_text() {
-    if command -v shasum >/dev/null 2>&1; then
-        printf '%s' "$1" | shasum -a 256 | awk '{print $1}'
-    elif command -v sha256sum >/dev/null 2>&1; then
-        printf '%s' "$1" | sha256sum | awk '{print $1}'
-    else
-        printf '%s' "unavailable"
-    fi
+    python3 - "$1" <<'PY'
+import hashlib, sys
+print(hashlib.sha256(sys.argv[1].encode("ascii")).hexdigest())
+PY
 }
 
-file_size() {
-    if stat -f '%z' "$1" >/dev/null 2>&1; then
-        stat -f '%z' "$1"
-    else
-        stat -c '%s' "$1"
-    fi
-}
-
+file_size() { if stat -f '%z' "$1" >/dev/null 2>&1; then stat -f '%z' "$1"; else stat -c '%s' "$1"; fi; }
 validate_file() {
-    local classification="$1"
-    local label="$2"
-    local path="$3"
+    local classification="$1" label="$2" path="$3"
     [[ -n "${path}" ]] || fail "${classification}" "${label} path is not configured."
-    [[ -f "${path}" ]] || fail "${classification}" "${label} does not exist: ${path}"
-    [[ -r "${path}" ]] || fail "${classification}" "${label} is not readable: ${path}"
+    [[ -f "${path}" && -r "${path}" ]] || fail "${classification}" "${label} is missing or unreadable: ${path}"
 }
 
 FINAL_STAGE="host-validation"
@@ -97,24 +102,37 @@ FINAL_STAGE="host-validation"
 [[ "$(uname -m)" == "arm64" ]] || fail "REFERENCE_HOST_UNSUPPORTED" "P1.09 reference capture requires an Apple Silicon arm64 host."
 
 FINAL_STAGE="configuration-validation"
-[[ -n "${QEMU_BIN}" ]] || fail "QEMU_BINARY_MISSING" "APPLESILICON_QEMU_BIN is not configured."
-[[ -x "${QEMU_BIN}" ]] || fail "QEMU_BINARY_MISSING" "QEMU binary is not executable: ${QEMU_BIN}"
-[[ -n "${UUID_VALUE}" ]] || fail "INPUT_UUID_MISSING" "APPLESILICON_VMAPPLE_UUID is not configured."
+for command in python3 grep tee; do command -v "${command}" >/dev/null 2>&1 || fail "TOOL_MISSING" "Missing required command: ${command}"; done
+[[ -f "${INTEGRITY_TOOL}" ]] || fail "RUNTIME_INTEGRITY_MISSING" "Runtime integrity helper is missing."
+[[ -n "${QEMU_BIN}" && -x "${QEMU_BIN}" ]] || fail "QEMU_BINARY_MISSING" "APPLESILICON_QEMU_BIN is missing or not executable."
+[[ -n "${UUID_VALUE}" ]] || fail "INPUT_UUID_MISSING" "APPLESILICON_VMAPPLE_UUID (VMApple uint64 machine id) is not configured."
+[[ "${SMP}" =~ ^[0-9]+$ ]] && (( SMP >= 1 && SMP <= 32 )) || fail "INVALID_SMP" "SMP must be an integer from 1 through 32."
+[[ -n "${RAM}" ]] || fail "INVALID_RAM" "RAM must not be empty."
 validate_file "INPUT_FIRMWARE_MISSING" "VMApple firmware" "${FIRMWARE}"
 validate_file "INPUT_AUX_MISSING" "VMApple aux image" "${AUX}"
 validate_file "INPUT_DISK_MISSING" "VMApple disk image" "${DISK}"
-validate_file "INPUT_IDENTITY_MISSING" "VMApple machine identity" "${MACHINE_IDENTITY}"
+validate_file "INPUT_IDENTITY_MISSING" "compiled P3.02 machine identity" "${MACHINE_IDENTITY}"
 validate_file "MANIFEST_TOOL_MISSING" "P1.09 manifest tool" "${MANIFEST_TOOL}"
 validate_file "MANIFEST_POLICY_MISSING" "P1.09 manifest policy" "${MANIFEST_POLICY}"
-if [[ -n "${HARDWARE_MODEL}" ]]; then
-    validate_file "INPUT_HARDWARE_MODEL_MISSING" "VMApple hardware model" "${HARDWARE_MODEL}"
-fi
+if [[ -n "${HARDWARE_MODEL}" ]]; then validate_file "INPUT_HARDWARE_MODEL_MISSING" "VMApple hardware model" "${HARDWARE_MODEL}"; fi
 validate_file "TRACE_CAPABILITY_FAILED" "trace configuration" "${TRACE_CONFIG}"
 [[ "${REFERENCE_SECONDS}" =~ ^[0-9]+$ ]] && (( REFERENCE_SECONDS > 0 )) || fail "LAUNCH_FAILED" "Reference duration must be a positive integer."
 [[ "${GRACE_SECONDS}" =~ ^[0-9]+$ ]] || fail "LAUNCH_FAILED" "Grace duration must be a non-negative integer."
 
-UUID_HASH="$(hash_text "${UUID_VALUE}")"
+MACHINE_ID="$(python3 "${INTEGRITY_TOOL}" machine-id "${UUID_VALUE}")" || fail "INPUT_UUID_INVALID" "VMApple machine id must be uint64 decimal or 0x-prefixed."
+python3 "${INTEGRITY_TOOL}" identity --compiled "${MACHINE_IDENTITY}" --machine-id "${MACHINE_ID}" >/dev/null ||
+    fail "INPUT_IDENTITY_INVALID" "Compiled P3.02 identity failed runtime validation."
+IDENTITY_ARGS=()
+while IFS= read -r item; do IDENTITY_ARGS+=("${item}"); done < <(
+    python3 "${INTEGRITY_TOOL}" identity --compiled "${MACHINE_IDENTITY}" --machine-id "${MACHINE_ID}" --emit-globals
+)
+(( ${#IDENTITY_ARGS[@]} >= 4 && ${#IDENTITY_ARGS[@]} % 2 == 0 )) || fail "INPUT_IDENTITY_INVALID" "Compiled identity emitted invalid globals."
+FIRMWARE_BYTES="$(file_size "${FIRMWARE}")"
+(( FIRMWARE_BYTES > 0 && FIRMWARE_BYTES <= 1048576 )) || fail "INPUT_FIRMWARE_INVALID" "Firmware must fit VMApple's 1 MiB window."
+MACHINE_ID_HASH="$(hash_text "${MACHINE_ID}")"
+
 echo "AppleSilicon version: ${VERSION}"
+echo "Run ID: ${RUN_ID}"
 echo "Started UTC: ${STARTED_UTC}"
 echo "Host OS: $(uname -s)"
 echo "Host architecture: $(uname -m)"
@@ -123,15 +141,18 @@ echo "CPU profile: ${CPU_PROFILE}"
 echo "SMP: ${SMP}"
 echo "RAM: ${RAM}"
 echo "Reference seconds: ${REFERENCE_SECONDS}"
-echo "UUID SHA-256: ${UUID_HASH}"
-echo "Firmware size: $(file_size "${FIRMWARE}") bytes"
+echo "Machine ID SHA-256: ${MACHINE_ID_HASH}"
+echo "UUID SHA-256: ${MACHINE_ID_HASH}"
+echo "Firmware size: ${FIRMWARE_BYTES} bytes"
 echo "Aux size: $(file_size "${AUX}") bytes"
 echo "Disk size: $(file_size "${DISK}") bytes"
+echo "Identity globals: $(( ${#IDENTITY_ARGS[@]} / 2 ))"
 
 FINAL_STAGE="qemu-capability-validation"
 "${QEMU_BIN}" --version | head -n 1
-"${QEMU_BIN}" -machine help 2>&1 | grep -Eq '(^|[[:space:]])vmapple([[:space:]]|$)' || fail "QEMU_VMAPPLE_MISSING" "Built QEMU does not advertise the vmapple machine."
+"${QEMU_BIN}" -machine help 2>&1 | grep -Eq '(^|[[:space:]])vmapple([[:space:]]|$)' || fail "QEMU_VMAPPLE_MISSING" "Built QEMU does not advertise vmapple."
 "${QEMU_BIN}" -accel help 2>&1 | grep -Eq '(^|[[:space:]])hvf([[:space:]]|$)' || fail "QEMU_HVF_MISSING" "Built QEMU does not advertise HVF."
+"${QEMU_BIN}" -cpu help 2>&1 | grep -Eq '(^|[[:space:]])host([[:space:]]|$)' || fail "QEMU_HOST_CPU_MISSING" "Built QEMU does not advertise host CPU."
 
 FINAL_STAGE="trace-capability-discovery"
 set +e
@@ -139,34 +160,27 @@ set +e
 TRACE_HELP_STATUS=$?
 set -e
 [[ ${TRACE_HELP_STATUS} -eq 0 ]] || fail "TRACE_CAPABILITY_FAILED" "QEMU -trace help failed with status ${TRACE_HELP_STATUS}."
-
 : > "${FILTERED_TRACE_FILE}"
 while IFS= read -r event || [[ -n "${event}" ]]; do
-    [[ -z "${event}" ]] && continue
-    [[ "${event}" == \#* ]] && continue
+    [[ -z "${event}" || "${event}" == \#* ]] && continue
     if grep -Fxq "${event}" "${TRACE_HELP_LOG}" || grep -Eq "(^|[[:space:]])${event}([[:space:]]|$)" "${TRACE_HELP_LOG}"; then
         printf '%s\n' "${event}" >> "${FILTERED_TRACE_FILE}"
     else
-        fail "TRACE_CAPABILITY_FAILED" "Configured trace event is unavailable in this QEMU build: ${event}"
+        fail "TRACE_CAPABILITY_FAILED" "Configured trace event is unavailable: ${event}"
     fi
 done < "${TRACE_CONFIG}"
-[[ -s "${FILTERED_TRACE_FILE}" ]] || fail "TRACE_CAPABILITY_FAILED" "No configured trace events survived capability filtering."
-
+[[ -s "${FILTERED_TRACE_FILE}" ]] || fail "TRACE_CAPABILITY_FAILED" "No configured trace events survived filtering."
 echo "Enabled trace events:"
 cat "${FILTERED_TRACE_FILE}"
 
 FINAL_STAGE="qemu-launch"
 QEMU_ARGS=(
-    -no-user-config
-    -display none
-    -monitor none
-    -serial stdio
-    -no-reboot
-    -m "${RAM}"
-    -smp "${SMP}"
-    -accel "${ACCEL}"
-    -cpu "${CPU_PROFILE}"
-    -M "vmapple,uuid=${UUID_VALUE}"
+    -no-user-config -display none -monitor none -serial stdio -no-reboot
+    -m "${RAM}" -smp "${SMP}" -accel "${ACCEL}" -cpu "${CPU_PROFILE}"
+    -M "vmapple,uuid=${MACHINE_ID}"
+)
+QEMU_ARGS+=("${IDENTITY_ARGS[@]}")
+QEMU_ARGS+=(
     -bios "${FIRMWARE}"
     -drive "file=${AUX},if=pflash,format=raw"
     -drive "file=${DISK},if=pflash,format=raw"
@@ -174,93 +188,52 @@ QEMU_ARGS=(
     -drive "file=${DISK},if=none,id=root,format=raw"
     -device "vmapple-virtio-blk-pci,variant=aux,drive=aux"
     -device "vmapple-virtio-blk-pci,variant=root,drive=root"
-    -d "${DEBUG_ITEMS}"
-    -D "${QEMU_DEBUG_LOG}"
-    -trace "events=${FILTERED_TRACE_FILE}"
+    -d "${DEBUG_ITEMS}" -D "${QEMU_DEBUG_LOG}" -trace "events=${FILTERED_TRACE_FILE}"
 )
 
 echo "Launching controlled P1.09 HVF reference capture."
 echo "Redacted shape: -accel hvf -cpu host -M vmapple,uuid=<redacted> -smp ${SMP} -m ${RAM}"
-
 set +e
 "${QEMU_BIN}" "${QEMU_ARGS[@]}" > >(tee "${SERIAL_LOG}") 2>&1 &
 QEMU_PID=$!
 set -e
 DEADLINE=$((SECONDS + REFERENCE_SECONDS))
-
 while kill -0 "${QEMU_PID}" 2>/dev/null; do
-    if (( SECONDS >= DEADLINE )); then
-        TIMED_OUT=1
-        break
-    fi
+    if (( SECONDS >= DEADLINE )); then TIMED_OUT=1; break; fi
     sleep 1
 done
-
 if (( TIMED_OUT == 1 )); then
     FINAL_STAGE="reference-timeout"
     kill -TERM "${QEMU_PID}" 2>/dev/null || true
     GRACE_DEADLINE=$((SECONDS + GRACE_SECONDS))
-    while kill -0 "${QEMU_PID}" 2>/dev/null && (( SECONDS < GRACE_DEADLINE )); do
-        sleep 1
-    done
-    if kill -0 "${QEMU_PID}" 2>/dev/null; then
-        kill -KILL "${QEMU_PID}" 2>/dev/null || true
-    fi
+    while kill -0 "${QEMU_PID}" 2>/dev/null && (( SECONDS < GRACE_DEADLINE )); do sleep 1; done
+    if kill -0 "${QEMU_PID}" 2>/dev/null; then kill -KILL "${QEMU_PID}" 2>/dev/null || true; fi
 fi
-
 set +e
 wait "${QEMU_PID}"
 QEMU_EXIT=$?
 set -e
+QEMU_PID=""
 QEMU_STATUS="${QEMU_EXIT}"
-
-if (( TIMED_OUT == 1 )); then
-    CLASSIFICATION="P1_09_REFERENCE_TIMED_OUT"
-else
-    CLASSIFICATION="P1_09_REFERENCE_EXITED"
-fi
+if (( TIMED_OUT == 1 )); then CLASSIFICATION="P1_09_REFERENCE_TIMED_OUT"; else CLASSIFICATION="P1_09_REFERENCE_EXITED"; fi
 
 FINAL_STAGE="manifest-generation"
 ENDED_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 HOST_CPU_FAMILY="$(sysctl -n machdep.cpu.brand_string 2>/dev/null || printf '%s' 'Apple Silicon')"
 RAM_MIB="${RAM%G}"
-if [[ "${RAM}" == *G ]]; then
-    RAM_MIB=$((RAM_MIB * 1024))
-elif [[ "${RAM}" == *M ]]; then
-    RAM_MIB="${RAM%M}"
-else
-    fail "MANIFEST_GENERATION_FAILED" "P1.09 manifest generation requires RAM to use G or M units, observed: ${RAM}"
-fi
+if [[ "${RAM}" == *G ]]; then RAM_MIB=$((RAM_MIB * 1024)); elif [[ "${RAM}" == *M ]]; then RAM_MIB="${RAM%M}"; else fail "MANIFEST_GENERATION_FAILED" "RAM must use G or M units for P1.09 manifest."; fi
 MANIFEST_ARGS=(
-    collect
-    --policy "${MANIFEST_POLICY}"
-    --role reference
-    --run-id "p1.09-reference-${TIMESTAMP}-$$"
-    --started-utc "${STARTED_UTC}"
-    --ended-utc "${ENDED_UTC}"
-    --result "${CLASSIFICATION}"
-    --host-os macOS
-    --host-architecture arm64
-    --host-cpu-family "${HOST_CPU_FAMILY}"
-    --host-virtualization HVF
-    --accelerator hvf
-    --cpu-model host
-    --ram-mib "${RAM_MIB}"
-    --smp "${SMP}"
+    collect --policy "${MANIFEST_POLICY}" --role reference --run-id "${RUN_ID}"
+    --started-utc "${STARTED_UTC}" --ended-utc "${ENDED_UTC}" --result "${CLASSIFICATION}"
+    --host-os macOS --host-architecture arm64 --host-cpu-family "${HOST_CPU_FAMILY}" --host-virtualization HVF
+    --accelerator hvf --cpu-model host --ram-mib "${RAM_MIB}" --smp "${SMP}"
     --command-shape "qemu-system-aarch64 -accel hvf -cpu host -M vmapple,uuid=<redacted> -m ${RAM} -smp ${SMP}"
-    --firmware "${FIRMWARE}"
-    --auxiliary-storage "${AUX}"
-    --disk "${DISK}"
-    --machine-identity "${MACHINE_IDENTITY}"
-    --artifact "serial_log=${SERIAL_LOG}"
-    --artifact "qemu_debug_log=${QEMU_DEBUG_LOG}"
-    --artifact "trace_capability_log=${TRACE_HELP_LOG}"
+    --firmware "${FIRMWARE}" --auxiliary-storage "${AUX}" --disk "${DISK}" --machine-identity "${MACHINE_IDENTITY}"
+    --artifact "serial_log=${SERIAL_LOG}" --artifact "qemu_debug_log=${QEMU_DEBUG_LOG}" --artifact "trace_capability_log=${TRACE_HELP_LOG}"
     --output "${MANIFEST_FILE}"
 )
-if [[ -n "${HARDWARE_MODEL}" ]]; then
-    MANIFEST_ARGS+=(--hardware-model "${HARDWARE_MODEL}")
-fi
-python3 "${MANIFEST_TOOL}" "${MANIFEST_ARGS[@]}" || fail "MANIFEST_GENERATION_FAILED" "P1.09 could not create the sanitized reference manifest."
+if [[ -n "${HARDWARE_MODEL}" ]]; then MANIFEST_ARGS+=(--hardware-model "${HARDWARE_MODEL}"); fi
+python3 "${MANIFEST_TOOL}" "${MANIFEST_ARGS[@]}" || fail "MANIFEST_GENERATION_FAILED" "P1.09 could not create sanitized reference manifest."
 
 FINAL_STAGE="complete"
 echo "QEMU exit status: ${QEMU_EXIT}"
