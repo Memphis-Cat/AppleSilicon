@@ -20,11 +20,18 @@ jobs:
           submodules: false
           fetch-depth: 0
 
-      - name: Initialize only pinned Inferno top-level source
+      - name: Initialize pinned Inferno top-level source
         shell: bash
         run: |
           set -euo pipefail
           git submodule update --init .src/.upstream/.inferno
+
+      - name: Restore hardened P4.01 policy from project history
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show b7ae5a8fa58d8a78ee5f7cc993e713034d2c751c:.src/.configs/p4.01-runtime-session-policy.json > .src/.configs/p4.01-runtime-session-policy.json
+          python3 .src/.tools/runtime-session.py --policy .src/.configs/p4.01-runtime-session-policy.json validate-policy
 
       - name: Fix RFC-UUID negative-self-test false positive
         shell: bash
@@ -60,7 +67,7 @@ jobs:
           path.write_text(text.replace(old, new, 1), encoding='utf-8')
           PY
 
-      - name: Refresh every repository-local integrity lock to a fixed point
+      - name: Refresh repository-local integrity locks to fixed point and validate
         shell: bash
         run: |
           set -euo pipefail
@@ -68,19 +75,21 @@ jobs:
           import hashlib
           import json
           from pathlib import Path
+
           root = Path('.').resolve()
           configs = sorted((root / '.src/.configs').glob('*.json'))
+
           def blob_sha(path: Path) -> str:
               payload = path.read_bytes()
-              header = f'blob {len(payload)}\0'.encode('ascii')
-              return hashlib.sha1(header + payload).hexdigest()
+              return hashlib.sha1(f'blob {len(payload)}\0'.encode('ascii') + payload).hexdigest()
+
           def refresh(node):
               changed = False
               if isinstance(node, dict):
-                  path_value = node.get('path')
+                  rel = node.get('path')
                   locked = node.get('git_blob_sha')
-                  if isinstance(path_value, str) and isinstance(locked, str):
-                      target = (root / path_value).resolve(strict=False)
+                  if isinstance(rel, str) and isinstance(locked, str):
+                      target = (root / rel).resolve(strict=False)
                       try:
                           target.relative_to(root)
                       except ValueError:
@@ -96,6 +105,7 @@ jobs:
                   for value in node:
                       changed = refresh(value) or changed
               return changed
+
           for pass_no in range(1, 51):
               changed_files = []
               for cfg in configs:
@@ -110,10 +120,6 @@ jobs:
           else:
               raise SystemExit('integrity lock graph did not converge')
           PY
-
-          rm -f .github/workflows/chatgpt-refresh-final-locks.yml
-          rmdir .github/workflows 2>/dev/null || true
-          rmdir .github 2>/dev/null || true
 
           python3 - <<'PY'
           import json
@@ -130,11 +136,17 @@ jobs:
 
           bash .src/.tools/prepare-final-stability.sh
 
+      - name: Remove temporary workflows, commit, and push repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/chatgpt-refresh-final-locks.yml
+          rm -f .github/workflows/chatgpt-refresh-locks.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
           git add -A
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          if ! git diff --cached --quiet; then
-            git commit -m 'Repair repository integrity lock graph and UUID audit'
-            git pull --rebase origin chatgpt/final-stability-audit-fixes-2026-08-12
-            git push origin HEAD:chatgpt/final-stability-audit-fixes-2026-08-12
-          fi
+          git commit -m 'Repair final stability contracts and integrity locks'
+          git pull --rebase origin chatgpt/final-stability-audit-fixes-2026-08-12
+          git push origin HEAD:chatgpt/final-stability-audit-fixes-2026-08-12
