@@ -31,7 +31,6 @@ jobs:
         run: |
           set -euo pipefail
           git show b7ae5a8fa58d8a78ee5f7cc993e713034d2c751c:.src/.configs/p4.01-runtime-session-policy.json > .src/.configs/p4.01-runtime-session-policy.json
-          python3 .src/.tools/runtime-session.py --policy .src/.configs/p4.01-runtime-session-policy.json validate-policy
 
       - name: Fix RFC-UUID negative-self-test false positive
         shell: bash
@@ -120,6 +119,8 @@ jobs:
           else:
               raise SystemExit('integrity lock graph did not converge')
           PY
+
+          python3 .src/.tools/runtime-session.py --policy .src/.configs/p4.01-runtime-session-policy.json validate-policy
 
           python3 - <<'PY'
           import json
