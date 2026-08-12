@@ -19,45 +19,84 @@ jobs:
           ref: chatgpt/final-stability-audit-fixes-2026-08-12
           submodules: recursive
           fetch-depth: 0
-      - name: Refresh integrity locks
+      - name: Refresh every repository-local integrity lock to a fixed point
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json, hashlib
+          import hashlib
+          import json
           from pathlib import Path
 
           root = Path('.').resolve()
+          configs = sorted((root / '.src/.configs').glob('*.json'))
 
           def blob_sha(path: Path) -> str:
-              b = path.read_bytes()
-              return hashlib.sha1(f'blob {len(b)}\0'.encode() + b).hexdigest()
+              payload = path.read_bytes()
+              header = f'blob {len(payload)}\0'.encode('ascii')
+              return hashlib.sha1(header + payload).hexdigest()
 
-          p406 = root / '.src/.configs/p4.06-runtime-evidence-policy.json'
-          data = json.loads(p406.read_text())
-          for item in data.get('locked_project_artifacts', []):
-              p = root / item['path']
-              if p.is_file():
-                  item['git_blob_sha'] = blob_sha(p)
-          p406.write_text(json.dumps(data, indent=2) + '\n')
+          def refresh(node):
+              changed = False
+              if isinstance(node, dict):
+                  path_value = node.get('path')
+                  locked = node.get('git_blob_sha')
+                  if isinstance(path_value, str) and isinstance(locked, str):
+                      target = (root / path_value).resolve(strict=False)
+                      try:
+                          target.relative_to(root)
+                      except ValueError:
+                          target = None
+                      if target is not None and target.is_file():
+                          actual = blob_sha(target)
+                          if actual != locked:
+                              node['git_blob_sha'] = actual
+                              changed = True
+                  for value in node.values():
+                      changed = refresh(value) or changed
+              elif isinstance(node, list):
+                  for value in node:
+                      changed = refresh(value) or changed
+              return changed
 
-          finalp = root / '.src/.configs/final-stability-policy.json'
-          data = json.loads(finalp.read_text())
-          for item in data.get('locked_project_artifacts', []):
-              p = root / item['path']
-              if p.is_file():
-                  item['git_blob_sha'] = blob_sha(p)
-          finalp.write_text(json.dumps(data, indent=2) + '\n')
+          for pass_no in range(1, 51):
+              changed_files = []
+              for cfg in configs:
+                  data = json.loads(cfg.read_text(encoding='utf-8'))
+                  if refresh(data):
+                      cfg.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+                      changed_files.append(str(cfg.relative_to(root)))
+              if not changed_files:
+                  print(f'Integrity lock graph converged after {pass_no} pass(es).')
+                  break
+              print(f'Pass {pass_no}: refreshed {len(changed_files)} config file(s).')
+          else:
+              raise SystemExit('integrity lock graph did not converge')
           PY
 
           rm -f .github/workflows/chatgpt-refresh-final-locks.yml
           rmdir .github/workflows 2>/dev/null || true
           rmdir .github 2>/dev/null || true
 
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for path in Path('.src/.configs').glob('*.json'):
+              json.loads(path.read_text(encoding='utf-8'))
+          for path in Path('.src/.tools').rglob('*.py'):
+              compile(path.read_text(encoding='utf-8'), str(path), 'exec')
+          PY
+
+          while IFS= read -r -d '' script; do
+            bash -n "$script"
+          done < <(find .src/.tools -type f -name '*.sh' -print0)
+
+          bash .src/.tools/prepare-final-stability.sh
+
           git add -A
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           if ! git diff --cached --quiet; then
-            git commit -m 'Refresh final stability locks after audit fixes'
+            git commit -m 'Repair repository integrity lock graph'
             git push origin HEAD:chatgpt/final-stability-audit-fixes-2026-08-12
           fi
