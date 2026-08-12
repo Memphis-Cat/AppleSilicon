@@ -51,9 +51,9 @@ FINAL_STAGE="runner-validation"
 [[ -n "${QEMU_BIN}" && -x "${QEMU_BIN}" ]] || fail "QEMU_BINARY_MISSING" "QEMU binary is missing or not executable"
 
 FINAL_STAGE="qemu-capability-gate"
-"${QEMU_BIN}" -machine help 2>&1 | grep -Eq '(^|[[:space:]])vmapple([[:space:]]|$)' || fail "QEMU_VMAPPLE_MISSING" "QEMU does not advertise vmapple"
-"${QEMU_BIN}" -accel help 2>&1 | grep -Eq '(^|[[:space:]])tcg([[:space:]]|$)' || fail "QEMU_TCG_MISSING" "QEMU does not advertise TCG"
-"${QEMU_BIN}" -cpu help 2>&1 | grep -Eq '(^|[[:space:]])apple-gxf([[:space:]]|$)' || fail "QEMU_APPLE_GXF_MISSING" "QEMU does not advertise apple-gxf"
+"${QEMU_BIN}" -machine help 2>&1 | grep -E '(^|[[:space:]])vmapple([[:space:]]|$)' >/dev/null || fail "QEMU_VMAPPLE_MISSING" "QEMU does not advertise vmapple"
+"${QEMU_BIN}" -accel help 2>&1 | grep -E '(^|[[:space:]])tcg([[:space:]]|$)' >/dev/null || fail "QEMU_TCG_MISSING" "QEMU does not advertise TCG"
+"${QEMU_BIN}" -cpu help 2>&1 | grep -E '(^|[[:space:]])apple-gxf([[:space:]]|$)' >/dev/null || fail "QEMU_APPLE_GXF_MISSING" "QEMU does not advertise apple-gxf"
 
 echo "QEMU capability gate: PASS"
 echo "Delegating actual observational probe to the locked Part 01 P1.07 harness."
