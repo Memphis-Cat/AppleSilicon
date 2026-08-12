@@ -205,7 +205,7 @@ if ! capture_nonfatal MACHINE_HELP_OUTPUT "machine-inventory" "${QEMU_BIN}" -mac
 fi
 
 VMAPPLE_PRESENT="no"
-if printf '%s\n' "${MACHINE_HELP_OUTPUT}" | grep -Eq '(^|[[:space:]])vmapple([[:space:]]|$)'; then
+if grep -Eq '(^|[[:space:]])vmapple([[:space:]]|$)' <<< "${MACHINE_HELP_OUTPUT}"; then
     VMAPPLE_PRESENT="yes"
 fi
 
@@ -222,7 +222,7 @@ if ! capture_nonfatal CPU_HELP_OUTPUT "cpu-inventory" "${QEMU_BIN}" -cpu help; t
 fi
 
 for accelerator in hvf kvm tcg; do
-    if printf '%s\n' "${ACCEL_HELP_OUTPUT}" | grep -Eq "(^|[[:space:]])${accelerator}([[:space:]]|$)"; then
+    if grep -Eq "(^|[[:space:]])${accelerator}([[:space:]]|$)" <<< "${ACCEL_HELP_OUTPUT}"; then
         echo "Accelerator ${accelerator}: present"
     else
         echo "Accelerator ${accelerator}: absent"
@@ -230,7 +230,7 @@ for accelerator in hvf kvm tcg; do
 done
 
 for cpu_model in host max; do
-    if printf '%s\n' "${CPU_HELP_OUTPUT}" | grep -Eq "(^|[[:space:]])${cpu_model}([[:space:]]|$)"; then
+    if grep -Eq "(^|[[:space:]])${cpu_model}([[:space:]]|$)" <<< "${CPU_HELP_OUTPUT}"; then
         echo "CPU model ${cpu_model}: present"
     else
         echo "CPU model ${cpu_model}: absent"
