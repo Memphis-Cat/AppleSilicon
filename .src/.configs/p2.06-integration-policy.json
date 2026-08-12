@@ -11,7 +11,7 @@
     {"path": ".src/.tools/run-p1.07-probe.sh", "git_blob_sha": "f8306de5c45265ea1e035494978ebe9e2a05946f", "role": "runtime_probe"},
     {"path": ".src/.configs/p1.09-manifest-policy.json", "git_blob_sha": "ccaf2c515102aad4f24a370dc6d4078f7924e91f", "role": "evidence_manifest"},
     {"path": ".src/.configs/p1.10-promotion-policy.json", "git_blob_sha": "1fe4cad7ea0a439db76d62871a15f2b3a0d2779a", "role": "divergence_gate"},
-    {"path": ".src/.tools/runtime_integrity.py", "git_blob_sha": "REPLACE_RUNTIME_INTEGRITY", "role": "runtime_integrity"},
+    {"path": ".src/.tools/runtime_integrity.py", "git_blob_sha": "fea42f1d78b3e920d6f7da50ebeb8d84d7886c9c", "role": "runtime_integrity"},
     {"path": ".src/.configs/p2.05-regression-policy.json", "git_blob_sha": "0e48602cbff1145b64f69a5ccc0e4a1afe028d5b", "role": "cpu_regression_policy"},
     {"path": ".src/.tools/cpu-contract-regression.py", "git_blob_sha": "9ed2b662c6aa91f1d23ad5da092c793ef7c96ffe", "role": "cpu_regression_tool"},
     {"path": ".src/.tools/prepare-p2.05.sh", "git_blob_sha": "a93f9264ff3e07d7b598ca794bf21b277ba28c32", "role": "cpu_regression_prepare"}
