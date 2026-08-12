@@ -50,19 +50,32 @@ require_command() {
 }
 
 safe_reset_work_root() {
-    case "${WORK_ROOT}" in
-        ""|"/"|"${ROOT_DIR}"|"${HOME}"|"${ROOT_DIR}/.build")
+    local normalized_root normalized_build_root
+    normalized_root="$(python3 - "${WORK_ROOT}" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || return 1
+    normalized_build_root="$(python3 - "${ROOT_DIR}/.build" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || return 1
+    case "${normalized_root}" in
+        ""|"/"|"${ROOT_DIR}"|"${HOME}"|"${normalized_build_root}")
             echo "Refusing unsafe P1.04 work-root reset: ${WORK_ROOT}" >&2
             return 1
             ;;
     esac
-
-    if [[ "${WORK_ROOT}" != "${ROOT_DIR}/.build/"* ]]; then
-        echo "Refusing P1.04 work root outside ${ROOT_DIR}/.build: ${WORK_ROOT}" >&2
+    if [[ "${normalized_root}" != "${normalized_build_root}/"* ]]; then
+        echo "Refusing P1.04 work root outside ${normalized_build_root}: ${WORK_ROOT}" >&2
         return 1
     fi
-
-    rm -rf "${WORK_ROOT}"
+    WORK_ROOT="${normalized_root}"
+    PREPARED_SOURCE="${WORK_ROOT}/inferno-src"
+    rm -rf -- "${WORK_ROOT}"
     mkdir -p "${WORK_ROOT}"
 }
 
@@ -91,6 +104,7 @@ echo "Log file: ${LOG_FILE}"
 FINAL_STAGE="tool-preflight"
 require_command git
 require_command grep
+require_command python3
 
 FINAL_STAGE="source-validation"
 if [[ ! -d "${SOURCE_DIR}" ]]; then
