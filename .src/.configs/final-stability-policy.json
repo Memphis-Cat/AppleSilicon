@@ -51,7 +51,7 @@
     },
     {
       "path": ".src/.tools/build-inferno.sh",
-      "git_blob_sha": "e42c59ec1c3126aea56a09dffb26203ca0aadade",
+      "git_blob_sha": "9dcf4a1ffcbda0da2ec7bbdc91d6dae5d02b5ce8",
       "role": "build_baseline"
     },
     {

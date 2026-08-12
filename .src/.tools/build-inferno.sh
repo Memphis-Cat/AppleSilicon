@@ -265,6 +265,15 @@ fi
 pushd "${BUILD_DIR}" >/dev/null
 run_stage "configure" "${CONFIGURE_COMMAND[@]}"
 run_stage "compile" make -j"${JOBS}"
+
+if [[ "${HOST_OS}" == "Darwin" ]]; then
+    case ",${TARGETS}," in
+        *,aarch64-softmmu,*)
+            run_stage "darwin-aarch64-finalization" ninja -C "${BUILD_DIR}" qemu-system-aarch64
+            ;;
+    esac
+fi
+
 popd >/dev/null
 
 QEMU_AARCH64="${BUILD_DIR}/qemu-system-aarch64"
