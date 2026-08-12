@@ -123,9 +123,13 @@ def load_p1_policy() -> dict[str, Any]:
     require(policy.get("schema") == 1, "P1.10 policy schema mismatch")
     require(isinstance(policy.get("minimum_reproductions"), int) and policy["minimum_reproductions"] >= 2,
             "P1.10 minimum reproduction count weakened")
-    require(policy.get("require_unique_run_pairs") is True, "P1.10 unique run-pair gate disabled")
-    require(policy.get("require_same_contract_fingerprint") is True, "P1.10 contract gate disabled")
-    require(policy.get("require_same_divergence_signature") is True, "P1.10 signature gate disabled")
+    for key in (
+        "require_unique_run_pairs", "require_unique_reference_runs", "require_unique_probe_runs",
+        "require_unique_reference_manifests", "require_unique_probe_manifests",
+        "require_candidate_fingerprint", "require_same_contract_fingerprint",
+        "require_same_divergence_signature",
+    ):
+        require(policy.get(key) is True, f"P1.10 gate disabled: {key}")
     require(policy.get("auto_commit_promotion") is False, "P1.10 auto-commit must remain disabled")
     return policy
 
@@ -211,6 +215,9 @@ def run_p1_candidate(item: dict[str, Any], output_dir: Path) -> dict[str, Any]:
     require(candidate.get("status") == "divergence_candidate", "P1.10 found no divergence in an admitted reproduction")
     require(candidate.get("evidence_origin") == "runtime", "P1.10 candidate is not runtime evidence")
     require(candidate.get("promotion_eligible") is True, "P1.10 candidate is not promotion eligible")
+    require(isinstance(candidate.get("candidate_fingerprint"), str)
+            and SHA256_RE.fullmatch(candidate["candidate_fingerprint"]) is not None,
+            "P1.10 candidate fingerprint invalid")
     require(isinstance(candidate.get("divergence_signature"), str)
             and SHA256_RE.fullmatch(candidate["divergence_signature"]) is not None,
             "P1.10 candidate divergence signature invalid")
@@ -258,6 +265,7 @@ def build_output(items: list[dict[str, Any]], p1_record_path: Path, p1_record: d
             "reference_capture_fingerprint": item["bundle"]["reference"]["capture_fingerprint"],
             "probe_capture_fingerprint": item["bundle"]["probe"]["capture_fingerprint"],
             "candidate_id": candidate["candidate_id"],
+            "candidate_fingerprint": candidate["candidate_fingerprint"],
             "candidate_sha256": sha256_file(item["candidate_path"]),
             "divergence_signature": candidate["divergence_signature"],
             "contract_fingerprint": candidate["contract_fingerprint"],
@@ -309,7 +317,7 @@ def promote(args: argparse.Namespace, policy: dict[str, Any]) -> dict[str, Any]:
         for label, path in (("P4.04 A/B session", ab_path), ("reference manifest", ref_manifest_path),
                             ("probe manifest", probe_manifest_path), ("reference trace", ref_trace_path),
                             ("probe trace", probe_trace_path)):
-            require(path.is_file() and path.is_file(), f"{label} missing: {path}")
+            require(path.is_file(), f"{label} missing: {path}")
         bundle = load_json(ab_path)
         reference_manifest = load_json(ref_manifest_path)
         probe_manifest = load_json(probe_manifest_path)
@@ -414,7 +422,7 @@ def main() -> int:
         result = promote(args, policy)
         write_result(args.output, result)
         return 0
-    except (PromotionError, OSError, subprocess.TimeoutExpired) as exc:
+    except (PromotionError, OSError, subprocess.TimeoutExpired, KeyError, TypeError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
