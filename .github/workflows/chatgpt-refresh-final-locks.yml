@@ -32,28 +32,29 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-
           path = Path('.src/.tools/final-stability-audit.py')
           text = path.read_text(encoding='utf-8')
-          old = '''    paths = policy["runtime_source_contract"]
-    combined = "\\n".join(read_source(rel) for rel in paths["uuid_forbidden_paths"])
-    require("uuid.UUID" not in combined, "obsolete RFC UUID parser remains in runtime path")
-    require("lowercase_canonical_uuid" not in combined, "obsolete RFC UUID normalization remains in runtime path")
-'''
-          new = '''    paths = policy["runtime_source_contract"]
-    sources = [(rel, read_source(rel)) for rel in paths["uuid_forbidden_paths"]]
-    combined = "\\n".join(text for _rel, text in sources)
-    require("uuid.UUID" not in combined, "obsolete RFC UUID parser remains in runtime path")
-    obsolete_normalization_lines = [
-        f"{rel}:{line_no}:{line.strip()}"
-        for rel, text in sources
-        for line_no, line in enumerate(text.splitlines(), 1)
-        if "lowercase_canonical_uuid" in line and "expect_failure(" not in line
-    ]
-    require(not obsolete_normalization_lines,
-            "obsolete RFC UUID normalization remains in runtime path: " +
-            "; ".join(obsolete_normalization_lines[:5]))
-'''
+          old = (
+              '    paths = policy["runtime_source_contract"]\n'
+              '    combined = "\\n".join(read_source(rel) for rel in paths["uuid_forbidden_paths"])\n'
+              '    require("uuid.UUID" not in combined, "obsolete RFC UUID parser remains in runtime path")\n'
+              '    require("lowercase_canonical_uuid" not in combined, "obsolete RFC UUID normalization remains in runtime path")\n'
+          )
+          new = (
+              '    paths = policy["runtime_source_contract"]\n'
+              '    sources = [(rel, read_source(rel)) for rel in paths["uuid_forbidden_paths"]]\n'
+              '    combined = "\\n".join(text for _rel, text in sources)\n'
+              '    require("uuid.UUID" not in combined, "obsolete RFC UUID parser remains in runtime path")\n'
+              '    obsolete_normalization_lines = [\n'
+              '        f"{rel}:{line_no}:{line.strip()}"\n'
+              '        for rel, text in sources\n'
+              '        for line_no, line in enumerate(text.splitlines(), 1)\n'
+              '        if "lowercase_canonical_uuid" in line and "expect_failure(" not in line\n'
+              '    ]\n'
+              '    require(not obsolete_normalization_lines,\n'
+              '            "obsolete RFC UUID normalization remains in runtime path: " +\n'
+              '            "; ".join(obsolete_normalization_lines[:5]))\n'
+          )
           if old not in text:
               raise SystemExit('expected final-stability UUID audit block was not found')
           path.write_text(text.replace(old, new, 1), encoding='utf-8')
@@ -67,15 +68,12 @@ jobs:
           import hashlib
           import json
           from pathlib import Path
-
           root = Path('.').resolve()
           configs = sorted((root / '.src/.configs').glob('*.json'))
-
           def blob_sha(path: Path) -> str:
               payload = path.read_bytes()
               header = f'blob {len(payload)}\0'.encode('ascii')
               return hashlib.sha1(header + payload).hexdigest()
-
           def refresh(node):
               changed = False
               if isinstance(node, dict):
@@ -98,7 +96,6 @@ jobs:
                   for value in node:
                       changed = refresh(value) or changed
               return changed
-
           for pass_no in range(1, 51):
               changed_files = []
               for cfg in configs:
