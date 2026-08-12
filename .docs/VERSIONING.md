@@ -18,37 +18,46 @@ MAJOR.UPDATE.EMERGENCY.FIX.RESERVED.HOTFIX
 ## Current version
 
 ```text
-4.5.0.0.0.0
+4.6.0.0.0.0
 ```
 
-This update implements P4.06, **Part 04 Runtime Evidence Gate**, the final planned implementation objective.
+This is the **final post-roadmap stability hardening release**.
 
-P4.06 validates P4.01 through P4.05, preserves the five-patch Inferno chain, and distinguishes planned implementation completion from real runtime evidence validation.
+It does not create another Part or objective. P4.06 remains the final planned implementation objective; there is no P4.07 and no automatically defined Part 05.
 
-Without real runtime artifacts the expected classification is:
+The hardening pass corrected runtime/provenance defects before real integrated testing, including:
+
+- VMApple's machine `uuid` property is handled as the pinned `uint64_t` machine ID/SDOM/ECID source rather than an RFC 128-bit UUID;
+- compiled P3.02 machine identity is validated, machine-ID-bound and actually applied to QEMU;
+- generated P2/P3/P4 fingerprints are recomputed before use;
+- P1.07/P1.09 QEMU children are cleaned up on interruption;
+- probe run IDs originate at runtime launch rather than evidence collection;
+- P4 session/preflight/capture fingerprints are authenticated;
+- P1.10 rejects empty canonical traces and unstructured fallback records as insufficient runtime evidence;
+- Inferno build parallelism must be a positive integer;
+- a final whole-repository static auditor locks the actual runtime shell wrappers as well as the policy/validator layers.
+
+The compatibility patch chain still ends at `0005`; no evidence justified a new Inferno patch.
+
+The final static hardening classification is:
 
 ```text
-P4_06_IMPLEMENTATION_COMPLETE_RUNTIME_EVIDENCE_PENDING
+FINAL_STABILITY_AUDIT_PASS
 ```
 
-This closes the planned implementation roadmap while keeping runtime validation explicitly pending.
+This classification means the source/repository stability audit passed when the repository-owned final harness is executed. It is intentionally separate from real runtime validation.
 
-The future runtime gate requires at least two independent P4.04 sessions and accepts either reproduced trace equivalence within the configured capture scope or one reproducible divergence backed by the exact P4.05/P1.10 promotion record.
-
-Part 04 is fixed at exactly six objectives:
+Current project state remains:
 
 ```text
-P4.01 — Runtime Session Provenance and Input Lock
-P4.02 — Integrated TCG Probe Capture
-P4.03 — Apple Silicon HVF Reference Capture
-P4.04 — Comparable A/B Session Assembly
-P4.05 — Reproducible Divergence Promotion
-P4.06 — Part 04 Runtime Evidence Gate
+planned implementation roadmap  complete
+final stability hardening        implemented
+real runtime evidence validation pending
 ```
 
-There is no P4.07 and no automatically defined Part 05.
+No real macOS boot, TCG success, HVF equivalence or full Apple-Silicon compatibility is claimed by version `4.6.0.0.0.0` without the required runtime evidence.
 
-The repository root `README.md` remains intentionally unchanged. P4.06 adds no Inferno patch, and no real runtime pass is claimed during implementation.
+The repository root `README.md` remains intentionally unchanged.
 
 ## Reset behavior
 
@@ -61,4 +70,5 @@ Examples:
 1.9.0.0.0.0 -> 2.0.0.0.0.0
 2.5.0.0.0.0 -> 3.0.0.0.0.0
 3.5.0.0.0.0 -> 4.0.0.0.0.0
+4.5.0.0.0.0 -> 4.6.0.0.0.0
 ```
