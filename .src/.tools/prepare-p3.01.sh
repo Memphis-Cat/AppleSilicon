@@ -39,14 +39,29 @@ fail() {
 }
 
 safe_reset_work_root() {
-    case "${WORK_ROOT}" in
-        ""|"/"|"${ROOT_DIR}"|"${HOME}"|"${ROOT_DIR}/.build")
+    local normalized_root normalized_build_root
+    normalized_root="$(python3 - "${WORK_ROOT}" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || fail "P3_01_UNSAFE_WORK_ROOT" "Could not canonicalize P3.01 work root: ${WORK_ROOT}"
+    normalized_build_root="$(python3 - "${ROOT_DIR}/.build" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || fail "P3_01_UNSAFE_WORK_ROOT" "Could not canonicalize project build root"
+    case "${normalized_root}" in
+        ""|"/"|"${ROOT_DIR}"|"${HOME}"|"${normalized_build_root}")
             fail "P3_01_UNSAFE_WORK_ROOT" "Refusing unsafe work-root reset: ${WORK_ROOT}"
             ;;
     esac
-    [[ "${WORK_ROOT}" == "${ROOT_DIR}/.build/"* ]] ||
-        fail "P3_01_UNSAFE_WORK_ROOT" "Work root must remain below ${ROOT_DIR}/.build"
-    rm -rf "${WORK_ROOT}"
+    [[ "${normalized_root}" == "${normalized_build_root}/"* ]] ||
+        fail "P3_01_UNSAFE_WORK_ROOT" "Work root must remain below ${normalized_build_root}"
+    WORK_ROOT="${normalized_root}"
+    SUMMARY_FILE="${WORK_ROOT}/platform-contract-summary.json"
+    rm -rf -- "${WORK_ROOT}"
     mkdir -p "${WORK_ROOT}"
 }
 
