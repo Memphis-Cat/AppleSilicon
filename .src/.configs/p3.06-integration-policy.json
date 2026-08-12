@@ -48,7 +48,7 @@
   "locked_artifacts": [
     {
       "path": ".src/.configs/p2.06-integration-policy.json",
-      "git_blob_sha": "8dc8d827a6f20ea566d64e2c47c4511499a1c12d",
+      "git_blob_sha": "6b8bb679f3b539f0f779ef51b1e4cb84131e07ce",
       "role": "cpu_integration_policy"
     },
     {

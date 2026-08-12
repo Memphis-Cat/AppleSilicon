@@ -19,3 +19,6 @@ diff --git a/hw/vmapple/vmapple.c b/hw/vmapple/vmapple.c
      sysbus_mmio_map(gfx, 0, vms->memmap[VMAPPLE_APV_GFX].base);
      sysbus_mmio_map(gfx, 1, vms->memmap[VMAPPLE_APV_IOSFC].base);
      sysbus_connect_irq(gfx, 0, qdev_get_gpio_in(vms->gic, irq_gfx));
+     sysbus_connect_irq(gfx, 1, qdev_get_gpio_in(vms->gic, irq_iosfc));
+     sysbus_realize_and_unref(gfx, &error_fatal);
+ }

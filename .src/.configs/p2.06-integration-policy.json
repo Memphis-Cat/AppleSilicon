@@ -4,17 +4,56 @@
   "part": "Part 02",
   "objective": "P2.06",
   "title": "Part 02 Integration Gate",
-  "source_lock": {"inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"},
-  "cpu_contract": {"accelerator": "tcg", "cpu": "apple-gxf", "control_cpu": "max", "machine": "vmapple"},
+  "source_lock": {
+    "inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
+  },
+  "cpu_contract": {
+    "accelerator": "tcg",
+    "cpu": "apple-gxf",
+    "control_cpu": "max",
+    "machine": "vmapple"
+  },
   "locked_artifacts": [
-    {"path": ".src/.configs/p1.07-trace-events", "git_blob_sha": "c3c86c183944d8145e7fea37959624f6d22ecfca", "role": "trace_contract"},
-    {"path": ".src/.tools/run-p1.07-probe.sh", "git_blob_sha": "3318f8081ddeacaab4822710e7e6a66ac7df608a", "role": "runtime_probe"},
-    {"path": ".src/.configs/p1.09-manifest-policy.json", "git_blob_sha": "ccaf2c515102aad4f24a370dc6d4078f7924e91f", "role": "evidence_manifest"},
-    {"path": ".src/.configs/p1.10-promotion-policy.json", "git_blob_sha": "e726c3323435ea7aea3020b93975888823b1c21d", "role": "divergence_gate"},
-    {"path": ".src/.tools/runtime_integrity.py", "git_blob_sha": "4a9ac530d4e1deb3aab1026798d0b4df702ed9e2", "role": "runtime_integrity"},
-    {"path": ".src/.configs/p2.05-regression-policy.json", "git_blob_sha": "0e48602cbff1145b64f69a5ccc0e4a1afe028d5b", "role": "cpu_regression_policy"},
-    {"path": ".src/.tools/cpu-contract-regression.py", "git_blob_sha": "9ed2b662c6aa91f1d23ad5da092c793ef7c96ffe", "role": "cpu_regression_tool"},
-    {"path": ".src/.tools/prepare-p2.05.sh", "git_blob_sha": "4469784ffae30078e3ebf7c48d19130b6bfcf70d", "role": "cpu_regression_prepare"}
+    {
+      "path": ".src/.configs/p1.07-trace-events",
+      "git_blob_sha": "c3c86c183944d8145e7fea37959624f6d22ecfca",
+      "role": "trace_contract"
+    },
+    {
+      "path": ".src/.tools/run-p1.07-probe.sh",
+      "git_blob_sha": "3318f8081ddeacaab4822710e7e6a66ac7df608a",
+      "role": "runtime_probe"
+    },
+    {
+      "path": ".src/.configs/p1.09-manifest-policy.json",
+      "git_blob_sha": "ccaf2c515102aad4f24a370dc6d4078f7924e91f",
+      "role": "evidence_manifest"
+    },
+    {
+      "path": ".src/.configs/p1.10-promotion-policy.json",
+      "git_blob_sha": "e726c3323435ea7aea3020b93975888823b1c21d",
+      "role": "divergence_gate"
+    },
+    {
+      "path": ".src/.tools/runtime_integrity.py",
+      "git_blob_sha": "4a9ac530d4e1deb3aab1026798d0b4df702ed9e2",
+      "role": "runtime_integrity"
+    },
+    {
+      "path": ".src/.configs/p2.05-regression-policy.json",
+      "git_blob_sha": "e5c2a2c4fd14d5465013d4779e9f992189ca5fb6",
+      "role": "cpu_regression_policy"
+    },
+    {
+      "path": ".src/.tools/cpu-contract-regression.py",
+      "git_blob_sha": "9ed2b662c6aa91f1d23ad5da092c793ef7c96ffe",
+      "role": "cpu_regression_tool"
+    },
+    {
+      "path": ".src/.tools/prepare-p2.05.sh",
+      "git_blob_sha": "4469784ffae30078e3ebf7c48d19130b6bfcf70d",
+      "role": "cpu_regression_prepare"
+    }
   ],
   "patch_series": [
     ".src/.patches/0001-vmapple-decouple-build-from-hvf.patch",
@@ -36,7 +75,10 @@
     "runtime_integrity_fingerprint_recheck_required": true,
     "guest_runtime_deferred": true
   },
-  "outputs": {"manifest": ".build/p2.06/integration-manifest.json", "prepared_source": ".build/p2.06/inferno-src"},
+  "outputs": {
+    "manifest": ".build/p2.06/integration-manifest.json",
+    "prepared_source": ".build/p2.06/inferno-src"
+  },
   "part_status_after_success": "closed_implementation_complete",
   "next_part": "Part 03",
   "next_objective": "P3.01"

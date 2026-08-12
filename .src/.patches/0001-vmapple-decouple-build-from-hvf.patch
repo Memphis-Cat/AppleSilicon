@@ -10,6 +10,7 @@ diff --git a/hw/vmapple/Kconfig b/hw/vmapple/Kconfig
      default y if ARM
      imply PCI_DEVICES
      select ARM_GICV3
+     select PLATFORM_BUS
 diff --git a/hw/vmapple/vmapple.c b/hw/vmapple/vmapple.c
 --- a/hw/vmapple/vmapple.c
 +++ b/hw/vmapple/vmapple.c

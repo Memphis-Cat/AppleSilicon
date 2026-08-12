@@ -25,7 +25,7 @@
   "locked_project_artifacts": [
     {
       "path": ".src/.configs/p4.01-runtime-session-policy.json",
-      "git_blob_sha": "f6562d04246b771816df0a00eb9ff2a4cbd7a621",
+      "git_blob_sha": "4a39df265b834e28f9d732ee083c6256814e6b60",
       "role": "session_provenance_policy"
     },
     {

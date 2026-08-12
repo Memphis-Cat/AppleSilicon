@@ -38,7 +38,7 @@
     },
     {
       "path": ".src/.patches/0004-arm-apple-sysreg-policy-model.patch",
-      "git_blob_sha": "5910e4e4fc6d90128779cdd058198dbe8cc5b562",
+      "git_blob_sha": "d92515533e47006ef4922acfc0cd6c2ec8fe9bd1",
       "role": "sysreg_policy_patch"
     },
     {

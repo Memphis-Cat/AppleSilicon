@@ -131,7 +131,7 @@ diff --git a/target/arm/apple-sysregs.c b/target/arm/apple-sysregs.c
  static void apple_sysreg_validate_spec(const AppleSysRegSpec *spec)
  {
      g_assert(spec != NULL);
-@@ -55,6 +60,174 @@ static void apple_sysreg_validate_spec(const AppleSysRegSpec *spec)
+@@ -55,6 +60,169 @@ static void apple_sysreg_validate_spec(const AppleSysRegSpec *spec)
      g_assert(spec->op2 <= 7);
  }
  
@@ -301,7 +301,7 @@ diff --git a/target/arm/apple-sysregs.c b/target/arm/apple-sysregs.c
  void apple_sysreg_register_undefined(ARMCPU *cpu,
                                       const AppleSysRegSpec *spec)
  {
-@@ -81,10 +254,83 @@ void apple_sysreg_register_undefined(ARMCPU *cpu,
+@@ -81,9 +249,83 @@ void apple_sysreg_register_undefined(ARMCPU *cpu,
      define_one_arm_cp_reg(cpu, &ri);
  }
  
