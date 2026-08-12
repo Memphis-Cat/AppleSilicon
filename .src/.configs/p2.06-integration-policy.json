@@ -8,13 +8,13 @@
   "cpu_contract": {"accelerator": "tcg", "cpu": "apple-gxf", "control_cpu": "max", "machine": "vmapple"},
   "locked_artifacts": [
     {"path": ".src/.configs/p1.07-trace-events", "git_blob_sha": "c3c86c183944d8145e7fea37959624f6d22ecfca", "role": "trace_contract"},
-    {"path": ".src/.tools/run-p1.07-probe.sh", "git_blob_sha": "f8306de5c45265ea1e035494978ebe9e2a05946f", "role": "runtime_probe"},
+    {"path": ".src/.tools/run-p1.07-probe.sh", "git_blob_sha": "3318f8081ddeacaab4822710e7e6a66ac7df608a", "role": "runtime_probe"},
     {"path": ".src/.configs/p1.09-manifest-policy.json", "git_blob_sha": "ccaf2c515102aad4f24a370dc6d4078f7924e91f", "role": "evidence_manifest"},
-    {"path": ".src/.configs/p1.10-promotion-policy.json", "git_blob_sha": "1fe4cad7ea0a439db76d62871a15f2b3a0d2779a", "role": "divergence_gate"},
-    {"path": ".src/.tools/runtime_integrity.py", "git_blob_sha": "fea42f1d78b3e920d6f7da50ebeb8d84d7886c9c", "role": "runtime_integrity"},
+    {"path": ".src/.configs/p1.10-promotion-policy.json", "git_blob_sha": "e726c3323435ea7aea3020b93975888823b1c21d", "role": "divergence_gate"},
+    {"path": ".src/.tools/runtime_integrity.py", "git_blob_sha": "4a9ac530d4e1deb3aab1026798d0b4df702ed9e2", "role": "runtime_integrity"},
     {"path": ".src/.configs/p2.05-regression-policy.json", "git_blob_sha": "0e48602cbff1145b64f69a5ccc0e4a1afe028d5b", "role": "cpu_regression_policy"},
     {"path": ".src/.tools/cpu-contract-regression.py", "git_blob_sha": "9ed2b662c6aa91f1d23ad5da092c793ef7c96ffe", "role": "cpu_regression_tool"},
-    {"path": ".src/.tools/prepare-p2.05.sh", "git_blob_sha": "a93f9264ff3e07d7b598ca794bf21b277ba28c32", "role": "cpu_regression_prepare"}
+    {"path": ".src/.tools/prepare-p2.05.sh", "git_blob_sha": "4469784ffae30078e3ebf7c48d19130b6bfcf70d", "role": "cpu_regression_prepare"}
   ],
   "patch_series": [
     ".src/.patches/0001-vmapple-decouple-build-from-hvf.patch",
