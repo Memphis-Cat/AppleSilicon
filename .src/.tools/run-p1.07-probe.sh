@@ -4,6 +4,14 @@ set -Eeuo pipefail
 
 VERSION="0.7.0.0.0.0"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+RUNTIME_PROFILE="${APPLESILICON_P1_07_PROFILE:-${ROOT_DIR}/.build/runtime/p1.07-runtime.env}"
+
+if [[ -f "${RUNTIME_PROFILE}" ]]; then
+    set -a
+    source "${RUNTIME_PROFILE}"
+    set +a
+fi
 LOG_DIR="${APPLESILICON_LOG_DIR:-${ROOT_DIR}/.logs}"
 INTEGRITY_TOOL="${ROOT_DIR}/.src/.tools/runtime_integrity.py"
 QEMU_BIN="${APPLESILICON_QEMU_BIN:-}"
