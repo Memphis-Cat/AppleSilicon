@@ -19,7 +19,7 @@ p4.05-divergence-promotion-policy.json
 p4.06-runtime-evidence-gate-policy.json
 ```
 
-P4.01 locks privacy-safe pre-execution provenance.
+P4.01 locks privacy-safe pre-execution provenance. Its legacy `machine_uuid` field now explicitly means the pinned VMApple unsigned 64-bit machine ID/SDOM/ECID source, not an RFC UUID.
 
 P4.02/P4.03 define the TCG/`apple-gxf` probe and Darwin/arm64 + HVF + `host` reference capture contracts.
 
@@ -27,7 +27,28 @@ P4.04 defines A/B admission and comparability.
 
 P4.05 requires at least two independent admitted sessions before delegating any divergence promotion to P1.10.
 
-P4.06 is the final gate. It distinguishes `planned_implementation_complete` from real runtime validation and accepts only two evidence-backed runtime outcomes: reproduced trace equivalence within the configured capture scope, or a reproducible divergence backed by P4.05/P1.10 promotion.
+P4.06 is the final runtime evidence gate.
+
+## Final stability contract
+
+```text
+final-stability-policy.json
+```
+
+This is a post-roadmap `4.6.0.0.0.0` hardening policy rather than a new Part/objective. It locks the actual runtime shell wrappers as well as the validator/policy layers and requires a whole-repository static scan.
+
+The policy preserves:
+
+- exact Inferno gitlink revision;
+- exact root README blob;
+- exact five-patch chain, with no `0006`;
+- uint64 VMApple machine-ID semantics;
+- compiled P3.02 identity application;
+- generated fingerprint recomputation;
+- runtime-origin run IDs;
+- QEMU signal cleanup;
+- non-empty structured trace evidence;
+- runtime validation still pending.
 
 There is no P4.07 and no automatically defined Part 05.
 
