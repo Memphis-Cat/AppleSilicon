@@ -49,13 +49,27 @@ for path in "${TOOL}" "${POLICY}" "${REFERENCE_EXAMPLE}" "${PROBE_EXAMPLE}" "${R
     [[ -f "${path}" ]] || fail "P1_09_FILE_MISSING" "Required P1.09 file is missing: ${path}"
 done
 
-case "${WORK_ROOT}" in
-    ""|"/"|"${HOME}"|"${ROOT_DIR}"|"${ROOT_DIR}/.build")
+NORMALIZED_BUILD_ROOT="$(python3 - "${ROOT_DIR}/.build" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || fail "UNSAFE_WORK_ROOT" "Could not canonicalize project build root."
+NORMALIZED_WORK_ROOT="$(python3 - "${WORK_ROOT}" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || fail "UNSAFE_WORK_ROOT" "Could not canonicalize P1.09 work root."
+case "${NORMALIZED_WORK_ROOT}" in
+    ""|"/"|"${HOME}"|"${ROOT_DIR}"|"${NORMALIZED_BUILD_ROOT}")
         fail "UNSAFE_WORK_ROOT" "Unsafe P1.09 work root: ${WORK_ROOT}"
         ;;
 esac
-[[ "${WORK_ROOT}" == "${ROOT_DIR}/.build/"* ]] || fail "UNSAFE_WORK_ROOT" "P1.09 work root must remain under ${ROOT_DIR}/.build/."
-rm -rf "${WORK_ROOT}"
+[[ "${NORMALIZED_WORK_ROOT}" == "${NORMALIZED_BUILD_ROOT}/"* ]] || fail "UNSAFE_WORK_ROOT" "P1.09 work root must remain under ${NORMALIZED_BUILD_ROOT}/."
+WORK_ROOT="${NORMALIZED_WORK_ROOT}"
+CHECK_ROOT="${WORK_ROOT}/.self-check"
+rm -rf -- "${WORK_ROOT}"
 mkdir -p "${CHECK_ROOT}"
 
 echo "============================================================"
