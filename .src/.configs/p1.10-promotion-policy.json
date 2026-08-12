@@ -8,6 +8,8 @@
   "require_unique_run_pairs": true,
   "require_unique_reference_runs": true,
   "require_unique_probe_runs": true,
+  "require_unique_reference_manifests": true,
+  "require_unique_probe_manifests": true,
   "require_candidate_fingerprint": true,
   "require_same_contract_fingerprint": true,
   "require_same_divergence_signature": true,
@@ -34,6 +36,8 @@
     "candidate_fingerprint_must_reproduce": true,
     "candidate_id_must_reproduce": true,
     "independent_reference_runs_required": true,
-    "independent_probe_runs_required": true
+    "independent_probe_runs_required": true,
+    "independent_reference_manifests_required": true,
+    "independent_probe_manifests_required": true
   }
 }
