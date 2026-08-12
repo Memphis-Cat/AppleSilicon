@@ -11,6 +11,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_INFERNO = "cc4302a99167abec69b714cfd00c38caece7e7de"
+EXPECTED_P205_VERSION = "2.4.0.0.0.0"
+P205_POLICY = ROOT / ".src/.configs/p2.05-regression-policy.json"
 
 class GateError(RuntimeError):
     pass
@@ -28,6 +30,10 @@ def git_blob(path: Path) -> str:
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def canonical_hash(value: Any) -> str:
+    payload = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 def git_output(cwd: Path, *args: str) -> str:
     p = subprocess.run(["git", *args], cwd=cwd, text=True, capture_output=True)
@@ -54,7 +60,8 @@ def validate_policy(policy: dict[str, Any]) -> None:
         "patch_series_must_apply_cleanly", "max_control_must_remain_isolated",
         "apple_gxf_tcg_wiring_required", "live_sysreg_policy_count_must_remain_zero",
         "p1_07_probe_must_be_reused_not_forked", "p1_09_evidence_contract_required",
-        "p1_10_promotion_gate_required", "guest_runtime_deferred",
+        "p1_10_promotion_gate_required", "runtime_integrity_fingerprint_recheck_required",
+        "guest_runtime_deferred",
     ):
         require(req.get(key) is True, f"P2.06 requirement disabled: {key}")
     require(policy.get("part_status_after_success") == "closed_implementation_complete",
@@ -81,6 +88,9 @@ def validate_locked_artifacts(policy: dict[str, Any]) -> list[dict[str, str]]:
 def validate_regression(path: Path) -> dict[str, Any]:
     require(path.is_file(), f"P2.05 regression result missing: {path}")
     data = load_json(path)
+    require(data.get("schema") == 1, "P2.05 regression schema mismatch")
+    require(data.get("project_version") == EXPECTED_P205_VERSION, "P2.05 regression version mismatch")
+    require(data.get("objective") == "P2.05", "P2.05 regression objective mismatch")
     require(data.get("classification") == "P2_05_REGRESSION_PASS",
             "P2.05 regression did not pass")
     require(data.get("guest_execution") is False,
@@ -91,8 +101,21 @@ def validate_regression(path: Path) -> dict[str, Any]:
             "P2.05 max control isolation failed")
     require(data.get("prepared_source", {}).get("apple_gxf_tcg_wiring") is True,
             "P2.05 apple-gxf TCG wiring failed")
+
+    require(P205_POLICY.is_file(), f"P2.05 regression policy missing: {P205_POLICY}")
+    expected_policy_sha256 = canonical_hash(load_json(P205_POLICY))
+    require(data.get("policy_sha256") == expected_policy_sha256,
+            "P2.05 policy fingerprint does not reproduce")
+
     fp = data.get("suite_fingerprint")
     require(isinstance(fp, str) and len(fp) == 64, "P2.05 suite fingerprint invalid")
+    expected_fp = canonical_hash({
+        "policy_sha256": data["policy_sha256"],
+        "locked_artifacts": data.get("locked_artifacts"),
+        "cross_contracts": data.get("cross_contracts"),
+        "prepared_source": data.get("prepared_source"),
+    })
+    require(fp == expected_fp, "P2.05 suite fingerprint does not reproduce")
     return {"suite_fingerprint": fp, "sha256": sha256(path)}
 
 def validate_prepared_source(source: Path, policy: dict[str, Any]) -> dict[str, Any]:
@@ -187,6 +210,6 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except GateError as exc:
+    except (GateError, KeyError, TypeError, ValueError) as exc:
         print(f"P2.06 integration failure: {exc}", file=sys.stderr)
         raise SystemExit(1)
