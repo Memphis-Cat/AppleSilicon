@@ -5,6 +5,7 @@ VERSION="3.5.0.0.0.0"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 P3_MANIFEST="${APPLESILICON_P3_06_MANIFEST:-${ROOT_DIR}/.build/p3.06/platform-integration-manifest.json}"
 P2_MANIFEST="${APPLESILICON_P2_06_MANIFEST:-${ROOT_DIR}/.build/p2.06/integration-manifest.json}"
+INTEGRITY_TOOL="${ROOT_DIR}/.src/.tools/runtime_integrity.py"
 P2_RUNNER="${ROOT_DIR}/.src/.tools/run-p2.06-probe.sh"
 LOG_DIR="${APPLESILICON_LOG_DIR:-${ROOT_DIR}/.logs}"
 CLASSIFICATION="UNCLASSIFIED"
@@ -26,75 +27,38 @@ on_exit() {
     exit "${status}"
 }
 trap on_exit EXIT
-
-fail() {
-    CLASSIFICATION="$1"
-    shift
-    printf '%s\n' "$@" >&2
-    exit 1
-}
+fail() { CLASSIFICATION="$1"; shift; printf '%s\n' "$@" >&2; exit 1; }
 
 echo "AppleSilicon version: ${VERSION}"
 echo "Objective: P3.06 final runtime wrapper"
 echo "Started UTC: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 FINAL_STAGE="platform-manifest-validation"
-[[ -f "${P3_MANIFEST}" ]] ||
-    fail "P3_06_MANIFEST_MISSING" "P3.06 platform integration manifest is missing: ${P3_MANIFEST}"
-[[ -f "${P2_MANIFEST}" ]] ||
-    fail "P2_06_MANIFEST_MISSING" "P2.06 CPU integration manifest is missing: ${P2_MANIFEST}"
-
-python3 - "${P3_MANIFEST}" "${P2_MANIFEST}" <<'PY'
-import json
+[[ -f "${P3_MANIFEST}" ]] || fail "P3_06_MANIFEST_MISSING" "P3.06 platform integration manifest is missing"
+[[ -f "${P2_MANIFEST}" ]] || fail "P2_06_MANIFEST_MISSING" "P2.06 CPU integration manifest is missing"
+[[ -x "${INTEGRITY_TOOL}" ]] || fail "P3_06_INTEGRITY_TOOL_MISSING" "Runtime integrity tool is not executable"
+P3_FP="$(python3 "${INTEGRITY_TOOL}" verify-p3 "${P3_MANIFEST}" --p2 "${P2_MANIFEST}")" ||
+    fail "P3_06_MANIFEST_INVALID" "P3.06/P2.06 fingerprints or binding did not reproduce"
+P2_FP="$(python3 "${INTEGRITY_TOOL}" verify-p2 "${P2_MANIFEST}")" ||
+    fail "P2_06_MANIFEST_INVALID" "P2.06 fingerprint did not reproduce"
+python3 - "${P3_MANIFEST}" <<'PY'
+import json,sys
 from pathlib import Path
-import sys
-
-p3 = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-p2 = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-
-if p3.get("classification") != "P3_06_INTEGRATION_PASS":
-    raise SystemExit("P3.06 integration manifest did not pass")
-if p3.get("part_status") != "closed_implementation_complete":
-    raise SystemExit("Part 03 integration manifest is not closed")
-if p3.get("guest_execution") is not False:
-    raise SystemExit("P3.06 preparation manifest unexpectedly records guest execution")
-if p3.get("integrated_machine") != {
-    "machine": "vmapple",
-    "accelerator": "tcg",
-    "cpu": "apple-gxf",
-    "control_cpu": "max",
-}:
-    raise SystemExit("P3.06 integrated machine contract mismatch")
-if p3.get("cross_contracts", {}).get("fake_gpu_allowed") is not False:
-    raise SystemExit("P3.06 fake-GPU policy drift")
-if p3.get("cross_contracts", {}).get("layout_discrepancy") != "unresolved":
-    raise SystemExit("P3.02 layout discrepancy unexpectedly resolved")
-if p3.get("cross_contracts", {}).get("power_semantics") != "evidence_gated":
-    raise SystemExit("P3.03 power semantics lost evidence gate")
-if p3.get("p2_06", {}).get("live_sysreg_policy_count") != 0:
-    raise SystemExit("live Apple sysreg policy count drift")
-
-p3fp = p3.get("platform_integration_fingerprint")
-if not isinstance(p3fp, str) or len(p3fp) != 64:
-    raise SystemExit("P3.06 platform integration fingerprint invalid")
-
-if p2.get("classification") != "P2_06_INTEGRATION_PASS":
-    raise SystemExit("P2.06 integration manifest did not pass")
-p2fp = p2.get("integration_fingerprint")
-if p3.get("p2_06", {}).get("integration_fingerprint") != p2fp:
-    raise SystemExit("P3.06 is not bound to the supplied P2.06 manifest")
-
-print(f"Platform integration fingerprint: {p3fp}")
-print(f"CPU integration fingerprint: {p2fp}")
+d=json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+expected={"machine":"vmapple","accelerator":"tcg","cpu":"apple-gxf","control_cpu":"max"}
+if d.get("integrated_machine")!=expected: raise SystemExit("P3.06 integrated machine contract mismatch")
+c=d.get("cross_contracts",{})
+if c.get("fake_gpu_allowed") is not False: raise SystemExit("fake-GPU policy drift")
+if c.get("layout_discrepancy")!="unresolved": raise SystemExit("P3.02 layout discrepancy unexpectedly resolved")
+if c.get("power_semantics")!="evidence_gated": raise SystemExit("P3.03 power semantics lost evidence gate")
 PY
+echo "Platform integration fingerprint: ${P3_FP}"
+echo "CPU integration fingerprint: ${P2_FP}"
 
 FINAL_STAGE="runner-validation"
-[[ -x "${P2_RUNNER}" ]] ||
-    fail "P2_06_RUNNER_MISSING" "P2.06 runtime wrapper is not executable: ${P2_RUNNER}"
-
+[[ -x "${P2_RUNNER}" ]] || fail "P2_06_RUNNER_MISSING" "P2.06 runtime wrapper is not executable"
 echo "P3.06 platform contract gate: PASS"
-echo "Delegating observational runtime probe to P2.06, which delegates to the locked P1.07 harness."
-echo "Runtime evidence remains subject to P1.09 manifest pairing and P1.10 divergence promotion."
+echo "Delegating observational runtime probe to P2.06 → P1.07."
 
 FINAL_STAGE="p2.06-runtime-delegate"
 set +e
@@ -103,7 +67,6 @@ APPLESILICON_LOG_DIR="${LOG_DIR}" \
 "${P2_RUNNER}"
 STATUS=$?
 set -e
-
 CLASSIFICATION="P3_06_RUNTIME_DELEGATED"
 FINAL_STAGE="complete"
 echo "P2.06 delegated probe exit status: ${STATUS}"
