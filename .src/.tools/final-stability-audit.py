@@ -214,9 +214,18 @@ def read_source(rel: str) -> str:
 
 def validate_runtime_source_contract(policy: dict[str, Any]) -> dict[str, Any]:
     paths = policy["runtime_source_contract"]
-    combined = "\n".join(read_source(rel) for rel in paths["uuid_forbidden_paths"])
+    sources = [(rel, read_source(rel)) for rel in paths["uuid_forbidden_paths"]]
+    combined = "\n".join(text for _rel, text in sources)
     require("uuid.UUID" not in combined, "obsolete RFC UUID parser remains in runtime path")
-    require("lowercase_canonical_uuid" not in combined, "obsolete RFC UUID normalization remains in runtime path")
+    obsolete_normalization_lines = [
+        f"{rel}:{line_no}:{line.strip()}"
+        for rel, text in sources
+        for line_no, line in enumerate(text.splitlines(), 1)
+        if "lowercase_canonical_uuid" in line and "expect_failure(" not in line
+    ]
+    require(not obsolete_normalization_lines,
+            "obsolete RFC UUID normalization remains in runtime path: " +
+            "; ".join(obsolete_normalization_lines[:5]))
 
     p107 = read_source(".src/.tools/run-p1.07-probe.sh")
     p109 = read_source(".src/.tools/run-p1.09-reference.sh")

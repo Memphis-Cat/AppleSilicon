@@ -4,49 +4,151 @@
   "part": "Part 04",
   "objective": "P4.06",
   "title": "Part 04 Runtime Evidence Gate",
-  "source_lock": {"inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"},
+  "source_lock": {
+    "inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
+  },
   "part_04_objectives": [
-    "P4.01 — Runtime Session Provenance and Input Lock",
-    "P4.02 — Integrated TCG Probe Capture",
-    "P4.03 — Apple Silicon HVF Reference Capture",
-    "P4.04 — Comparable A/B Session Assembly",
-    "P4.05 — Reproducible Divergence Promotion",
-    "P4.06 — Part 04 Runtime Evidence Gate"
+    "P4.01 \u2014 Runtime Session Provenance and Input Lock",
+    "P4.02 \u2014 Integrated TCG Probe Capture",
+    "P4.03 \u2014 Apple Silicon HVF Reference Capture",
+    "P4.04 \u2014 Comparable A/B Session Assembly",
+    "P4.05 \u2014 Reproducible Divergence Promotion",
+    "P4.06 \u2014 Part 04 Runtime Evidence Gate"
   ],
   "implementation_validators": [
-    {"objective":"P4.01","policy":".src/.configs/p4.01-runtime-session-policy.json","tool":".src/.tools/runtime-session.py","command":"validate-policy"},
-    {"objective":"P4.02","policy":".src/.configs/p4.02-probe-capture-policy.json","tool":".src/.tools/probe-capture.py","command":"validate-policy"},
-    {"objective":"P4.03","policy":".src/.configs/p4.03-reference-capture-policy.json","tool":".src/.tools/reference-capture.py","command":"validate-policy"},
-    {"objective":"P4.04","policy":".src/.configs/p4.04-ab-session-policy.json","tool":".src/.tools/ab-session.py","command":"validate-policy"},
-    {"objective":"P4.05","policy":".src/.configs/p4.05-divergence-promotion-policy.json","tool":".src/.tools/divergence-promotion.py","command":"validate-policy"}
+    {
+      "objective": "P4.01",
+      "policy": ".src/.configs/p4.01-runtime-session-policy.json",
+      "tool": ".src/.tools/runtime-session.py",
+      "command": "validate-policy"
+    },
+    {
+      "objective": "P4.02",
+      "policy": ".src/.configs/p4.02-probe-capture-policy.json",
+      "tool": ".src/.tools/probe-capture.py",
+      "command": "validate-policy"
+    },
+    {
+      "objective": "P4.03",
+      "policy": ".src/.configs/p4.03-reference-capture-policy.json",
+      "tool": ".src/.tools/reference-capture.py",
+      "command": "validate-policy"
+    },
+    {
+      "objective": "P4.04",
+      "policy": ".src/.configs/p4.04-ab-session-policy.json",
+      "tool": ".src/.tools/ab-session.py",
+      "command": "validate-policy"
+    },
+    {
+      "objective": "P4.05",
+      "policy": ".src/.configs/p4.05-divergence-promotion-policy.json",
+      "tool": ".src/.tools/divergence-promotion.py",
+      "command": "validate-policy"
+    }
   ],
   "runtime_contract": {
     "minimum_independent_reproductions": 2,
     "minimum_canonical_events_per_trace": 1,
     "structured_trace_events_required": true,
-    "reference": {"machine":"vmapple","accelerator":"hvf","cpu":"host"},
-    "probe": {"machine":"vmapple","accelerator":"tcg","cpu":"apple-gxf"},
+    "reference": {
+      "machine": "vmapple",
+      "accelerator": "hvf",
+      "cpu": "host"
+    },
+    "probe": {
+      "machine": "vmapple",
+      "accelerator": "tcg",
+      "cpu": "apple-gxf"
+    },
     "ram_mib": 4096,
     "smp": 4,
-    "accepted_outcomes": ["equivalent_observations","reproducible_divergence_promoted"]
+    "accepted_outcomes": [
+      "equivalent_observations",
+      "reproducible_divergence_promoted"
+    ]
   },
   "locked_project_artifacts": [
-    {"path":".src/.configs/p4.01-runtime-session-policy.json","git_blob_sha":"3acc7229335f2c60f94e44092112ff85e2a180d5","role":"p4_01_policy"},
-    {"path":".src/.tools/runtime-session.py","git_blob_sha":"2a0e182c0b7a549c47b2cf4ea0ee341d4d76b990","role":"p4_01_tool"},
-    {"path":".src/.tools/runtime_integrity.py","git_blob_sha":"fea42f1d78b3e920d6f7da50ebeb8d84d7886c9c","role":"runtime_integrity"},
-    {"path":".src/.configs/p4.02-probe-capture-policy.json","git_blob_sha":"14eb0aca040d9aba727abfd6c1fa3436cf923373","role":"p4_02_policy"},
-    {"path":".src/.tools/probe-capture.py","git_blob_sha":"939505d482a6bbfe273e5f85e0ebc3e8c7c95450","role":"p4_02_tool"},
-    {"path":".src/.configs/p4.03-reference-capture-policy.json","git_blob_sha":"cfaf8a24473660ae0330e30b70bf13d95f8ea420","role":"p4_03_policy"},
-    {"path":".src/.tools/reference-capture.py","git_blob_sha":"ffd9b147fbd22bc42207daef4013d7c19b574f2f","role":"p4_03_tool"},
-    {"path":".src/.configs/p4.04-ab-session-policy.json","git_blob_sha":"99cd3ceb5b2bfbf0fc9a28b4814fc1e5c73e6b3e","role":"p4_04_policy"},
-    {"path":".src/.tools/ab-session.py","git_blob_sha":"4a3ce3c326ce74358c6f1d44bce1402c897eb886","role":"p4_04_tool"},
-    {"path":".src/.configs/p4.05-divergence-promotion-policy.json","git_blob_sha":"2a27b885754442b6c42ff6924050d6b6180af62b","role":"p4_05_policy"},
-    {"path":".src/.tools/divergence-promotion.py","git_blob_sha":"bf7ef1879e7af372103c92473275fbfbb2dae425","role":"p4_05_tool"},
-    {"path":".src/.configs/p1.10-promotion-policy.json","git_blob_sha":"1fe4cad7ea0a439db76d62871a15f2b3a0d2779a","role":"promotion_policy"},
-    {"path":".src/.tools/evidence-bundle.py","git_blob_sha":"88b645e9c819efa0e150988c1ab7b5114874ffa2","role":"promotion_authority"},
-    {"path":".src/.configs/p3.06-integration-policy.json","git_blob_sha":"30b751ac89a2f2a763b22e96e01df8764d60935c","role":"platform_integration_policy"},
-    {"path":".src/.tools/platform-integration-gate.py","git_blob_sha":"f5adc6eac80e7106be14ee5aa5197f55728c97b6","role":"platform_integration_gate"},
-    {"path":"README.md","git_blob_sha":"5f056dadbac5d814b9ffb287ec786a559774f953","role":"frozen_root_readme"}
+    {
+      "path": ".src/.configs/p4.01-runtime-session-policy.json",
+      "git_blob_sha": "f6562d04246b771816df0a00eb9ff2a4cbd7a621",
+      "role": "p4_01_policy"
+    },
+    {
+      "path": ".src/.tools/runtime-session.py",
+      "git_blob_sha": "2a0e182c0b7a549c47b2cf4ea0ee341d4d76b990",
+      "role": "p4_01_tool"
+    },
+    {
+      "path": ".src/.tools/runtime_integrity.py",
+      "git_blob_sha": "4a9ac530d4e1deb3aab1026798d0b4df702ed9e2",
+      "role": "runtime_integrity"
+    },
+    {
+      "path": ".src/.configs/p4.02-probe-capture-policy.json",
+      "git_blob_sha": "e9fb9b48c253c84770d42c59981171b49516a247",
+      "role": "p4_02_policy"
+    },
+    {
+      "path": ".src/.tools/probe-capture.py",
+      "git_blob_sha": "939505d482a6bbfe273e5f85e0ebc3e8c7c95450",
+      "role": "p4_02_tool"
+    },
+    {
+      "path": ".src/.configs/p4.03-reference-capture-policy.json",
+      "git_blob_sha": "d69f96054514b3d0d8c15f6a28d58a6f0a50c802",
+      "role": "p4_03_policy"
+    },
+    {
+      "path": ".src/.tools/reference-capture.py",
+      "git_blob_sha": "ffd9b147fbd22bc42207daef4013d7c19b574f2f",
+      "role": "p4_03_tool"
+    },
+    {
+      "path": ".src/.configs/p4.04-ab-session-policy.json",
+      "git_blob_sha": "ca3281f4571409522168f778b08066496cfbcbd3",
+      "role": "p4_04_policy"
+    },
+    {
+      "path": ".src/.tools/ab-session.py",
+      "git_blob_sha": "4a3ce3c326ce74358c6f1d44bce1402c897eb886",
+      "role": "p4_04_tool"
+    },
+    {
+      "path": ".src/.configs/p4.05-divergence-promotion-policy.json",
+      "git_blob_sha": "9683d8f9e294f69e18721fc8e23f8ac058ec4653",
+      "role": "p4_05_policy"
+    },
+    {
+      "path": ".src/.tools/divergence-promotion.py",
+      "git_blob_sha": "e393984771c0006a8055bf8b0063536d2f675902",
+      "role": "p4_05_tool"
+    },
+    {
+      "path": ".src/.configs/p1.10-promotion-policy.json",
+      "git_blob_sha": "e726c3323435ea7aea3020b93975888823b1c21d",
+      "role": "promotion_policy"
+    },
+    {
+      "path": ".src/.tools/evidence-bundle.py",
+      "git_blob_sha": "107c578668a0ee62f30964efde701335a67cd9db",
+      "role": "promotion_authority"
+    },
+    {
+      "path": ".src/.configs/p3.06-integration-policy.json",
+      "git_blob_sha": "d1a5be45587094dabda1be21aaf8b1a785ec4c16",
+      "role": "platform_integration_policy"
+    },
+    {
+      "path": ".src/.tools/platform-integration-gate.py",
+      "git_blob_sha": "373fe09dc96bfd38559422e1fa67edb156e9f439",
+      "role": "platform_integration_gate"
+    },
+    {
+      "path": "README.md",
+      "git_blob_sha": "5f056dadbac5d814b9ffb287ec786a559774f953",
+      "role": "frozen_root_readme"
+    }
   ],
   "requirements": {
     "all_p4_implementation_policies_must_validate": true,
@@ -67,7 +169,10 @@
     "future_implementation_work_must_be_evidence_driven": true,
     "no_new_inferno_patch_for_p4_06": true
   },
-  "outputs": {"implementation_state":".build/p4.06/implementation-state.json","runtime_gate":".build/p4.06/runtime-evidence-gate.json"},
+  "outputs": {
+    "implementation_state": ".build/p4.06/implementation-state.json",
+    "runtime_gate": ".build/p4.06/runtime-evidence-gate.json"
+  },
   "part_status_after_implementation": "closed_implementation_complete_runtime_validation_pending",
   "part_status_after_runtime_pass": "closed_runtime_evidence_validated",
   "roadmap_status_after_implementation": "planned_implementation_complete",

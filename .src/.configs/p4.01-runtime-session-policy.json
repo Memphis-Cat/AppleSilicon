@@ -3,78 +3,165 @@
   "project_version": "4.0.0.0.0.0",
   "part": "Part 04",
   "objective": "P4.01",
-  "title": "Integrated Runtime Session Contract",
+  "title": "Runtime Session Provenance and Input Lock",
+  "scope": {
+    "machine": "vmapple",
+    "guest_execution": false,
+    "purpose": "pre_execution_provenance_lock",
+    "runtime_evidence_authority": "Part 01"
+  },
   "source_lock": {
     "inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
   },
-  "integrated_machine": {
-    "machine": "vmapple",
-    "accelerator": "tcg",
-    "cpu": "apple-gxf",
-    "control_cpu": "max",
-    "ram_mib": 4096,
-    "smp": 4
-  },
-  "upstream_integration_manifest": {
-    "classification": "P3_06_INTEGRATION_PASS",
-    "project_version": "3.5.0.0.0.0",
-    "part_status": "closed_implementation_complete",
-    "next_part": "Part 04",
-    "next_objective": "P4.01"
-  },
-  "guest_inputs": [
-    {"kind": "firmware", "environment": "APPLESILICON_VMAPPLE_FIRMWARE", "max_bytes": 1048576},
-    {"kind": "auxiliary_storage", "environment": "APPLESILICON_VMAPPLE_AUX", "min_bytes": 1},
-    {"kind": "root_storage", "environment": "APPLESILICON_VMAPPLE_DISK", "min_bytes": 1},
-    {"kind": "machine_identity", "environment": "APPLESILICON_VMAPPLE_MACHINE_IDENTITY", "min_bytes": 1}
+  "locked_project_artifacts": [
+    {
+      "path": ".src/.configs/p3.06-integration-policy.json",
+      "git_blob_sha": "d1a5be45587094dabda1be21aaf8b1a785ec4c16",
+      "role": "platform_integration_policy"
+    },
+    {
+      "path": ".src/.tools/platform-integration-gate.py",
+      "git_blob_sha": "373fe09dc96bfd38559422e1fa67edb156e9f439",
+      "role": "platform_integration_gate"
+    },
+    {
+      "path": ".src/.tools/prepare-p3.06.sh",
+      "git_blob_sha": "8ac2b8bd95bf82814bdad41c71695fb62bf4fa63",
+      "role": "platform_integration_prepare"
+    },
+    {
+      "path": ".src/.tools/run-p3.06-probe.sh",
+      "git_blob_sha": "942fa7ecbf313410db6d7532a7bf35799d1a215c",
+      "role": "runtime_probe_delegate"
+    },
+    {
+      "path": ".src/.tools/runtime_integrity.py",
+      "git_blob_sha": "4a9ac530d4e1deb3aab1026798d0b4df702ed9e2",
+      "role": "runtime_integrity"
+    },
+    {
+      "path": ".src/.configs/p1.07-trace-events",
+      "git_blob_sha": "c3c86c183944d8145e7fea37959624f6d22ecfca",
+      "role": "trace_contract"
+    },
+    {
+      "path": ".src/.configs/p1.09-manifest-policy.json",
+      "git_blob_sha": "ccaf2c515102aad4f24a370dc6d4078f7924e91f",
+      "role": "runtime_manifest_policy"
+    },
+    {
+      "path": ".src/.configs/p1.10-promotion-policy.json",
+      "git_blob_sha": "e726c3323435ea7aea3020b93975888823b1c21d",
+      "role": "divergence_promotion_policy"
+    },
+    {
+      "path": "README.md",
+      "git_blob_sha": "5f056dadbac5d814b9ffb287ec786a559774f953",
+      "role": "frozen_root_readme"
+    }
   ],
-  "runtime_inputs": [
-    {"kind": "qemu_binary", "environment": "APPLESILICON_QEMU_BIN", "must_be_executable": true},
-    {"kind": "machine_uuid", "environment": "APPLESILICON_VMAPPLE_UUID", "representation": "uint64_decimal_or_0x", "semantic": "vmapple_sdom_ecid", "raw_value_must_not_be_stored": true}
-  ],
+  "roles": {
+    "probe": {
+      "accelerator": "tcg",
+      "cpu": "apple-gxf",
+      "required_host": null
+    },
+    "reference": {
+      "accelerator": "hvf",
+      "cpu": "host",
+      "required_host": {
+        "os": "Darwin",
+        "arch": "arm64"
+      }
+    }
+  },
   "required_qemu_capabilities": {
     "machine": "vmapple",
-    "accelerator": "tcg",
-    "cpu": "apple-gxf"
+    "probe_accelerator": "tcg",
+    "probe_cpu": "apple-gxf",
+    "reference_accelerator": "hvf",
+    "reference_cpu": "host"
   },
-  "trace_contract": ".src/.configs/p1.07-trace-events",
-  "runtime_evidence_authority": {
-    "manifest_policy": ".src/.configs/p1.09-manifest-policy.json",
-    "promotion_policy": ".src/.configs/p1.10-promotion-policy.json",
-    "probe_runner": ".src/.tools/run-p3.06-probe.sh"
-  },
-  "locked_project_artifacts": [
-    {"path": ".src/.configs/p3.06-integration-policy.json", "git_blob_sha": "2a50df527b468af5e82d2fef615ba5e8fdb3d654", "role": "part03_integration_policy"},
-    {"path": ".src/.tools/platform-integration-gate.py", "git_blob_sha": "373fe09dc96bfd38559422e1fa67edb156e9f439", "role": "part03_integration_gate"},
-    {"path": ".src/.tools/prepare-p3.06.sh", "git_blob_sha": "c67d7325c8add17d4f99f6704c4b42110a5b9e07", "role": "part03_integration_prepare"},
-    {"path": ".src/.tools/run-p3.06-probe.sh", "git_blob_sha": "b17378d23e658a1ebd1ec035da5ea7d9316fb6fa", "role": "part03_runtime_delegate"},
-    {"path": ".src/.tools/runtime_integrity.py", "git_blob_sha": "4a9ac530d4e1deb3aab1026798d0b4df702ed9e2", "role": "runtime_integrity"},
-    {"path": ".src/.configs/p1.07-trace-events", "git_blob_sha": "c3c86c183944d8145e7fea37959624f6d22ecfca", "role": "runtime_trace_contract"},
-    {"path": ".src/.configs/p1.09-manifest-policy.json", "git_blob_sha": "ccaf2c515102aad4f24a370dc6d4078f7924e91f", "role": "runtime_manifest_policy"},
-    {"path": ".src/.configs/p1.10-promotion-policy.json", "git_blob_sha": "e726c3323435ea7aea3020b93975888823b1c21d", "role": "runtime_promotion_gate"},
-    {"path": "README.md", "git_blob_sha": "5f056dadbac5d814b9ffb287ec786a559774f953", "role": "frozen_root_readme"}
+  "required_guest_inputs": [
+    "firmware",
+    "auxiliary_storage",
+    "disk",
+    "machine_identity"
   ],
+  "optional_guest_inputs": [
+    "hardware_model"
+  ],
+  "runtime_parameters": {
+    "machine_uuid": {
+      "required": true,
+      "store_raw_value": false,
+      "store_sha256": true,
+      "normalization": "uint64_decimal",
+      "semantic": "vmapple_sdom_ecid"
+    }
+  },
+  "input_digest": {
+    "algorithm": "sha256",
+    "store_bytes": true,
+    "copy_input_content": false,
+    "store_source_path": false
+  },
+  "trace_contract": {
+    "events": [
+      "memory_region_ops_read",
+      "memory_region_ops_write"
+    ],
+    "debug_items": [
+      "guest_errors",
+      "unimp",
+      "int",
+      "cpu_reset"
+    ],
+    "qemu_log_backend_supported": true
+  },
+  "privacy": {
+    "store_raw_local_paths": false,
+    "store_raw_machine_uuid": false,
+    "store_raw_machine_identity": false,
+    "store_raw_hardware_model": false,
+    "store_real_serial_or_account_identifiers": false,
+    "store_firmware_or_disk_content": false,
+    "store_hostname": false,
+    "qemu_binary_label_may_use_basename_only": true
+  },
   "requirements": {
-    "p3_06_integration_manifest_must_reauthenticate": true,
-    "qemu_binary_must_be_executable": true,
-    "qemu_capabilities_must_be_preflighted": true,
-    "firmware_must_fit_vmapple_window": true,
-    "machine_uuid_must_be_uint64": true,
-    "machine_identity_must_be_compiled_p3_02_profile": true,
-    "machine_identity_fingerprint_must_reproduce": true,
-    "machine_identity_uuid_must_match_runtime_uuid": true,
-    "machine_identity_example_profile_forbidden": true,
-    "machine_identity_global_allowlist_required": true,
-    "guest_input_hashes_required": true,
-    "guest_input_contents_must_not_be_copied": true,
-    "raw_uuid_must_not_be_stored": true,
-    "host_path_must_not_be_stored": true,
-    "part_01_evidence_gates_remain_authoritative": true,
-    "no_boot_success_claim": true,
-    "no_automatic_promotion": true
+    "p3_06_manifest_must_pass": true,
+    "p3_06_part_must_be_closed": true,
+    "p3_06_guest_execution_must_be_false": true,
+    "platform_integration_fingerprint_required": true,
+    "platform_integration_fingerprint_must_reproduce": true,
+    "qemu_binary_sha256_required": true,
+    "qemu_version_required": true,
+    "qemu_role_capabilities_must_be_verified": true,
+    "machine_uuid_digest_required": true,
+    "machine_uuid_is_vmapple_uint64": true,
+    "machine_identity_must_be_compiled_p3_02": true,
+    "machine_identity_id_must_match_machine_uuid": true,
+    "all_required_inputs_must_be_hashed_before_execution": true,
+    "trace_contract_must_match_part_01": true,
+    "session_plan_must_be_deterministic": true,
+    "session_fingerprint_must_reproduce": true,
+    "session_plan_is_not_runtime_evidence": true,
+    "part_01_manifest_and_promotion_gates_remain_authoritative": true,
+    "no_guest_execution_in_p4_01": true,
+    "no_new_inferno_patch_for_p4_01": true,
+    "root_readme_remains_frozen": true
   },
   "outputs": {
-    "session_plan": ".build/p4.01/runtime-session.json"
+    "session_plan_template": ".build/p4.01/{role}-runtime-session-plan.json"
   },
+  "part_04_objectives": [
+    "P4.01 Runtime Session Provenance and Input Lock",
+    "P4.02 Integrated TCG Probe Capture",
+    "P4.03 Apple Silicon HVF Reference Capture",
+    "P4.04 Comparable A/B Session Assembly",
+    "P4.05 Reproducible Divergence Promotion",
+    "P4.06 Part 04 Runtime Evidence Gate"
+  ],
   "next_objective": "P4.02"
 }

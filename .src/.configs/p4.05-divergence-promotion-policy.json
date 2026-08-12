@@ -4,7 +4,9 @@
   "part": "Part 04",
   "objective": "P4.05",
   "title": "Reproducible Divergence Promotion",
-  "source_lock": {"inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"},
+  "source_lock": {
+    "inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
+  },
   "input_contract": {
     "ab_classification": "P4_04_AB_SESSION_READY",
     "ab_project_version": "4.3.0.0.0.0",
@@ -36,15 +38,51 @@
     "record_id": "P01-DIVERGENCE-0001"
   },
   "locked_project_artifacts": [
-    {"path": ".src/.configs/p4.04-ab-session-policy.json", "git_blob_sha": "64eef90ef5eea8b39f3f22602c99540426de1b96", "role": "ab_policy"},
-    {"path": ".src/.tools/ab-session.py", "git_blob_sha": "3570b4cf8ba6570ff914cd951490b6b5c7e5d404", "role": "ab_tool"},
-    {"path": ".src/.configs/p1.09-manifest-policy.json", "git_blob_sha": "ccaf2c515102aad4f24a370dc6d4078f7924e91f", "role": "pairing_policy"},
-    {"path": ".src/.tools/reference-manifest.py", "git_blob_sha": "c969d017a5c8add9d4b99f6704c4b42110a5b9e07", "role": "pairing_tool"},
-    {"path": ".src/.configs/p1.08-compare.json", "git_blob_sha": "b7bdf7f04566b3b67d02bb3fd3b81588da7503ab", "role": "trace_compare_policy"},
-    {"path": ".src/.tools/compare-boot-traces.py", "git_blob_sha": "5d39a7e0ae153a4a13667f3356eef9012c1954b2", "role": "trace_compare_tool"},
-    {"path": ".src/.configs/p1.10-promotion-policy.json", "git_blob_sha": "e726c3323435ea7aea3020b93975888823b1c21d", "role": "promotion_policy"},
-    {"path": ".src/.tools/evidence-bundle.py", "git_blob_sha": "107c578668a0ee62f30964efde701335a67cd9db", "role": "promotion_tool"},
-    {"path": "README.md", "git_blob_sha": "5f056dadbac5d814b9ffb287ec786a559774f953", "role": "frozen_root_readme"}
+    {
+      "path": ".src/.configs/p4.04-ab-session-policy.json",
+      "git_blob_sha": "ca3281f4571409522168f778b08066496cfbcbd3",
+      "role": "ab_policy"
+    },
+    {
+      "path": ".src/.tools/ab-session.py",
+      "git_blob_sha": "4a3ce3c326ce74358c6f1d44bce1402c897eb886",
+      "role": "ab_tool"
+    },
+    {
+      "path": ".src/.configs/p1.09-manifest-policy.json",
+      "git_blob_sha": "ccaf2c515102aad4f24a370dc6d4078f7924e91f",
+      "role": "pairing_policy"
+    },
+    {
+      "path": ".src/.tools/reference-manifest.py",
+      "git_blob_sha": "e22ee337b0206b0ba7f2d67de6cf6e05ea6e4cd4",
+      "role": "pairing_tool"
+    },
+    {
+      "path": ".src/.configs/p1.08-compare.json",
+      "git_blob_sha": "9efac8bec834be7226e17b78aec7cf7c79dcd17f",
+      "role": "trace_compare_policy"
+    },
+    {
+      "path": ".src/.tools/compare-boot-traces.py",
+      "git_blob_sha": "1c1d3774782dfcb1261272fa7c4a137f56ac9a4e",
+      "role": "trace_compare_tool"
+    },
+    {
+      "path": ".src/.configs/p1.10-promotion-policy.json",
+      "git_blob_sha": "e726c3323435ea7aea3020b93975888823b1c21d",
+      "role": "promotion_policy"
+    },
+    {
+      "path": ".src/.tools/evidence-bundle.py",
+      "git_blob_sha": "107c578668a0ee62f30964efde701335a67cd9db",
+      "role": "promotion_tool"
+    },
+    {
+      "path": "README.md",
+      "git_blob_sha": "5f056dadbac5d814b9ffb287ec786a559774f953",
+      "role": "frozen_root_readme"
+    }
   ],
   "requirements": {
     "p4_04_fingerprints_must_reproduce": true,
