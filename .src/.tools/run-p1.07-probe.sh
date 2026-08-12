@@ -105,7 +105,7 @@ for command in python3 grep tee; do command -v "${command}" >/dev/null 2>&1 || f
 [[ "${ACCEL}" == "tcg" ]] || fail "QEMU_TCG_MISSING" "P1.07 requires APPLESILICON_VMAPPLE_ACCEL=tcg."
 case "${CPU_PROFILE}" in max|apple-gxf) ;; *) fail "QEMU_CPU_PROFILE_MISSING" "P1.07 accepts max or apple-gxf." ;; esac
 [[ "${SMP}" =~ ^[0-9]+$ ]] && (( SMP >= 1 && SMP <= 32 )) || fail "INVALID_SMP" "SMP must be an integer from 1 through 32."
-[[ -n "${RAM}" ]] || fail "INVALID_RAM" "RAM must not be empty."
+[[ "${RAM}" =~ ^[1-9][0-9]*[GM]$ ]] || fail "INVALID_RAM" "RAM must be a positive integer followed by G or M (for example 4G or 4096M)."
 [[ -n "${QEMU_BIN}" && -x "${QEMU_BIN}" ]] || fail "QEMU_BINARY_MISSING" "APPLESILICON_QEMU_BIN is missing or not executable."
 [[ -n "${UUID_VALUE}" ]] || fail "INPUT_UUID_MISSING" "APPLESILICON_VMAPPLE_UUID (VMApple uint64 machine id) is not configured."
 validate_file "INPUT_IDENTITY_MISSING" "compiled P3.02 machine identity" "${MACHINE_IDENTITY}"
@@ -149,10 +149,11 @@ echo "Disk size: $(file_size "${DISK}") bytes"
 echo "Identity globals: $(( ${#IDENTITY_ARGS[@]} / 2 ))"
 
 FINAL_STAGE="qemu-capability-validation"
-"${QEMU_BIN}" --version | head -n 1
-"${QEMU_BIN}" -machine help 2>&1 | grep -Eq '(^|[[:space:]])vmapple([[:space:]]|$)' || fail "QEMU_VMAPPLE_MISSING" "Built QEMU does not advertise vmapple."
-"${QEMU_BIN}" -accel help 2>&1 | grep -Eq '(^|[[:space:]])tcg([[:space:]]|$)' || fail "QEMU_TCG_MISSING" "Built QEMU does not advertise TCG."
-"${QEMU_BIN}" -cpu help 2>&1 | grep -Eq "(^|[[:space:]])${CPU_PROFILE}([[:space:]]|$)" || fail "QEMU_CPU_PROFILE_MISSING" "Built QEMU does not advertise CPU ${CPU_PROFILE}."
+QEMU_VERSION_OUTPUT="$("${QEMU_BIN}" --version 2>&1)" || fail "QEMU_BINARY_MISSING" "QEMU --version failed."
+printf '%s\n' "${QEMU_VERSION_OUTPUT%%$'\n'*}"
+"${QEMU_BIN}" -machine help 2>&1 | grep -E '(^|[[:space:]])vmapple([[:space:]]|$)' >/dev/null || fail "QEMU_VMAPPLE_MISSING" "Built QEMU does not advertise vmapple."
+"${QEMU_BIN}" -accel help 2>&1 | grep -E '(^|[[:space:]])tcg([[:space:]]|$)' >/dev/null || fail "QEMU_TCG_MISSING" "Built QEMU does not advertise TCG."
+"${QEMU_BIN}" -cpu help 2>&1 | grep -E "(^|[[:space:]])${CPU_PROFILE}([[:space:]]|$)" >/dev/null || fail "QEMU_CPU_PROFILE_MISSING" "Built QEMU does not advertise CPU ${CPU_PROFILE}."
 
 FINAL_STAGE="trace-capability-discovery"
 set +e
