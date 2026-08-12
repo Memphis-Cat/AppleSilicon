@@ -34,7 +34,12 @@ printf 'version=%s\n' "${VERSION}"
 printf 'root=%s\n' "${ROOT_DIR}"
 
 FINAL_STAGE="syntax"
-python3 -m py_compile "${TOOL}"
+python3 - "${TOOL}" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+compile(path.read_text(encoding="utf-8"), str(path), "exec")
+PY
 bash -n "${ROOT_DIR}/.src/.tools/evaluate-p4.06.sh"
 python3 -m json.tool "${POLICY}" >/dev/null
 
@@ -66,7 +71,10 @@ cp "${TMP1}" "${OUTPUT}"
 FINAL_STAGE="repository-integrity"
 PATCH_COUNT="$(find "${ROOT_DIR}/.src/.patches" -maxdepth 1 -type f -name '*.patch' | wc -l | tr -d ' ')"
 [[ "${PATCH_COUNT}" == "5" ]]
-[[ ! -e "${ROOT_DIR}/.src/.patches/0006-"* ]]
+if compgen -G "${ROOT_DIR}/.src/.patches/0006-*.patch" >/dev/null; then
+  echo "Unexpected 0006 patch found" >&2
+  exit 1
+fi
 README_BLOB="$(git -C "${ROOT_DIR}" hash-object README.md)"
 [[ "${README_BLOB}" == "5f056dadbac5d814b9ffb287ec786a559774f953" ]]
 INFERNO_ENTRY="$(git -C "${ROOT_DIR}" ls-files -s .src/.upstream/.inferno)"
