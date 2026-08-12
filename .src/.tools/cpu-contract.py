@@ -162,6 +162,7 @@ def validate_contract(contract: dict[str, Any]) -> None:
         if not isinstance(feature, dict):
             raise ContractError(f"features[{index}] must be an object")
         name = require_string(feature.get("name"), f"features[{index}].name")
+        require_string(feature.get("class"), f"features[{index}].class")
         if name in feature_names:
             raise ContractError(f"duplicate feature name: {name}")
         feature_names.add(name)
@@ -172,6 +173,8 @@ def validate_contract(contract: dict[str, Any]) -> None:
         evidence = feature.get("source_evidence")
         if not isinstance(evidence, list) or not evidence:
             raise ContractError(f"feature {name} must have source_evidence")
+        for evidence_index, source in enumerate(evidence):
+            require_string(source, f"feature {name}.source_evidence[{evidence_index}]")
         unknown_sources = sorted(set(evidence) - source_names)
         if unknown_sources:
             raise ContractError(
@@ -321,6 +324,14 @@ def self_check(contract: dict[str, Any]) -> None:
     bad_source["registers"][0]["source_evidence"][0]["source"] = "forum_post"
     expect_rejected(bad_source, "unknown evidence source")
 
+    missing_feature_class = copy.deepcopy(contract)
+    missing_feature_class["features"][0].pop("class", None)
+    expect_rejected(missing_feature_class, "missing feature class")
+
+    invalid_feature_evidence = copy.deepcopy(contract)
+    invalid_feature_evidence["features"][0]["source_evidence"][0] = {"source": "xnu_proc_reg"}
+    expect_rejected(invalid_feature_evidence, "non-string feature evidence")
+
 
 def run_validate(args: argparse.Namespace) -> int:
     contract = load_json(args.contract)
@@ -350,7 +361,7 @@ def run_self_check(args: argparse.Namespace) -> int:
     print("P2.01 self-check: PASS")
     print(
         "checks=source-locks,encoding-ranges,unique-names,unique-encodings,"
-        "unknown-priority,inventory-state,evidence-resolution"
+        "unknown-priority,inventory-state,evidence-resolution,feature-shape"
     )
     return 0
 
