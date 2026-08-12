@@ -11,6 +11,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_VERSION = "3.5.0.0.0.0"
+EXPECTED_P206_VERSION = "2.5.0.0.0.0"
 EXPECTED_INFERNO = "cc4302a99167abec69b714cfd00c38caece7e7de"
 EXPECTED_MACHINE = {
     "machine": "vmapple",
@@ -98,6 +99,7 @@ def validate_policy(policy: dict[str, Any]) -> None:
         "modern_macos_graphics_compatibility_is_not_claimed",
         "p1_runtime_evidence_and_promotion_gates_remain_authoritative",
         "p2_06_runtime_probe_is_reused_not_forked",
+        "runtime_integrity_fingerprint_recheck_required",
         "root_readme_remains_frozen",
         "guest_runtime_deferred",
     ):
@@ -132,6 +134,11 @@ def validate_locked_artifacts(policy: dict[str, Any]) -> list[dict[str, str]]:
 def validate_p2_manifest(path: Path) -> dict[str, Any]:
     require(path.is_file(), f"P2.06 integration manifest missing: {path}")
     data = load_json(path)
+    require(data.get("schema") == 1, "P2.06 integration manifest schema mismatch")
+    require(data.get("project_version") == EXPECTED_P206_VERSION,
+            "P2.06 integration manifest version mismatch")
+    require(data.get("part") == "Part 02" and data.get("objective") == "P2.06",
+            "P2.06 integration manifest identity drift")
     require(data.get("classification") == "P2_06_INTEGRATION_PASS",
             "P2.06 integration manifest did not pass")
     require(data.get("part_status") == "closed_implementation_complete",
@@ -151,6 +158,9 @@ def validate_p2_manifest(path: Path) -> dict[str, Any]:
             "P2.06 apple-gxf TCG wiring is not proven")
     fp = data.get("integration_fingerprint")
     require(isinstance(fp, str) and len(fp) == 64, "P2.06 integration fingerprint invalid")
+    basis = {k: v for k, v in data.items() if k not in ("classification", "integration_fingerprint")}
+    expected_fp = hashlib.sha256(canonical(basis)).hexdigest()
+    require(fp == expected_fp, "P2.06 integration fingerprint does not reproduce")
     return {
         "classification": data["classification"],
         "integration_fingerprint": fp,
@@ -332,6 +342,6 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except (OSError, json.JSONDecodeError, GateError) as exc:
+    except (OSError, json.JSONDecodeError, GateError, KeyError, TypeError, ValueError) as exc:
         print(f"P3.06 integration failure: {exc}", file=sys.stderr)
         raise SystemExit(1)
