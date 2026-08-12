@@ -26,11 +26,13 @@ jobs:
           set -euo pipefail
           git submodule update --init .src/.upstream/.inferno
 
-      - name: Restore hardened P4.01 policy from project history
+      - name: Restore hardened Part 04 runtime policies from project history
         shell: bash
         run: |
           set -euo pipefail
           git show b7ae5a8fa58d8a78ee5f7cc993e713034d2c751c:.src/.configs/p4.01-runtime-session-policy.json > .src/.configs/p4.01-runtime-session-policy.json
+          git show bad02b066ee7bc38af1d86a1bd3256ddf2ab59ff:.src/.configs/p4.02-probe-capture-policy.json > .src/.configs/p4.02-probe-capture-policy.json
+          git show 11f6efcca2e79c325631ecffda5cd04756dff7f6:.src/.configs/p4.03-reference-capture-policy.json > .src/.configs/p4.03-reference-capture-policy.json
 
       - name: Fix RFC-UUID negative-self-test false positive
         shell: bash
@@ -121,6 +123,11 @@ jobs:
           PY
 
           python3 .src/.tools/runtime-session.py --policy .src/.configs/p4.01-runtime-session-policy.json validate-policy
+          python3 .src/.tools/probe-capture.py --policy .src/.configs/p4.02-probe-capture-policy.json validate-policy
+          python3 .src/.tools/reference-capture.py --policy .src/.configs/p4.03-reference-capture-policy.json validate-policy
+          python3 .src/.tools/ab-session.py --policy .src/.configs/p4.04-ab-session-policy.json validate-policy
+          python3 .src/.tools/divergence-promotion.py --policy .src/.configs/p4.05-divergence-promotion-policy.json validate-policy
+          python3 .src/.tools/runtime-evidence-gate.py --policy .src/.configs/p4.06-runtime-evidence-gate-policy.json validate-policy
 
           python3 - <<'PY'
           import json
