@@ -6,6 +6,9 @@
   "minimum_canonical_events_per_trace": 1,
   "require_structured_trace_events": true,
   "require_unique_run_pairs": true,
+  "require_unique_reference_runs": true,
+  "require_unique_probe_runs": true,
+  "require_candidate_fingerprint": true,
   "require_same_contract_fingerprint": true,
   "require_same_divergence_signature": true,
   "auto_commit_promotion": false,
@@ -27,6 +30,10 @@
   ],
   "requirements": {
     "empty_canonical_stream_is_insufficient_evidence": true,
-    "unstructured_trace_fallback_is_not_promotable_runtime_evidence": true
+    "unstructured_trace_fallback_is_not_promotable_runtime_evidence": true,
+    "candidate_fingerprint_must_reproduce": true,
+    "candidate_id_must_reproduce": true,
+    "independent_reference_runs_required": true,
+    "independent_probe_runs_required": true
   }
 }
