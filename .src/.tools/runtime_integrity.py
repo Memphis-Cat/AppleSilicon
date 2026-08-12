@@ -61,10 +61,12 @@ def parse_machine_id(value: Any) -> int:
     elif isinstance(value, str):
         raw = value.strip()
         require(raw != "", "VMApple machine id cannot be empty")
-        try:
-            parsed = int(raw, 0)
-        except ValueError as exc:
-            raise IntegrityError("VMApple machine id must be decimal or 0x-prefixed uint64") from exc
+        if re.fullmatch(r"0[xX][0-9a-fA-F]+", raw):
+            parsed = int(raw, 16)
+        elif re.fullmatch(r"[0-9]+", raw):
+            parsed = int(raw, 10)
+        else:
+            raise IntegrityError("VMApple machine id must be decimal or 0x-prefixed uint64")
     else:
         raise IntegrityError("VMApple machine id must be an integer or string")
     require(0 <= parsed <= 0xFFFFFFFFFFFFFFFF, "VMApple machine id must fit uint64")
