@@ -1,8 +1,8 @@
 # Source
 
-Project version: **`4.5.0.0.0.0`**
+Project version: **`4.6.0.0.0.0`**
 
-The source tree contains closed Part 01 evidence, closed Part 02 CPU compatibility, closed Part 03 VMApple platform integration, and the completed Part 04 runtime-evidence implementation through P4.06.
+The source tree contains closed Part 01 evidence, closed Part 02 CPU compatibility, closed Part 03 VMApple platform integration, completed Part 04 runtime-evidence implementation through P4.06, and the final post-roadmap stability hardening layer.
 
 ## Layout
 
@@ -10,7 +10,7 @@ The source tree contains closed Part 01 evidence, closed Part 02 CPU compatibili
 .src/
 ├── .upstream/.inferno/  # pinned Inferno submodule
 ├── .patches/            # ordered compatibility patches
-├── .tools/              # logged preparation/regression/evidence tools
+├── .tools/              # logged preparation/regression/evidence/audit tools
 ├── .configs/            # non-secret machine-readable contracts/configs
 └── .fixtures/           # sanitized deterministic fixtures
 ```
@@ -27,11 +27,13 @@ The ordered source patch chain remains exactly:
 0005-arm-vmapple-feature-contract.patch
 ```
 
-Part 04 adds no `0006` patch.
+There is no `0006` patch.
+
+The final source audit did not establish evidence for another Apple CPU/sysreg/device/storage behavior, so no speculative emulator patch was added.
 
 ## Part 04 — Runtime evidence
 
-Part 04 is fixed at exactly P4.01 through P4.06 and is implementation-complete:
+Part 04 is fixed at exactly P4.01 through P4.06 and remains implementation-complete:
 
 ```text
 P4.01  Runtime Session Provenance and Input Lock  complete
@@ -44,14 +46,36 @@ P4.06  Part 04 Runtime Evidence Gate              complete
 
 There is no P4.07.
 
-P4.06 emits a deterministic implementation state that intentionally reports runtime evidence as pending until real P4.02/P4.03 captures exist.
+## Final stability hardening
 
-The final runtime evaluator requires at least two independent P4.04 sessions and accepts either reproduced trace equivalence or a reproducible divergence promoted by the existing P1.10 authority.
+Version `4.6.0.0.0.0` is not another Part/objective. It hardens the finished implementation before real integrated testing.
+
+Key changes include:
+
+- correct VMApple `uint64_t` machine-ID semantics instead of RFC UUID semantics;
+- compiled P3.02 identity validation and real application to QEMU;
+- P2/P3/P4 generated-fingerprint recomputation;
+- runtime-origin probe run IDs;
+- QEMU signal cleanup;
+- P4 plan/preflight/capture authentication;
+- P1.10 rejection of empty/unstructured runtime trace evidence;
+- positive-integer Inferno build parallelism;
+- a whole-repository final static audit that locks the actual runtime wrappers.
+
+Final hardening files:
+
+```text
+.configs/final-stability-policy.json
+.tools/runtime_integrity.py
+.tools/final-stability-audit.py
+.tools/prepare-final-stability.sh
+```
 
 ## Current closure state
 
 ```text
 planned implementation roadmap  complete
+final stability hardening        implemented
 runtime evidence validation      pending
 ```
 
@@ -61,6 +85,6 @@ No Part 05 is automatically defined. Further implementation work must be justifi
 
 ## Testing and artifacts
 
-`prepare-p4.01.sh` through `prepare-p4.06.sh` provide logged static/deterministic implementation checks.
+`prepare-final-stability.sh` is the final logged static/source/repository audit and executes no guest.
 
-Real guest execution remains local and evidence-gated. No proprietary Apple firmware, macOS images, AUX/root storage artifacts, tickets, keys, authentic hardware secrets, machine-identity blobs or account secrets belong in `.src/`.
+Real guest execution remains local and evidence-gated through P4.01–P4.06. No proprietary Apple firmware, macOS images, AUX/root storage artifacts, tickets, keys, authentic hardware secrets, machine-identity blobs or account secrets belong in `.src/`.
