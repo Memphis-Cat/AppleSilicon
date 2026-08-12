@@ -96,18 +96,32 @@ run_stage() {
 }
 
 safe_reset_build_directory() {
-    case "${BUILD_DIR}" in
-        ""|"/"|"${ROOT_DIR}"|"${HOME}")
+    local normalized_build normalized_root
+    normalized_build="$(python3 - "${BUILD_DIR}" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || return 1
+    normalized_root="$(python3 - "${ROOT_DIR}/.build" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || return 1
+    case "${normalized_build}" in
+        ""|"/"|"${ROOT_DIR}"|"${HOME}"|"${normalized_root}")
             echo "Refusing unsafe build directory reset: ${BUILD_DIR}" >&2
             return 1
             ;;
     esac
-    if [[ "${BUILD_DIR}" != "${ROOT_DIR}/.build/"* ]]; then
-        echo "Refusing to delete build directory outside ${ROOT_DIR}/.build: ${BUILD_DIR}" >&2
+    if [[ "${normalized_build}" != "${normalized_root}/"* ]]; then
+        echo "Refusing to delete build directory outside ${normalized_root}: ${BUILD_DIR}" >&2
         echo "Use the default project build directory for the reproducible baseline." >&2
         return 1
     fi
-    rm -rf "${BUILD_DIR}"
+    BUILD_DIR="${normalized_build}"
+    rm -rf -- "${BUILD_DIR}"
     mkdir -p "${BUILD_DIR}"
 }
 
