@@ -19,6 +19,7 @@ DISK="${APPLESILICON_VMAPPLE_DISK:-}"
 PROBE_SECONDS="${APPLESILICON_P1_07_PROBE_SECONDS:-30}"
 GRACE_SECONDS="${APPLESILICON_P1_07_GRACE_SECONDS:-3}"
 DEBUG_ITEMS="${APPLESILICON_P1_07_DEBUG_ITEMS:-guest_errors,unimp,int,cpu_reset}"
+QEMU_SEED="${APPLESILICON_P1_07_QEMU_SEED:-}"
 TRACE_CONFIG="${APPLESILICON_P1_07_TRACE_EVENTS:-${ROOT_DIR}/.src/.configs/p1.07-trace-events}"
 CLASSIFICATION="UNCLASSIFIED"
 FINAL_STAGE="startup"
@@ -115,6 +116,10 @@ validate_file "INPUT_DISK_MISSING" "VMApple disk image" "${DISK}"
 validate_file "TRACE_CAPABILITY_FAILED" "P1.07 trace configuration" "${TRACE_CONFIG}"
 [[ "${PROBE_SECONDS}" =~ ^[0-9]+$ ]] && (( PROBE_SECONDS > 0 )) || fail "LAUNCH_FAILED" "Probe duration must be a positive integer."
 [[ "${GRACE_SECONDS}" =~ ^[0-9]+$ ]] || fail "LAUNCH_FAILED" "Grace duration must be a non-negative integer."
+if [[ -n "${QEMU_SEED}" ]]; then
+    [[ "${QEMU_SEED}" =~ ^(0[xX][0-9a-fA-F]+|[0-9]+)$ ]] ||
+        fail "INVALID_QEMU_SEED" "QEMU seed must be decimal or 0x-prefixed hexadecimal."
+fi
 
 MACHINE_ID="$(python3 "${INTEGRITY_TOOL}" machine-id "${UUID_VALUE}")" || fail "INPUT_UUID_INVALID" "VMApple machine id must be uint64 decimal or 0x-prefixed."
 python3 "${INTEGRITY_TOOL}" identity --compiled "${MACHINE_IDENTITY}" --machine-id "${MACHINE_ID}" >/dev/null ||
@@ -141,6 +146,9 @@ echo "RAM: ${RAM}"
 echo "Probe seconds: ${PROBE_SECONDS}"
 echo "Grace seconds: ${GRACE_SECONDS}"
 echo "Debug items: ${DEBUG_ITEMS}"
+if [[ -n "${QEMU_SEED}" ]]; then
+    echo "QEMU deterministic seed: ${QEMU_SEED}"
+fi
 echo "Machine ID SHA-256: ${MACHINE_ID_HASH}"
 echo "UUID SHA-256: ${MACHINE_ID_HASH}"
 echo "Firmware size: ${FIRMWARE_BYTES} bytes"
@@ -180,6 +188,9 @@ QEMU_ARGS=(
     -m "${RAM}" -smp "${SMP}" -accel "${ACCEL}" -cpu "${CPU_PROFILE}"
     -M "vmapple,uuid=${MACHINE_ID}"
 )
+if [[ -n "${QEMU_SEED}" ]]; then
+    QEMU_ARGS+=(-seed "${QEMU_SEED}")
+fi
 QEMU_ARGS+=("${IDENTITY_ARGS[@]}")
 QEMU_ARGS+=(
     -bios "${FIRMWARE}"
