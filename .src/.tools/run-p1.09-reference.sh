@@ -107,7 +107,7 @@ for command in python3 grep tee; do command -v "${command}" >/dev/null 2>&1 || f
 [[ -n "${QEMU_BIN}" && -x "${QEMU_BIN}" ]] || fail "QEMU_BINARY_MISSING" "APPLESILICON_QEMU_BIN is missing or not executable."
 [[ -n "${UUID_VALUE}" ]] || fail "INPUT_UUID_MISSING" "APPLESILICON_VMAPPLE_UUID (VMApple uint64 machine id) is not configured."
 [[ "${SMP}" =~ ^[0-9]+$ ]] && (( SMP >= 1 && SMP <= 32 )) || fail "INVALID_SMP" "SMP must be an integer from 1 through 32."
-[[ -n "${RAM}" ]] || fail "INVALID_RAM" "RAM must not be empty."
+[[ "${RAM}" =~ ^[1-9][0-9]*[GM]$ ]] || fail "INVALID_RAM" "RAM must be a positive integer followed by G or M (for example 4G or 4096M)."
 validate_file "INPUT_FIRMWARE_MISSING" "VMApple firmware" "${FIRMWARE}"
 validate_file "INPUT_AUX_MISSING" "VMApple aux image" "${AUX}"
 validate_file "INPUT_DISK_MISSING" "VMApple disk image" "${DISK}"
@@ -149,10 +149,11 @@ echo "Disk size: $(file_size "${DISK}") bytes"
 echo "Identity globals: $(( ${#IDENTITY_ARGS[@]} / 2 ))"
 
 FINAL_STAGE="qemu-capability-validation"
-"${QEMU_BIN}" --version | head -n 1
-"${QEMU_BIN}" -machine help 2>&1 | grep -Eq '(^|[[:space:]])vmapple([[:space:]]|$)' || fail "QEMU_VMAPPLE_MISSING" "Built QEMU does not advertise vmapple."
-"${QEMU_BIN}" -accel help 2>&1 | grep -Eq '(^|[[:space:]])hvf([[:space:]]|$)' || fail "QEMU_HVF_MISSING" "Built QEMU does not advertise HVF."
-"${QEMU_BIN}" -cpu help 2>&1 | grep -Eq '(^|[[:space:]])host([[:space:]]|$)' || fail "QEMU_HOST_CPU_MISSING" "Built QEMU does not advertise host CPU."
+QEMU_VERSION_OUTPUT="$("${QEMU_BIN}" --version 2>&1)" || fail "QEMU_BINARY_MISSING" "QEMU --version failed."
+printf '%s\n' "${QEMU_VERSION_OUTPUT%%$'\n'*}"
+"${QEMU_BIN}" -machine help 2>&1 | grep -E '(^|[[:space:]])vmapple([[:space:]]|$)' >/dev/null || fail "QEMU_VMAPPLE_MISSING" "Built QEMU does not advertise vmapple."
+"${QEMU_BIN}" -accel help 2>&1 | grep -E '(^|[[:space:]])hvf([[:space:]]|$)' >/dev/null || fail "QEMU_HVF_MISSING" "Built QEMU does not advertise HVF."
+"${QEMU_BIN}" -cpu help 2>&1 | grep -E '(^|[[:space:]])host([[:space:]]|$)' >/dev/null || fail "QEMU_HOST_CPU_MISSING" "Built QEMU does not advertise host CPU."
 
 FINAL_STAGE="trace-capability-discovery"
 set +e
