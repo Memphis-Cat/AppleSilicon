@@ -44,7 +44,7 @@ fail() {
     exit 1
 }
 
-for cmd in git grep cp mkdir rm tee; do
+for cmd in git grep cp mkdir rm tee python3; do
     command -v "${cmd}" >/dev/null 2>&1 || fail "TOOL_MISSING" "Missing required command: ${cmd}"
 done
 
@@ -76,11 +76,27 @@ git -C "${SOURCE_DIR}" apply --check "${PATCH_0001}" || fail "PATCH_0001_CHECK_F
 git -C "${SOURCE_DIR}" apply --check "${PATCH_0002}" || fail "PATCH_0002_CHECK_FAILED" "P1.05 patch does not apply cleanly."
 
 FINAL_STAGE="work-root-reset"
-case "${WORK_ROOT}" in
-    ""|"/"|"${HOME}"|"${ROOT_DIR}"|"${ROOT_DIR}/.build") fail "UNSAFE_WORK_ROOT" "Unsafe work root: ${WORK_ROOT}" ;;
+NORMALIZED_BUILD_ROOT="$(python3 - "${ROOT_DIR}/.build" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || fail "UNSAFE_WORK_ROOT" "Could not canonicalize project build root."
+NORMALIZED_WORK_ROOT="$(python3 - "${WORK_ROOT}" <<'PY'
+from pathlib import Path
+import sys
+print(Path(sys.argv[1]).resolve(strict=False))
+PY
+)" || fail "UNSAFE_WORK_ROOT" "Could not canonicalize work root."
+case "${NORMALIZED_WORK_ROOT}" in
+    ""|"/"|"${HOME}"|"${ROOT_DIR}"|"${NORMALIZED_BUILD_ROOT}") fail "UNSAFE_WORK_ROOT" "Unsafe work root: ${WORK_ROOT}" ;;
 esac
-[[ "${WORK_ROOT}" == "${ROOT_DIR}/.build/"* ]] || fail "UNSAFE_WORK_ROOT" "Work root must remain under ${ROOT_DIR}/.build/."
-rm -rf "${WORK_ROOT}"
+[[ "${NORMALIZED_WORK_ROOT}" == "${NORMALIZED_BUILD_ROOT}/"* ]] || fail "UNSAFE_WORK_ROOT" "Work root must remain under ${NORMALIZED_BUILD_ROOT}/."
+WORK_ROOT="${NORMALIZED_WORK_ROOT}"
+PREPARED_SOURCE="${WORK_ROOT}/.inferno-src"
+MANIFEST="${WORK_ROOT}/probe-manifest.env"
+TRACE_COPY="${WORK_ROOT}/trace-events"
+rm -rf -- "${WORK_ROOT}"
 mkdir -p "${WORK_ROOT}"
 
 FINAL_STAGE="source-preparation"
