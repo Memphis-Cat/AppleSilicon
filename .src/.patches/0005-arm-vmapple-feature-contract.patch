@@ -20,7 +20,7 @@ diff --git a/target/arm/apple-cpu-features.h b/target/arm/apple-cpu-features.h
 new file mode 100644
 --- /dev/null
 +++ b/target/arm/apple-cpu-features.h
-@@ -0,0 +1,17 @@
+@@ -0,0 +1,18 @@
 +/*
 + * VMApple architectural CPU feature profile
 + *
@@ -43,7 +43,7 @@ diff --git a/target/arm/apple-cpu-features.c b/target/arm/apple-cpu-features.c
 new file mode 100644
 --- /dev/null
 +++ b/target/arm/apple-cpu-features.c
-@@ -0,0 +1,106 @@
+@@ -0,0 +1,107 @@
 +/*
 + * VMApple architectural CPU feature profile
 + *

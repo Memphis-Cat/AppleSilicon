@@ -16,7 +16,7 @@
     },
     {
       "name": "0002-vmapple-optional-apple-pvg.patch",
-      "git_blob_sha": "0e70f9b333a56cac82a46506ac5d9bf80d916a92"
+      "git_blob_sha": "9b0b1e07eb83ca8c9ca40cb1ebc9dbf98f7adb79"
     },
     {
       "name": "0003-arm-apple-sysreg-framework.patch",
@@ -28,7 +28,7 @@
     },
     {
       "name": "0005-arm-vmapple-feature-contract.patch",
-      "git_blob_sha": "66e985f95aa8449df4d008fd8ffb67b731caba98"
+      "git_blob_sha": "0dbc1bdb4e3fc127955d3818815205dba58b11c8"
     }
   ],
   "repository_scan": {
@@ -151,42 +151,42 @@
     },
     {
       "path": ".src/.configs/p2.06-integration-policy.json",
-      "git_blob_sha": "6b8bb679f3b539f0f779ef51b1e4cb84131e07ce",
+      "git_blob_sha": "0ece54668832f5823ed246cd9f256e16c1e30e2c",
       "role": "cpu_integration_policy"
     },
     {
       "path": ".src/.configs/p3.06-integration-policy.json",
-      "git_blob_sha": "5f626c2b81ed55532454ac15657cbdb571ebdb6b",
+      "git_blob_sha": "bd39b5274cae264009ff05e96191a49d5f468673",
       "role": "platform_integration_policy"
     },
     {
       "path": ".src/.configs/p4.01-runtime-session-policy.json",
-      "git_blob_sha": "4a39df265b834e28f9d732ee083c6256814e6b60",
+      "git_blob_sha": "43e8ad3d7ffac0110910f987969d278de4447434",
       "role": "p4_01_policy"
     },
     {
       "path": ".src/.configs/p4.02-probe-capture-policy.json",
-      "git_blob_sha": "e97c20d5913c814bed98337bd142703e1744f243",
+      "git_blob_sha": "696e3f1e9eaed12cf8c510003fa3ea1eeef1dfef",
       "role": "p4_02_policy"
     },
     {
       "path": ".src/.configs/p4.03-reference-capture-policy.json",
-      "git_blob_sha": "009ce66df8900d58828efa1ca0b06ce3d3673be1",
+      "git_blob_sha": "b654b07dae055b105e33adaca7b3259eaf2d965e",
       "role": "p4_03_policy"
     },
     {
       "path": ".src/.configs/p4.04-ab-session-policy.json",
-      "git_blob_sha": "a46f996312d96d04645668b7e4a7bd8c22bbc052",
+      "git_blob_sha": "43b5b05026104dccfef1b657caea5b351fa8ebb2",
       "role": "p4_04_policy"
     },
     {
       "path": ".src/.configs/p4.05-divergence-promotion-policy.json",
-      "git_blob_sha": "5c9099bb7f70f8d2d4ad041c2c437e22067faceb",
+      "git_blob_sha": "4a4209396273fecee1f779f8ab318773ba94e5e6",
       "role": "p4_05_policy"
     },
     {
       "path": ".src/.configs/p4.06-runtime-evidence-gate-policy.json",
-      "git_blob_sha": "ba544fcd4515dca1cda88ca25957011d04279135",
+      "git_blob_sha": "b630ee302f8f3e9129eee88e3f1310a42f0546b2",
       "role": "p4_06_policy"
     },
     {

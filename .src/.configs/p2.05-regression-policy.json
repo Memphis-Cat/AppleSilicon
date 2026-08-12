@@ -43,7 +43,7 @@
     },
     {
       "path": ".src/.patches/0005-arm-vmapple-feature-contract.patch",
-      "git_blob_sha": "66e985f95aa8449df4d008fd8ffb67b731caba98",
+      "git_blob_sha": "0dbc1bdb4e3fc127955d3818815205dba58b11c8",
       "role": "feature_profile_patch"
     }
   ],

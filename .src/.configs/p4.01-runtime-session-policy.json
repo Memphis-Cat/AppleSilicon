@@ -16,7 +16,7 @@
   "locked_project_artifacts": [
     {
       "path": ".src/.configs/p3.06-integration-policy.json",
-      "git_blob_sha": "5f626c2b81ed55532454ac15657cbdb571ebdb6b",
+      "git_blob_sha": "bd39b5274cae264009ff05e96191a49d5f468673",
       "role": "platform_integration_policy"
     },
     {

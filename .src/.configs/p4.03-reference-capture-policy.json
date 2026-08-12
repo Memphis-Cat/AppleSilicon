@@ -29,7 +29,7 @@
   "locked_project_artifacts": [
     {
       "path": ".src/.configs/p4.01-runtime-session-policy.json",
-      "git_blob_sha": "4a39df265b834e28f9d732ee083c6256814e6b60",
+      "git_blob_sha": "43e8ad3d7ffac0110910f987969d278de4447434",
       "role": "session_provenance_policy"
     },
     {
@@ -44,7 +44,7 @@
     },
     {
       "path": ".src/.configs/p4.02-probe-capture-policy.json",
-      "git_blob_sha": "e97c20d5913c814bed98337bd142703e1744f243",
+      "git_blob_sha": "696e3f1e9eaed12cf8c510003fa3ea1eeef1dfef",
       "role": "peer_probe_runtime_contract"
     },
     {

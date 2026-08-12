@@ -41,7 +41,7 @@
     },
     {
       "path": ".src/.configs/p2.05-regression-policy.json",
-      "git_blob_sha": "e5c2a2c4fd14d5465013d4779e9f992189ca5fb6",
+      "git_blob_sha": "42a5a79397e09402b36f610822e4310e6d360e39",
       "role": "cpu_regression_policy"
     },
     {
@@ -51,7 +51,7 @@
     },
     {
       "path": ".src/.tools/prepare-p2.05.sh",
-      "git_blob_sha": "4469784ffae30078e3ebf7c48d19130b6bfcf70d",
+      "git_blob_sha": "42eb0f480977f2c439d1fdd443411f081b3e560a",
       "role": "cpu_regression_prepare"
     }
   ],

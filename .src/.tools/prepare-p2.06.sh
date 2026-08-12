@@ -136,6 +136,13 @@ FINAL_STAGE="integrated-source-clone"
 git clone --quiet --no-hardlinks "${SOURCE_DIR}" "${PREPARED_SOURCE}"
 git -C "${PREPARED_SOURCE}" checkout --quiet --detach "${EXPECTED_INFERNO_REVISION}"
 
+FINAL_STAGE="inferno-submodules"
+git -C "${PREPARED_SOURCE}" submodule update --init --recursive -- util/mlib
+
+[[ -f "${PREPARED_SOURCE}/util/mlib/m-algo.h" ]] ||
+    fail "INFERNO_MLIB_MISSING" "Required Inferno util/mlib submodule was not initialized"
+
+
 FINAL_STAGE="integrated-patch-series"
 for patch in "${PATCHES[@]}"; do
     git -C "${PREPARED_SOURCE}" apply --check "${patch}" ||

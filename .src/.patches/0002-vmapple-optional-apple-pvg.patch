@@ -1,3 +1,13 @@
+diff --git a/hw/vmapple/Kconfig b/hw/vmapple/Kconfig
+--- a/hw/vmapple/Kconfig
++++ b/hw/vmapple/Kconfig
+@@ -31,5 +31,5 @@ config VMAPPLE
+     select VMAPPLE_AES
+     select VMAPPLE_BDIF
+     select VMAPPLE_CFG
+-    select MAC_PVG_MMIO
++    select MAC_PVG_MMIO if MAC_PVG
+     select VMAPPLE_VIRTIO_BLK
 diff --git a/hw/vmapple/vmapple.c b/hw/vmapple/vmapple.c
 --- a/hw/vmapple/vmapple.c
 +++ b/hw/vmapple/vmapple.c

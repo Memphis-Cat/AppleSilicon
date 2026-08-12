@@ -8,12 +8,12 @@
     "inferno_revision": "cc4302a99167abec69b714cfd00c38caece7e7de"
   },
   "part_04_objectives": [
-    "P4.01 — Runtime Session Provenance and Input Lock",
-    "P4.02 — Integrated TCG Probe Capture",
-    "P4.03 — Apple Silicon HVF Reference Capture",
-    "P4.04 — Comparable A/B Session Assembly",
-    "P4.05 — Reproducible Divergence Promotion",
-    "P4.06 — Part 04 Runtime Evidence Gate"
+    "P4.01 \u2014 Runtime Session Provenance and Input Lock",
+    "P4.02 \u2014 Integrated TCG Probe Capture",
+    "P4.03 \u2014 Apple Silicon HVF Reference Capture",
+    "P4.04 \u2014 Comparable A/B Session Assembly",
+    "P4.05 \u2014 Reproducible Divergence Promotion",
+    "P4.06 \u2014 Part 04 Runtime Evidence Gate"
   ],
   "implementation_validators": [
     {
@@ -71,7 +71,7 @@
   "locked_project_artifacts": [
     {
       "path": ".src/.configs/p4.01-runtime-session-policy.json",
-      "git_blob_sha": "4a39df265b834e28f9d732ee083c6256814e6b60",
+      "git_blob_sha": "43e8ad3d7ffac0110910f987969d278de4447434",
       "role": "p4_01_policy"
     },
     {
@@ -86,7 +86,7 @@
     },
     {
       "path": ".src/.configs/p4.02-probe-capture-policy.json",
-      "git_blob_sha": "e97c20d5913c814bed98337bd142703e1744f243",
+      "git_blob_sha": "696e3f1e9eaed12cf8c510003fa3ea1eeef1dfef",
       "role": "p4_02_policy"
     },
     {
@@ -96,7 +96,7 @@
     },
     {
       "path": ".src/.configs/p4.03-reference-capture-policy.json",
-      "git_blob_sha": "009ce66df8900d58828efa1ca0b06ce3d3673be1",
+      "git_blob_sha": "b654b07dae055b105e33adaca7b3259eaf2d965e",
       "role": "p4_03_policy"
     },
     {
@@ -106,7 +106,7 @@
     },
     {
       "path": ".src/.configs/p4.04-ab-session-policy.json",
-      "git_blob_sha": "a46f996312d96d04645668b7e4a7bd8c22bbc052",
+      "git_blob_sha": "43b5b05026104dccfef1b657caea5b351fa8ebb2",
       "role": "p4_04_policy"
     },
     {
@@ -116,7 +116,7 @@
     },
     {
       "path": ".src/.configs/p4.05-divergence-promotion-policy.json",
-      "git_blob_sha": "5c9099bb7f70f8d2d4ad041c2c437e22067faceb",
+      "git_blob_sha": "4a4209396273fecee1f779f8ab318773ba94e5e6",
       "role": "p4_05_policy"
     },
     {
@@ -136,7 +136,7 @@
     },
     {
       "path": ".src/.configs/p3.06-integration-policy.json",
-      "git_blob_sha": "5f626c2b81ed55532454ac15657cbdb571ebdb6b",
+      "git_blob_sha": "bd39b5274cae264009ff05e96191a49d5f468673",
       "role": "platform_integration_policy"
     },
     {

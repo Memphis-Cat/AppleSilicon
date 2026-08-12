@@ -40,7 +40,7 @@
   "locked_project_artifacts": [
     {
       "path": ".src/.configs/p4.04-ab-session-policy.json",
-      "git_blob_sha": "a46f996312d96d04645668b7e4a7bd8c22bbc052",
+      "git_blob_sha": "43b5b05026104dccfef1b657caea5b351fa8ebb2",
       "role": "ab_policy"
     },
     {
