@@ -20,11 +20,47 @@ fail() {
     exit 1
 }
 
+hash_file() {
+    shasum -a 256 "$1" | awk '{print $1}'
+}
+
+hash_text() {
+    printf '%s' "$1" | shasum -a 256 | awk '{print $1}'
+}
+
+manifest_value() {
+    local key="$1"
+
+    awk -v key="$key" '
+        index($0, key ": ") == 1 {
+            print substr($0, length(key) + 3)
+            found = 1
+            exit
+        }
+
+        END {
+            if (!found)
+                exit 1
+        }
+    ' "$MANIFEST"
+}
+
+require_sha256() {
+    local label="$1"
+    local value="$2"
+
+    [[ "$value" =~ ^[0-9a-f]{64}$ ]] ||
+        fail "$label in import manifest is not a valid lowercase SHA-256"
+}
+
 [[ -x "$RUNNER" ]] ||
     fail "P1.07 runtime harness unavailable: $RUNNER"
 
-[[ -x "$VALIDATOR" ]] ||
+[[ -f "$VALIDATOR" ]] ||
     fail "storage validator unavailable: $VALIDATOR"
+
+[[ -f "$INTEGRITY" ]] ||
+    fail "runtime integrity helper unavailable: $INTEGRITY"
 
 [[ -f "$AUX" ]] ||
     fail "no staged AUX image; run import-vmapple-storage.sh first"
@@ -41,25 +77,69 @@ fail() {
 [[ -f "$MANIFEST" ]] ||
     fail "import manifest is missing"
 
-MACHINE_ID="$(cat "$MACHINE_ID_FILE")"
+echo "===== IMPORTED BUNDLE INTEGRITY ====="
+
+EXPECTED_AUX_HASH="$(
+    manifest_value "AUX staged SHA-256"
+)" || fail "manifest has no AUX staged SHA-256"
+
+EXPECTED_ROOT_HASH="$(
+    manifest_value "ROOT staged SHA-256"
+)" || fail "manifest has no ROOT staged SHA-256"
+
+EXPECTED_IDENTITY_HASH="$(
+    manifest_value "Machine identity SHA-256"
+)" || fail "manifest has no machine identity SHA-256"
+
+EXPECTED_MACHINE_ID_HASH="$(
+    manifest_value "Machine ID SHA-256"
+)" || fail "manifest has no machine ID SHA-256"
+
+require_sha256 "AUX staged SHA-256" "$EXPECTED_AUX_HASH"
+require_sha256 "ROOT staged SHA-256" "$EXPECTED_ROOT_HASH"
+require_sha256 "Machine identity SHA-256" "$EXPECTED_IDENTITY_HASH"
+require_sha256 "Machine ID SHA-256" "$EXPECTED_MACHINE_ID_HASH"
+
+ACTUAL_AUX_HASH="$(hash_file "$AUX")"
+ACTUAL_ROOT_HASH="$(hash_file "$ROOT")"
+ACTUAL_IDENTITY_HASH="$(hash_file "$IDENTITY")"
+
+[[ "$ACTUAL_AUX_HASH" == "$EXPECTED_AUX_HASH" ]] ||
+    fail "staged AUX changed after import"
+
+[[ "$ACTUAL_ROOT_HASH" == "$EXPECTED_ROOT_HASH" ]] ||
+    fail "staged root changed after import"
+
+[[ "$ACTUAL_IDENTITY_HASH" == "$EXPECTED_IDENTITY_HASH" ]] ||
+    fail "compiled machine identity changed after import"
+
+RAW_MACHINE_ID="$(cat "$MACHINE_ID_FILE")"
 
 MACHINE_ID="$(
-    python3 "$INTEGRITY" machine-id "$MACHINE_ID"
+    python3 "$INTEGRITY" machine-id "$RAW_MACHINE_ID"
 )" || fail "imported machine ID is invalid"
+
+ACTUAL_MACHINE_ID_HASH="$(hash_text "$MACHINE_ID")"
+
+[[ "$ACTUAL_MACHINE_ID_HASH" == "$EXPECTED_MACHINE_ID_HASH" ]] ||
+    fail "imported machine ID changed after import"
 
 python3 "$INTEGRITY" \
     identity \
     --compiled "$IDENTITY" \
     --machine-id "$MACHINE_ID" \
     >/dev/null ||
-    fail "imported machine identity does not match imported machine ID"
+    fail "compiled machine identity does not match imported machine ID"
 
-MACHINE_ID_HASH="$(
-    printf '%s' "$MACHINE_ID" |
-    shasum -a 256 |
-    awk '{print $1}'
-)"
+echo "PASS: AUX matches import manifest"
+echo "PASS: root matches import manifest"
+echo "PASS: machine identity matches import manifest"
+echo "PASS: machine ID matches import manifest"
+echo "PASS: compiled identity matches machine ID"
 
+MACHINE_ID_HASH="$ACTUAL_MACHINE_ID_HASH"
+
+echo
 echo "===== IMPORTED VMAPPLE STORAGE ====="
 echo "AUX working image: $AUX"
 echo "ROOT working image: $ROOT"
@@ -79,7 +159,7 @@ export APPLESILICON_VMAPPLE_MACHINE_IDENTITY="$IDENTITY"
 
 echo
 echo "===== STARTING VMAPPLE RUNTIME ====="
-echo "Only staged working images and their matching imported identity are used."
+echo "Only manifest-verified staged images and their matching identity are used."
 echo
 
 exec bash "$RUNNER"
